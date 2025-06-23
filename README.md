@@ -281,7 +281,7 @@ ATLAS_AUTO_LAUNCHER（Arduionと表示される場合もあり）を選んで〔
 - **ジャンプワイヤー等のケーブル**
 
 <p align="center">
-<img width="700" alt="ctrl_devices" src="https://github.com/user-attachments/assets/7198bb5a-f8d9-42b6-815f-cbfd76bd344d" />
+<img width="700" alt="ctrl_devices" src="https://github.com/user-attachments/assets/5bfff615-dbf2-4bd0-9fef-270805743ddb" />
 </p>
 
 ### 4-1-2. 駆動系
@@ -318,13 +318,13 @@ ATLAS_AUTO_LAUNCHER（Arduionと表示される場合もあり）を選んで〔
 1-5のパーツは下記のように組み立てます。
 
 <p align="center">
-<img width="500" alt="motor-assembly" src="https://github.com/user-attachments/assets/e6f3d177-cccc-4739-a23b-596214497da5" />
+<img width="500" alt="motor-assembly" src="https://github.com/user-attachments/assets/b50a89ba-130a-4447-a269-93e7dd933ac2" />
 </p>
 
 完成すると以下の図のようになります。左回転用は別途用意するか、ランチャーの爪を付け替えます。
 
 <p align="center">
-<img width="300" alt="motor-assembly" src="https://github.com/user-attachments/assets/4c8a78ed-f68b-4b88-8b04-74432806bb4d" />
+<img width="300" alt="motor-assembly" src="https://github.com/user-attachments/assets/130de011-55aa-4063-b0c9-21f8ef8e90d3" />
 </p>
 
 > [!NOTE]
