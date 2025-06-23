@@ -182,6 +182,7 @@ ReadySetが表示されている間にベイをランチャーから外すと、
 Web Bluetooth APIがChromeでしか動かないため、Chromeをお使いください。
 
 デバイスとの通信アプリは以下のULRにアクセスすると使えます。
+
 https://shark-minister.github.io/atlas_bey/
 
 ページを開くと次の画面が現れます。
