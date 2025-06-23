@@ -47,7 +47,7 @@ ATLASのマイコンへはUSB-Cで電力を供給します。
 オートモードのディスプレイ表示は以下の通りです。
 
 <p align="center">
-<img width="200" alt="オートモード画面" src="https://github.com/user-attachments/assets/bbbf4813-b6c0-41d0-ba84-d5f32e50b676" />
+<img width="200" alt="オートモード画面" src="https://github.com/user-attachments/assets/830a536d-1dfa-4d40-8787-2180f7dcdd38" />
 </p>
 
 表示の詳細は以下の通りです。
@@ -68,13 +68,13 @@ ATLASのマイコンへはUSB-Cで電力を供給します。
 オートモードの最初には、ベイバトルパス（以下、BBP）の接続を促すメッセージが表示されます。
 
 <p align="center">
-<img width="200" alt="オートモード画面" src="https://github.com/user-attachments/assets/d4fe3dbd-e7df-4867-a6f3-d571bb262169" />
+<img width="200" alt="オートモード画面" src="https://github.com/user-attachments/assets/66b89fcd-44bd-4565-abb5-1892a15ef57d" />
 </p>
 
 BBPの電源を投入し、BBPの天面ボタンを長押しすることで接続依頼（Bluetoothのアドバタイズ）を行います。ATLASがそれを検知し接続が完了するとBBPのインジケータが緑色の点滅を行います（スマホのベイブレードアプリへの接続と同じです）。また、その際に画面表示が変わって、画面上部のヘッダ領域に`P`が表示されます。
 
 <p align="center">
-<img width="200" alt="オートモード画面" src="https://github.com/user-attachments/assets/febd623c-819c-4814-993f-f77ace9f0055" />
+<img width="200" alt="オートモード画面" src="https://github.com/user-attachments/assets/a4b3044b-256a-4655-be5d-9eedc6dcbdc9" />
 </p>
 
 BBPを切断したいときはBBPのボタンを長押ししてください。インジケータが赤色の点滅を行ったら切断成功です。ヘッダ領域の`P`マークが消えることを確認してください。
@@ -84,13 +84,13 @@ BBPを切断したいときはBBPのボタンを長押ししてください。�
 オートモード起動直後は、安全のためモーターが無効にされています。この状態では、電動ランチャーを連動させずに単なるシュートパワー計測機として使うことができます。ベイをランチャー（BBPは接続済み）にセットするとATLASはそれを感知し、画面上部のヘッダ領域に`B`マークがつきます。ベイを外すと`B`マークは消えます。
 
 <p align="center">
-<img width="200" alt="オートモード画面" src="https://github.com/user-attachments/assets/7213ef60-6dff-47bb-b212-8f5f4257ced6" />
+<img width="200" alt="オートモード画面" src="https://github.com/user-attachments/assets/a7b67763-7017-4e4f-935a-314cfa496bf2" />
 </p>
 
 ベイのシュートを行うと、画面にシュートパワーが表示されます。
 
 <p align="center">
-<img width="200" alt="オートモード画面" src="https://github.com/user-attachments/assets/c3a539a3-3b9d-454b-bc42-e667359b7a2f" />
+<img width="200" alt="オートモード画面" src="https://github.com/user-attachments/assets/350990ad-8a83-46b5-b0e4-be0398c973e2" />
 </p>
 
 シュートパワー以外にも、シュートの加速度（Acc）と、新品のストリングランチャーを用いて、前半の加速度を維持したまま引き切ったときに期待されるシュートパワー（Exp.SP）を画面下部に表示しています。
@@ -99,7 +99,7 @@ BBPを切断したいときはBBPのボタンを長押ししてください。�
 ベイバトルパスからのデータが正しく送受信されないとチェックサムエラーとなり、画面にERRORと表示されます。
 
 <p align="center">
-<img width="200" alt="オートモード画面" src="https://github.com/user-attachments/assets/74fada94-9b38-499e-8732-abbcb2a883b7" />
+<img width="200" alt="オートモード画面" src="https://github.com/user-attachments/assets/3b573def-1101-4f4c-9d66-145f985665b4" />
 </p>
 
 ### 2-1-4. 電動ランチャーを用いるときは
@@ -107,25 +107,25 @@ BBPを切断したいときはBBPのボタンを長押ししてください。�
 電動ランチャーの射出するベイとバトルしたい場合はモーターを有効にする必要があります。モーターを有効にするには、ランチャーにベイがセットされていない状態でBBPのボタンを2連続で押してください（ダブルクリック）。モーターが有効になるとヘッダ領域に電動ランチャーの情報（番号と回転方向）が表示されます。下の図の例だと、電動ランチャー1が有効で、右回転に設定されています。
 
 <p align="center">
-<img width="200" alt="オートモード画面" src="https://github.com/user-attachments/assets/259d0db0-0014-48b7-9360-d018c1627bbd" />
+<img width="200" alt="オートモード画面" src="https://github.com/user-attachments/assets/6f18a478-5b39-4a45-9fbd-85f3c4422736" />
 </p>
 
 この状態でベイをセットすると、ディスプレイに**ReadySet**と大きく表示されます。
 
 <p align="center">
-<img width="200" alt="オートモード画面" src="https://github.com/user-attachments/assets/26f5b4f3-03a8-4c15-a378-2d99253b43a7" />
+<img width="200" alt="オートモード画面" src="https://github.com/user-attachments/assets/2ed11b5a-5e21-4d7f-8861-6002c4005a41" />
 </p>
 
 ReadySetが表示されている間にベイをランチャーから外すと、電動ランチャー駆動（モーターの回転開始）がキャンセルされます。このキャンセル可能な時間を猶予時間（レイテンシ, latency）と呼び、デフォルトでは1.3秒間で設定されています。猶予時間の値はマニュアル・設定モードで変更することができます（詳細はマニュアル・設定モードを参照）。
 
 <p align="center">
-<img width="200" alt="オートモード画面" src="https://github.com/user-attachments/assets/b7a83744-39a6-4e54-b4e6-0cb3ad48f7ff" />
+<img width="200" alt="オートモード画面" src="https://github.com/user-attachments/assets/3d7dcd3e-620e-4e61-b018-c2c0dcbbd36b" />
 </p>
 
 ベイを外さないでおくとカウントダウンが始まりますので、号令にあわせて自分のシュートを行ってください。電動ランチャーは設定にしたがってベイの射出を行います。ディスプレイには自分のシュートパワーが表示されます。画面の見方は、前述の電動ランチャー無効状態でのシュートパワー測定と同じです（エラー表示も同様）。
 
 <p align="center">
-<img width="200" alt="オートモード画面" src="https://github.com/user-attachments/assets/bbbf4813-b6c0-41d0-ba84-d5f32e50b676" />
+<img width="200" alt="オートモード画面" src="https://github.com/user-attachments/assets/a5f025cc-f72e-4af4-bad7-2eea0a779b42" />
 </p>
 
 ## 2-2. マニュアル・設定モード
