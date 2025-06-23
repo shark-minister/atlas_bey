@@ -13,7 +13,7 @@ ATLASでは、ランチャーにベイをセットしたら自動で検知して
 ATLASの概略図を下に示します。
 
 <p align="center">
-<img width="900" alt="マイコン制御電動ランチャー" src="https://github.com/user-attachments/assets/c2168db2-c99c-4009-9f64-13002556ebe8" />
+<img width="900" alt="マイコン制御電動ランチャー" src="https://github.com/user-attachments/assets/f4939f6f-cd0b-48d6-a4a3-ab32b006a0d5" />
 </p>
 
 # 2. 使い方
