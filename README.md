@@ -188,7 +188,7 @@ https://shark-minister.github.io/atlas_bey/
 ページを開くと次の画面が現れます。
 
 <p align="center">
-  <img width="400" alt="image" src="https://github.com/user-attachments/assets/0574f447-35fa-49a0-90cb-3342439eda61" />
+  <img width="400" alt="image" src="https://github.com/user-attachments/assets/0df8123e-27bf-4a5e-b628-9387fc8eb26e" />
 </p>
 
 #### 接続
@@ -196,7 +196,7 @@ https://shark-minister.github.io/atlas_bey/
 デバイスをマニュアル/設定モードに切り替えた状態で、〔接続する〕ボタンをクリックしてください。
 
 <p align="center">
-<img width="327" alt="接続" src="https://github.com/user-attachments/assets/83f76098-71ba-4580-891c-90e430cafa72" />
+<img width="327" alt="接続" src="https://github.com/user-attachments/assets/503f0562-9e80-4ec7-aee9-709a2736eb2e" />
 </p>
 
 ATLAS_AUTO_LAUNCHER（Arduionと表示される場合もあり）を選んで〔ペア設定〕をクリックするとデバイスが接続されます。接続されると自動的にデバイスのパラメータが読み込まれます。
@@ -204,7 +204,7 @@ ATLAS_AUTO_LAUNCHER（Arduionと表示される場合もあり）を選んで〔
 もしデバイスが2台のモーターを稼働させる状態になっている場合、以下の設定画面（後述）は以下の通りになります。
 
 <p align="center">
-<img width="450" alt="Webクライアント画面2" src="https://github.com/user-attachments/assets/e34c50bf-66e0-40b0-8ac8-9efbb46c6169" />
+<img width="450" alt="Webクライアント画面2" src="https://github.com/user-attachments/assets/32614eab-dc61-4367-b555-062ab4d92dcf" />
 </p>
 
 #### 切断
@@ -234,11 +234,11 @@ ATLAS_AUTO_LAUNCHER（Arduionと表示される場合もあり）を選んで〔
 - 〔初期化〕ボタン: デバイスに保存されているシュート統計情報をクリアする。
 
 <p align="center">
-<img width="400" alt="シュート統計" src="https://github.com/user-attachments/assets/e2cfac98-4329-4645-807c-b00e8559282e" />
+<img width="400" alt="シュート統計" src="https://github.com/user-attachments/assets/8f82318d-b840-4a8b-8af7-e0676e78d08a" />
 </p>
 
 <p align="center">
-<img width="400" alt="シュート統計グラフ" src="https://github.com/user-attachments/assets/24b154a9-f7f1-42e2-b9f0-294583851bf6" />
+<img width="400" alt="シュート統計グラフ" src="https://github.com/user-attachments/assets/f001e7fe-d015-423a-80fb-58371c006cdc" />
 </p>
 
 # 4. ハードウェア
@@ -280,7 +280,7 @@ ATLAS_AUTO_LAUNCHER（Arduionと表示される場合もあり）を選んで〔
 - **ジャンプワイヤー等のケーブル**
 
 <p align="center">
-<img width="700" alt="ctrl_devices" src="https://github.com/user-attachments/assets/49496c3c-64a1-4331-9c0e-33a245529d0a" />
+<img width="700" alt="ctrl_devices" src="https://github.com/user-attachments/assets/7198bb5a-f8d9-42b6-815f-cbfd76bd344d" />
 </p>
 
 ### 4-1-2. 駆動系
@@ -317,13 +317,13 @@ ATLAS_AUTO_LAUNCHER（Arduionと表示される場合もあり）を選んで〔
 1-5のパーツは下記のように組み立てます。
 
 <p align="center">
-<img width="500" alt="motor-assembly" src="https://github.com/user-attachments/assets/157866d5-f824-499b-b0a5-4d10ab48a274" />
+<img width="500" alt="motor-assembly" src="https://github.com/user-attachments/assets/e6f3d177-cccc-4739-a23b-596214497da5" />
 </p>
 
 完成すると以下の図のようになります。左回転用は別途用意するか、ランチャーの爪を付け替えます。
 
 <p align="center">
-<img width="300" alt="motor-assembly" src="https://github.com/user-attachments/assets/75785a5a-2328-434d-92a8-1d6b6a12c47d" />
+<img width="300" alt="motor-assembly" src="https://github.com/user-attachments/assets/4c8a78ed-f68b-4b88-8b04-74432806bb4d" />
 </p>
 
 > [!NOTE]
@@ -352,8 +352,7 @@ microSDカードに 01, 02, 03, 04のフォルダを作成し、それぞれの�
 下の図の通り配線しました。
 
 <p align="center">
-<!-- <img width="700" alt="system-wiring" src="https://github.com/user-attachments/assets/5ce717db-b21d-435d-a943-38eb230eeeee" /> -->
-<img width="700" alt="system-wiring" src="https://github.com/user-attachments/assets/442bdb62-de9c-4cbf-b16b-3efee3359d2d" />
+<img width="700" alt="system-wiring" src="https://github.com/user-attachments/assets/dacfc4eb-82b9-449b-b29a-65594485c342" />
 </p>
 
 ### 4-2-1. BTS79608
@@ -532,7 +531,7 @@ https://www.arduino.cc/en/software/
 ボードマネージャから、**esp32 by Espressif Systems**をインストールします。
 
 <p align="center">
-<img width="277" alt="board-manager" src="https://github.com/user-attachments/assets/b1cb1103-2dcb-465b-afbf-41d950afb66c" />
+<img width="277" alt="board-manager" src="https://github.com/user-attachments/assets/d106f575-c411-4e75-9f6d-136c5e6c4daa" />
 </p>
 
 ### 5-1-3. ライブラリのインストール
@@ -547,7 +546,7 @@ https://www.arduino.cc/en/software/
 Arduino IDEの場合は、ライブラリマネージャ（左の柱のアイコンの上から3つ目）で、ライブラリ名を検索してインストールできます。
 
 <p align="center">
-<img width="363" alt="library" src="https://github.com/user-attachments/assets/e3b88919-343d-44f3-8e0d-880c029fd44d" />
+<img width="363" alt="library" src="https://github.com/user-attachments/assets/f789d353-7e15-40b6-b5c0-232fb33173e3" />
 </p>
 
 ## 5-2. パラメータの設定値変更
@@ -703,7 +702,7 @@ Arduino IDEの場合は、ライブラリマネージャ（左の柱のアイコ
 ビルドの際は、ボードに**XIAO EPS32-C3**を選んでください。→ボタンを押すとビルドとマイコンへのダウンロードが行われます。
 
 <p align="center">
-<img width="292" alt="board1" src="https://github.com/user-attachments/assets/c0856797-581d-4aa2-b261-37cc2aa7429b" />
+<img width="292" alt="board1" src="https://github.com/user-attachments/assets/b5688cfd-962f-4a72-84d2-cb37284bfe16" />
 </p>
 
 ## 5-4. ATLASのBLE仕様
@@ -759,4 +758,6 @@ ATLASのペリフェラルとしてのGATT仕様は以下の表の通りです�
 となっています。
 汎用のBLE通信アプリを使う場合は、デフォルト値で、00-82-00-00-64-00-64（16進数）です。
 
-<img width="600" alt="data-format" src="https://github.com/user-attachments/assets/2cc4bbc6-1144-41cb-8af5-4a32ec97236d" />
+<p align="center">
+<img width="600" alt="data-format" src="https://github.com/user-attachments/assets/f58e0207-e3e8-4beb-a40f-f4f14530104c" />
+</p>
