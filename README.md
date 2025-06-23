@@ -152,7 +152,7 @@ ReadySetが表示されている間にベイをランチャーから外すと、
 マニュアルモードのディスプレイ表示は以下の通りです。
 
 <p align="center">
-<img width="200" alt="マニュアル・設定モード画面" src="https://github.com/user-attachments/assets/e93d3d98-007a-4665-8e1e-783617f59eb7" />
+<img width="200" alt="マニュアル・設定モード画面" src="https://github.com/user-attachments/assets/b442df27-6c43-47c1-b48c-9d3fcad101a8" />
 </p>
 
 表示の詳細は以下の通りです。
