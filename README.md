@@ -318,13 +318,13 @@ ATLAS_AUTO_LAUNCHER（Arduionと表示される場合もあり）を選んで〔
 1-5のパーツは下記のように組み立てます。
 
 <p align="center">
-<img width="500" alt="motor-assembly" src="https://github.com/user-attachments/assets/b50a89ba-130a-4447-a269-93e7dd933ac2" />
+<img width="600" alt="motor-assembly" src="https://github.com/user-attachments/assets/b50a89ba-130a-4447-a269-93e7dd933ac2" />
 </p>
 
 完成すると以下の図のようになります。左回転用は別途用意するか、ランチャーの爪を付け替えます。
 
 <p align="center">
-<img width="300" alt="motor-assembly" src="https://github.com/user-attachments/assets/130de011-55aa-4063-b0c9-21f8ef8e90d3" />
+<img width="360" alt="motor-assembly" src="https://github.com/user-attachments/assets/130de011-55aa-4063-b0c9-21f8ef8e90d3" />
 </p>
 
 > [!NOTE]
