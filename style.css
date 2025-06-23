@@ -1,0 +1,252 @@
+body {
+    background-color: white;
+}
+
+h1.heading {
+    padding: 1ex 2ex 1ex 1.2ex;
+    margin: 3ex 0 2ex 0;
+    font-size: large;
+    border-left: 2ex solid #008fd1;
+    border-top-left-radius: 0.7ex;
+    border-bottom-left-radius: 0.7ex;
+    color: #0077ae;
+    background-color: #e2eef5;
+}
+
+h1.heading:first-child {
+    margin-top: 0;
+}
+
+h1.heading span {
+    font-size: small;
+}
+
+.contents {
+    width: fit-content;
+    position: relative;
+    padding: 2ex;
+}
+
+.menu-container {
+    width: fit-content;
+    position: relative;
+    margin: auto;
+}
+
+.shadow {
+    box-shadow:
+        0 8px 10px 1px rgba(0, 0, 0, 0.14),
+        0 3px 14px 2px rgba(0, 0, 0, 0.12),
+        0 5px 5px -3px rgba(0, 0, 0, 0.2)
+}
+
+/******************************************************************************
+    フォーム
+*******************************************************************************/
+td, th {
+    font-size: medium;
+    border-left: 2ex solid white;
+}
+
+th.header-elr {
+    text-align: center;
+}
+
+th.header-item {
+    text-align: right;
+}
+
+td {
+    text-align: center;
+    padding: 0.5ex;
+}
+
+tr.btn-margin td {
+    padding-top: 2ex;
+}
+
+button {
+    margin-left: 1ex;
+    margin-right: 1ex;
+}
+
+#latency, #delay {
+    width: 100%;
+}
+
+input:invalid {
+    background-color: #ff8889;
+}
+
+.eng {
+    font-size: smaller;
+    color: rgb(114, 172, 184);
+}
+
+.note {
+    font-size: x-small;
+    text-align: right;
+    color: rgb(114, 172, 184);
+}
+
+.number {
+    width: 100%;
+    text-align: right;
+    font-size: large;
+    height: 3.4ex;
+    border: 0;
+    border-radius: 1ex;
+    background-color: rgb(229, 247, 250);
+}
+
+/******************************************************************************
+    シュート情報
+*******************************************************************************/
+
+.form-align {
+    text-align: left;
+}
+
+.sp-data {
+    width: 12ex;
+    text-align: right;
+    font-size: large;
+    height: 3.4ex;
+    border: 0;
+    border-radius: 1ex;
+    background-color: rgb(229, 247, 250);
+}
+
+canvas {
+    margin-top: 2ex;
+}
+
+/******************************************************************************
+    トグルスイッチ (ON/OFF)
+*******************************************************************************/
+.toggle-btn {
+    display: inline-block;
+    position: relative;
+    width: 6ex;
+    height: 3ex;
+    border-radius: 3ex;
+    background-color: #dfdfdf;
+    cursor: pointer;
+    transition: background-color .5s;
+}
+
+.toggle-btn:has(:checked) {
+    background-color: #008fd1;
+}
+
+.toggle-btn::after {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3ex;
+    height: 3ex;
+    border-radius: 50%;
+    box-shadow: 0 0 5px rgb(0 0 0 / 20%);
+    background-color: #fff;
+    content: '';
+    transition: left .5s;
+}
+
+.toggle-btn:has(:checked)::after {
+    left: 3ex;
+}
+
+.toggle-btn input {
+    display: none;
+}
+
+/******************************************************************************
+    トグルスイッチ (L/R)
+*******************************************************************************/
+.toggle-lr {
+    text-align: center;
+    line-height: 3ex;
+    color: #cf6b00;
+    font-weight: bold;
+    display: inline-block;
+    position: relative;
+    width: 6ex;
+    height: 3ex;
+    border-radius: 3ex;
+    background-color: #fb8200;
+    cursor: pointer;
+    transition: background-color .4s;
+}
+
+.toggle-lr:has(:checked) {
+    background-color: #008fd1;
+}
+
+.toggle-lr::after {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3ex;
+    height: 3ex;
+    border-radius: 50%;
+    box-shadow: 0 0 5px rgb(0 0 0 / 20%);
+    background-color: #fff;
+    content: 'L';
+    transition: left .5s;
+}
+
+.toggle-lr:has(:checked)::after {
+    left: 3ex;
+    content: 'R';
+    color: #0086c0;
+}
+
+.toggle-lr input {
+    display: none;
+}
+
+
+/******************************************************************************
+    トグルスイッチ (L/R)
+*******************************************************************************/
+.toggle-12 {
+    text-align: center;
+    line-height: 3ex;
+    color: #0086c0;
+    font-weight: bold;
+    display: inline-block;
+    position: relative;
+    width: 6ex;
+    height: 3ex;
+    border-radius: 3ex;
+    background-color: #008fd1;
+    cursor: pointer;
+    transition: background-color .4s;
+}
+
+.toggle-12:has(:checked) {
+    background-color: #fb8200;
+}
+
+.toggle-12::after {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3ex;
+    height: 3ex;
+    border-radius: 50%;
+    box-shadow: 0 0 5px rgb(0 0 0 / 20%);
+    background-color: #fff;
+    content: '1';
+    transition: left .5s;
+}
+
+.toggle-12:has(:checked)::after {
+    left: 3ex;
+    content: '2';
+    color: #cf6b00;
+}
+
+.toggle-12 input {
+    display: none;
+}
