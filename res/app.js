@@ -1,34 +1,88 @@
 const { createApp } = Vue
 
 // constants
-const ATLAS_SERVICE ="32150100-9a86-43ac-b15f-200ed1b7a72a";
+const ATLAS_SERVICE ="32150000-9a86-43ac-b15f-200ed1b7a72a";
+
+class ElectricLauncher {
+    constructor() {
+        this.enabled_manual = false;
+        this.rot_is_right = true;
+        this.sp = 10000;
+    }
+    get_flag() {
+        let result = 0;
+        if (this.enabled_manual) {
+            result |= 1;
+        }
+        if (!this.rot_is_right) {
+            result |= (1 << 4);
+        }
+        return result;
+    }
+    set_flag(value) {
+        this.enabled_manual = ((value & 1) > 0);
+        this.rot_is_right = ((value & 16) == 0);
+    }
+}
 
 const app = Vue.createApp({
     data() {
         return {
-            // データ
-            total: 0,
-            max_sp: 0,
-            min_sp: 0,
-            avg_sp: 0.0,
-            stdev_sp: 0.0,
-            hist_num: 0,
-            hist_begin: 0,
-            hist_end: 60,
-            label: ["-"],
-            data: [0],
+            // パラメータ
+            num_motors: 1,
+            elr2_auto: false,
+            latency: 2000,
+            delay: 0,
+            elr1: new ElectricLauncher(),
+            elr2: new ElectricLauncher(),
+            write_rom: false,
             // Bluetooth
             device: null,
             service: null,
             last_uuid: "",
             last_characteristic: null,
+            is_gatt_busy: false,
+            // データ
+            num_shoots: 0,
+            min_sp: 0,
+            max_sp: 0,
+            avg_sp: 0,
+            std_sp: 0,
+            chart: null
+        }
+    },
+    computed: {
+        is_button_busy() {
+            return this.device === null || this.is_gatt_busy;
         }
     },
     methods: {
         //---------------------------------------------------------------------
         // データ
         //---------------------------------------------------------------------
-        deserialize(header, hists) {
+        serialize_params() {
+            return new Uint8Array([
+                this.num_motors-1,
+                this.latency / 10,
+                this.delay / 2,
+                this.elr1.get_flag(),
+                this.elr1.sp / 100,
+                this.elr2.get_flag(),
+                this.elr2.sp / 100
+            ]);
+        },
+        deserialize_params(data) {
+            const first_byte = data.getUint8(0);
+            this.num_motors = (first_byte & 16) > 0 ? 2 : 1;
+            this.elr2_auto = (first_byte & 1) > 0;
+            this.latency = data.getUint8(1) * 10;
+            this.delay = data.getUint8(2) * 2;
+            this.elr1.set_flag(data.getUint8(3));
+            this.elr1.sp = data.getUint8(4) * 100;
+            this.elr2.set_flag(data.getUint8(5));
+            this.elr2.sp = data.getUint8(6) * 100;    
+        },
+        deserialize_data(header, hists) {
             // ヘッダ情報
             this.total = header.getUint16(0, true);
             this.max_sp = header.getUint16(2, true);
@@ -38,37 +92,39 @@ const app = Vue.createApp({
             this.hist_begin = header.getUint8(10);
             this.hist_end = header.getUint8(11);
 
-            // ヒストグラムのビン数
-            const hist_n_bins = this.hist_end - this.hist_begin + 1;
-            // ヒストグラム
-            this.label = new Array(hist_n_bins);
-            this.data = new Array(hist_n_bins);
+            if (this.total > 0) {
+                // ヒストグラムのビン数
+                const hist_n_bins = this.hist_end - this.hist_begin + 1;
+                // ヒストグラム
+                this.label = new Array(hist_n_bins);
+                this.data = new Array(hist_n_bins);
 
-            for (let i = this.hist_begin; i <= this.hist_end; i += 1) {
-                const block = Math.floor(i / 20);
-                const index = i - (block * 20);
-                this.data[i - this.hist_begin] = hists[block].getUint8(index);
-                this.label[i - this.hist_begin] = String(4000 + i * 200);
+                for (let i = this.hist_begin; i <= this.hist_end; i += 1) {
+                    const block = Math.floor(i / 20);
+                    const index = i - (block * 20);
+                    this.data[i - this.hist_begin] = hists[block].getUint8(index);
+                    this.label[i - this.hist_begin] = String(4000 + i * 200);
+                }
+                return true;
             }
-        },
-        print_info() {
-            console.log(this.total);
-            console.log(this.max_sp);
-            console.log(this.min_sp);
-            console.log(this.avg_sp);
-            for (let i = 0; i < this.data.length; ++i) {
-                console.log(this.label[i] + ": " + this.data[i]);
+            else {
+                this.label = []
+                this.data = []
+                return false;
             }
         },
         plot() {
+            if (this.chart) {
+                this.chart.destroy();
+            }
             const ctx = document.getElementById("histogram").getContext('2d');
-            const chart = new Chart(ctx, {
+            this.chart = new Chart(ctx, {
                 type: "bar",
                 data: {
                     labels: this.label,
                     datasets: [{
                         data: this.data,
-                        backgroundColor: "#88bbff",
+                        backgroundColor: "#008fd1",
                     }],
                 },
                 options: {
@@ -118,6 +174,7 @@ const app = Vue.createApp({
             if (this.device == null) {
                 // スキャン実行
                 console.log("finding device...");
+                this.is_gatt_busy = true;
                 this.device = await navigator.bluetooth.requestDevice({
                     filters: [{
                         // サービス名は固定
@@ -133,14 +190,18 @@ const app = Vue.createApp({
             }
             // 接続実行
             console.log("connecting...");
+            this.is_gatt_busy = true;
             const server = await this.device.gatt.connect();
             this.service = await server.getPrimaryService(ATLAS_SERVICE);
+            this.is_gatt_busy = false;
             console.log("connecting...done");
         },
         async get_characteristic(uuid) {
             console.log('getting characteristic...');
             if (this.last_uuid != uuid) {
+                this.is_gatt_busy = true;
                 this.last_characteristic = await this.service.getCharacteristic(uuid);
+                this.is_gatt_busy = false;
             }
             return this.last_characteristic;
         },
@@ -149,8 +210,10 @@ const app = Vue.createApp({
             try {
                 await this.connect();
                 console.log("reading characteristic...");
+                this.is_gatt_busy = true;
                 const characteristic = await this.get_characteristic(uuid);
                 const data = await characteristic.readValue();
+                this.is_gatt_busy = false;
                 console.log("reading characteristic...done");
                 return data;
             }
@@ -163,8 +226,10 @@ const app = Vue.createApp({
             try {
                 await this.connect();
                 console.log("writing characteristic...");
+                this.is_gatt_busy = true;
                 const characteristic = await this.get_characteristic(uuid);
                 await characteristic.writeValue(value);
+                this.is_gatt_busy = false;
                 console.log("writing characteristic...done");
                 return;
             }
@@ -178,31 +243,81 @@ const app = Vue.createApp({
             }
             if (this.device.gatt.connected) {
                 console.log("disconnecting...");
+                this.is_gatt_busy = true;
                 await this.device.gatt.disconnect();
+                this.is_gatt_busy = false;
                 console.log("disconnecting...done");
             }
             this.device = null;
         },
         //---------------------------------------------------------------------
-        // Action
+        // Actions
         //---------------------------------------------------------------------
-        async read_data() {
+        async connect_to_atlas() {
+            await this.connect();
+            await this.read_params();
+        },
+        async disconnect_from_atlas() {
+            await this.disconnect();
+        },
+        async read_params() {
+            console.log("reading params...");
+            const data = await this.read("32150001-9a86-43ac-b15f-200ed1b7a72a");
+            this.deserialize_params(data);
+        },
+        async write_params() {
+            console.log("writing params...");
+            // 値が有効な場合のみ
+            if (document.getElementById("elr1-sp").checkValidity() &&
+                (this.num_motors == 1 || document.getElementById("elr2-sp").checkValidity()) &&
+                document.getElementById("delay").checkValidity() &&
+                document.getElementById("latency").checkValidity())
+            {
+                await this.write(
+                    "32150001-9a86-43ac-b15f-200ed1b7a72a",
+                    this.serialize_params()
+                );
+                if (this.write_rom) {
+                    // 本体ROMへパラメータを記憶させる
+                    await this.store_params();
+                }
+                return;
+            }
+            alert("値が適切ではありません");
+        },
+        async store_params() {
+            console.log("storing params in flash memory...");
+            await this.write(
+                "32150010-9a86-43ac-b15f-200ed1b7a72a",
+                new Uint8Array([1])
+            );
+        },
+        async launch() {
+            console.log("launching beyblade...");
+            await this.write(
+                "32150020-9a86-43ac-b15f-200ed1b7a72a",
+                new Uint8Array([1])
+            );
+        },
+        async read_shoot_data() {
             console.log("reading header...");
-            const headr = await this.read("32150110-9a86-43ac-b15f-200ed1b7a72a");
+            const headr = await this.read("32150030-9a86-43ac-b15f-200ed1b7a72a");
             const hists = [null, null, null];
             for (let i = 0; i < 3; i += 1) {
                 console.log("reading data...");
-                hists[i] = await this.read("32150101-9a86-43ac-b15f-200ed1b7a72a");
+                hists[i] = await this.read("32150031-9a86-43ac-b15f-200ed1b7a72a");
             }
-            this.deserialize(headr, hists);
+            const result = this.deserialize_data(headr, hists);
             console.log("reading data...done");
-            this.plot();
+            if (result) {
+                this.plot();
+            }
         },
-        async clear_data() {
+        async clear_shoot_data() {
             if (confirm("本体内のデータを初期化しますか？")) {
                 console.log("clearing data...");
                 await this.write(
-                    "32150120-9a86-43ac-b15f-200ed1b7a72a",
+                    "32150040-9a86-43ac-b15f-200ed1b7a72a",
                     new Uint8Array([1])
                 );
                 console.log("clearing data...done");
