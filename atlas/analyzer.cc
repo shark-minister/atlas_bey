@@ -6,10 +6,8 @@
 #include "analyzer.hh"
 
 // C++標準ライブラリ
+#include <array>
 #include <cmath>
-
-// Arduino
-#include <Arduino.h>
 
 namespace atlas
 {
@@ -69,92 +67,91 @@ BBPState BBPAnalyzer::analyze(const BBPData& data)
     // データの記録
     _data_map[hdr] = data;
 
-    // データの終了
+    // データの終了 ==> 解析の開始
     if (hdr == HEADER_DATA_END)
     {
-        // 解析を開始する
-        return this->_analyze_impl() ? BBPState::FINISHED : BBPState::ERROR;       
+        /*
+            ■ 内容
+            チェックサム値の取得
+
+            ■ ヘッダ
+            HEADER_CHECKSUM (B7)
+            
+            ■ 構成
+            ------------------------------------------------------------
+            オフセット  幅    内容
+            ------------------------------------------------------------
+                0       1    B7 (header)
+                1      15    -
+               16       1    B0-B6のチェックサム値
+            ------------------------------------------------------------
+        */
+        auto checksum = _data_map[HEADER_CHECKSUM].at(16);
+
+        /*
+            ■ 内容
+            シュートパワーリスト（のうち、最新のSP）の取得
+
+            ■ ヘッダ
+            HEADER_LIST_FIRST (B0) - HEADER_LIST_LAST (B6)
+            
+            ■ 構成
+            ------------------------------------------------------------
+            オフセット  幅    内容
+            ------------------------------------------------------------
+                0       1    B0   B1   B2   B3   B4   B5   B6  (header)
+                1       2    #1   #9  #17  #25  #33  #41  #49
+                3       2    #2  #10  #18  #26  #34  #42  #50
+                5       2    #3  #11  #19  #27  #35  #43    -
+                7       2    #4  #12  #20  #28  #36  #44   *1
+                9       2    #5  #13  #21  #29  #37  #45   *2
+               11       2    #6  #14  #22  #30  #38  #46   *3
+               13       2    #7  #15  #23  #31  #39  #47    -
+               15       2    #8  #16  #24  #32  #40  #48    -
+            ------------------------------------------------------------
+            #1-#50: シュートパワーリスト
+            *1: 最大シュートパワー
+            *2: シュート数（シュートカウンター）
+            *3: シュート数（シュートパワーリスト）
+        */
+        // 合計値の計算
+        std::uint32_t sum = 0;
+        for (auto h = HEADER_LIST_FIRST; h <= HEADER_LIST_LAST; ++h)
+        {
+            auto& data = _data_map[h];
+            for (int i = 1; i < BBPData::LENGTH; ++i)
+            {
+                sum += data.at(i);
+            }
+        }
+        // チェックサム
+        if ((sum & 0xFF) != checksum)
+        {
+            this->_data_map.clear();
+            // エラー
+            return BBPState::ERROR;
+        }
+        // SPリストのシュート数
+        {
+            // シュート数（シュートパワーリスト）の取得
+            auto n = _data_map[HEADER_LIST_LAST].at(11);
+            // 最新SPの格納位置の計算。上の表を参照。
+            // ((n - 1) >> 3) + HEADER_LIST_FIRST: 最新SPがどのデータ列にあるか
+            // (n & 7) * 2 - 1: 最新SPがデータ列のどの位置にあるか
+            _bbp_sp = _data_map[((n-1)>>3)+HEADER_LIST_FIRST].uint16((n&7)*2-1);
+            _true_sp = 0;
+            _max_sp = 0;
+        }
+
+        return BBPState::FINISHED;    
     }
 
     // それ以外
     return BBPState::NONE;
 }
 
-bool BBPAnalyzer::_analyze_impl()
+void BBPAnalyzer::calc_true_sp()
 {
-    /*
-        ■ 内容
-        チェックサム値の取得
-
-        ■ ヘッダ
-        HEADER_CHECKSUM (B7)
-        
-        ■ 構成
-        ------------------------------------------------------------
-         オフセット  幅    内容
-        ------------------------------------------------------------
-            0       1    B7 (header)
-            1      15    -
-           16       1    B0-B6のチェックサム値
-        ------------------------------------------------------------
-    */
-    auto checksum = _data_map[HEADER_CHECKSUM].at(16);
-
-    /*
-        ■ 内容
-        シュートパワーリスト（のうち、最新のSP）の取得
-
-        ■ ヘッダ
-        HEADER_LIST_FIRST (B0) - HEADER_LIST_LAST (B6)
-        
-        ■ 構成
-        ------------------------------------------------------------
-         オフセット  幅    内容
-        ------------------------------------------------------------
-            0       1    B0   B1   B2   B3   B4   B5   B6  (header)
-            1       2    #1   #9  #17  #25  #33  #41  #49
-            3       2    #2  #10  #18  #26  #34  #42  #50
-            5       2    #3  #11  #19  #27  #35  #43    -
-            7       2    #4  #12  #20  #28  #36  #44   *1
-            9       2    #5  #13  #21  #29  #37  #45   *2
-           11       2    #6  #14  #22  #30  #38  #46   *3
-           13       2    #7  #15  #23  #31  #39  #47    -
-           15       2    #8  #16  #24  #32  #40  #48    -
-        ------------------------------------------------------------
-         #1-#50: シュートパワーリスト
-         *1: 最大シュートパワー
-         *2: シュート数（シュートカウンター）
-         *3: シュート数（シュートパワーリスト）
-    */
-    // 合計値の計算
-    std::uint32_t sum = 0;
-    for (auto h = HEADER_LIST_FIRST; h <= HEADER_LIST_LAST; ++h)
-    {
-        auto& data = _data_map[h];
-        for (int i = 1; i < BBPData::LENGTH; ++i)
-        {
-            sum += data.at(i);
-        }
-    }
-    // チェックサム
-    if ((sum & 0xFF) != checksum)
-    {
-        Serial.println(checksum, HEX);
-        Serial.println(sum & 0xFF, HEX);
-        this->_data_map.clear();
-        // エラー
-        return false;
-    }
-    // SPリストのシュート数
-    {
-        // シュート数（シュートパワーリスト）の取得
-        auto n = _data_map[HEADER_LIST_LAST].at(11);
-        // 最新SPの格納位置の計算。上の表を参照。
-        // ((n - 1) >> 3) + HEADER_LIST_FIRST: 最新SPがどのデータ列にあるか
-        // (n & 7) * 2 - 1: 最新SPがデータ列のどの位置にあるか
-        _sp = _data_map[((n-1)>>3)+HEADER_LIST_FIRST].uint16((n&7)*2-1);
-    }
-
     /*
         ■ 内容
         シュートパワープロファイルの取得
@@ -178,13 +175,15 @@ bool BBPAnalyzer::_analyze_impl()
         ------------------------------------------------------------
     */
     // 経過時間
-    std::uint32_t t = 0;
-    int prof_size = 0;
-    std::uint32_t sum_xy = 0;
-    std::uint32_t sum_x = 0;
-    std::uint32_t sum_y = 0;
-    std::uint32_t sum_x2 = 0;
-    // _prof_size = 0;
+    std::uint16_t t = 0;
+    // プロファイル
+    std::array<std::uint16_t, 32> pf_t;
+    std::array<std::uint16_t, 32> pf_sp;
+    // 実効サイズ
+    std::uint32_t size = 0;
+    // 最大SP値
+    _max_sp = 0;
+
     for (auto h = HEADER_PROF_FIRST; h <= HEADER_PROF_LAST; ++h)
     {
         auto& data = _data_map[h];
@@ -205,28 +204,120 @@ bool BBPAnalyzer::_analyze_impl()
             auto sp = static_cast<std::uint16_t>(60000 / dt);
             // その回転が終了したときの、ランチャー引き始めからの時間t [ms]
             t += static_cast<std::uint16_t>(dt);
-
-            // 加速度を解析
-            // 横軸：時間、縦軸：SPで、最小二乗法
-            if (prof_size <= ACC_CALC_MAX)
+            // 格納
+            pf_t[size] = t;
+            pf_sp[size] = sp;
+            size += 1;
+            // 最大SP値
+            if (_max_sp < sp)
             {
-                sum_x  += t;
-                sum_y  += sp;
-                sum_xy += t * sp;
-                sum_x2 += t * t;
+                _max_sp = sp;
+            }
+        }
+    }
+    if (size < 5)
+    {
+        return;
+    }
 
-                if (prof_size == ACC_CALC_MAX)
+    std::uint16_t max_sp = 0;
+    std::uint16_t peak_t = 0;
+    std::uint32_t length = size > 13 ? 13 : size;
+    for (std::uint32_t i = 4; i < length; ++i)
+    {
+        // 最大SP値の更新
+        auto sp_0 = pf_sp[i];
+        if (sp_0 > max_sp)
+        {
+            max_sp = sp_0;
+        }
+        peak_t = i;
+
+        // 減少に転じた
+        auto t_m1  = pf_t[i-1];
+        auto sp_m1 = pf_sp[i-1];
+        if (sp_m1 > sp_0)
+        {
+            auto sp_p1 = pf_sp[i+1];
+            auto sp_p2 = pf_sp[i+2];
+            // さらに減少していくケース（つまりi-1がピークトップ）
+            if (sp_0 > sp_p1 && sp_p1 > sp_p2)
+            {
+                auto t_m2  = pf_t[i-2];
+                auto t_m4  = pf_t[i-4];
+                auto sp_m2 = pf_sp[i-2];
+                auto sp_m4 = pf_sp[i-4];
+                // 傾きの計算
+                auto a = static_cast<double>(sp_m2-sp_m4) / (t_m2-t_m4);
+                std::uint16_t ext_sp = a*(t_m1-t_m2) + sp_m2;
+                // 真のSP値
+                if (ext_sp < sp_m1)
                 {
-                    _accel = ((ACC_CALC_MAX+1) * sum_xy - sum_x * sum_y) /
-                             ((ACC_CALC_MAX+1) * sum_x2 - sum_x * sum_x); 
+                    _true_sp = sp_m2;
+                    peak_t = i - 2;
+                }
+                else
+                {
+                    _true_sp = sp_m1;
+                    peak_t = i - 1;
                 }
             }
-            prof_size += 1;
+            else
+            {
+                _true_sp = sp_m1;
+                peak_t = i - 1;
+            }
+            break;
         }
     }
 
+    if (peak_t == (size -1))
+    {
+        _true_sp = max_sp;
+    }
+    else if (peak_t < 4)
+    {
+        _true_sp = 0;
+    }
+    else if (_true_sp > _bbp_sp)
+    {
+        _true_sp = _bbp_sp;
+    }
+/*
+    // 加速度計算
+    int pf_size = 0;
+    std::uint32_t sum_xy = 0;
+    std::uint32_t sum_x = 0;
+    std::uint32_t sum_y = 0;
+    std::uint32_t sum_x2 = 0;
+
+    for (std::uint32_t i = 0; i < pf_size; ++i)
+    {
+        // 加速度を解析
+        // 横軸：時間、縦軸：SPで、最小二乗法
+        if (i <= ACC_CALC_MAX)
+        {
+            auto t = prof[i].first;
+            auto sp = prof[i].second;
+            
+            sum_x  += t;
+            sum_y  += sp;
+            sum_xy += t * sp;
+            sum_x2 += t * t;
+
+            if (i == ACC_CALC_MAX)
+            {
+                _accel = ((ACC_CALC_MAX+1) * sum_xy - sum_x * sum_y) /
+                         ((ACC_CALC_MAX+1) * sum_x2 - sum_x * sum_x); 
+            }
+        }
+    }
+*/
+}
+
+void BBPAnalyzer::clear()
+{
     this->_data_map.clear();
-    return true;
 }
 
 //-----------------------------------------------------------------------------

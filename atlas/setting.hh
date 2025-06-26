@@ -34,7 +34,7 @@
 #define  SPI_MASK          0x100   // SPI接続用のマスク（原則変更しない）
 #define  ADAFRUIT_SH1106G      1   // SH1106G
 #define  ADAFRUIT_SSD1306      2   // SSD1306
-#define  DISPLAY_DRIVER        ADAFRUIT_SH1106G
+#define  DISPLAY_DRIVER        ADAFRUIT_SSD1306
 #if  DISPLAY_IS_SPI == 1
 #define  DISPLAY_DRIVER        (DISPLAY_DRIVER | SPI_MASK)
 #endif  
@@ -170,7 +170,7 @@
 #define  ATLAS_CHR_HEADER         "32150030-9A86-43AC-B15F-200ED1B7A72A"
 #define  ATLAS_CHR_HEADER_DESCR   "Header for SP statistics"
 #define  ATLAS_CHR_DATA           "32150031-9A86-43AC-B15F-200ED1B7A72A"
-#define  ATLAS_CHR_DATA_DESCR     "Histogram data for SP 4,000-7,999"
+#define  ATLAS_CHR_DATA_DESCR     "Histogram data for SP"
 #define  ATLAS_CHR_CLEAR          "32150040-9A86-43AC-B15F-200ED1B7A72A"
 #define  ATLAS_CHR_CLEAR_DESCR    "Clear data in flash memory"
 

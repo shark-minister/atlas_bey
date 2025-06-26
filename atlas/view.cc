@@ -287,9 +287,9 @@ void ViewBase::auto_mode_aborted()
     xSemaphoreGive(_smp);
 }
 
-void ViewBase::auto_mode_sp(std::uint16_t sp,
-                            std::uint16_t accel,
-                            std::uint16_t exp_sp)
+void ViewBase::auto_mode_sp(std::uint16_t bbp_sp,
+                            std::uint16_t true_sp,
+                            std::uint16_t max_sp)
 {
     // セマフォの取得
     xSemaphoreTake(_smp, portMAX_DELAY);
@@ -307,11 +307,11 @@ void ViewBase::auto_mode_sp(std::uint16_t sp,
     _driver->drawRect(0, 20, 128, 33, _color);
 
     // SP
-    this->_text(6, 26, 1, "YOUR");
+    this->_text(6, 26, 1, "TRUE");
     this->_text(6, 35, 1, "SP");
     
     char buf[6];
-    auto n = std::sprintf(buf, "%u", sp);
+    auto n = std::sprintf(buf, "%u", true_sp);
     for (int i = n-1; i >= 0; i -= 1)
     {
         this->_image(
@@ -323,13 +323,13 @@ void ViewBase::auto_mode_sp(std::uint16_t sp,
         );
     }
 
-    // acc
-    this->_text(0, 56, 1, "Acc:");
-    this->_number(24, 56, 1, accel);
+    // バトルパスに記録されたSP
+    this->_text(0, 56, 1, "BBP");
+    this->_number(24, 56, 1, bbp_sp);
 
     // exp.SP
-    this->_text(54, 56, 1, "Exp.SP:");
-    this->_number(96, 56, 1, exp_sp);
+    this->_text(64, 56, 1, "MAX");
+    this->_number(88, 56, 1, max_sp);
 
     // 表示
     this->_show_display();
@@ -381,13 +381,13 @@ void ViewBase::_auto_mode_header()
     // 電動ランチャーの状態
     if (_state->elr_enabled())
     {
-        this->_number(30, 0, 1, _params->automode_elr_index()+1);
-        this->_text(30, 8, 1, _params->automode_elr().is_right() ? "R" : "L");
+        this->_number(29, 0, 1, _params->automode_elr_index()+1);
+        this->_text(29, 8, 1, _params->automode_elr().is_right() ? "R" : "L");
     }
     else
     {
-        this->_text(30, 0, 1, "-");
-        this->_text(30, 8, 1, "-");
+        this->_text(29, 0, 1, "-");
+        this->_text(29, 8, 1, "-");
     }
 
     // 最大

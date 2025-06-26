@@ -66,13 +66,13 @@ public:
     
     /*!
         @brief  オートモードで、シュート情報を表示する
-        @param[in]   sp      シュートパワー
-        @param[in]   accel   加速度
-        @param[in]   exp_sp  期待SP値
+        @param[in]   bbp_sp    BBPに記録されたSP
+        @param[in]   true_sp   真のSP
+        @param[in]   max_sp    プロファイル錠の最大SP
     */
-    void auto_mode_sp(std::uint16_t sp,
-                      std::uint16_t accel,
-                      std::uint16_t exp_sp);
+    void auto_mode_sp(std::uint16_t bbp_sp,
+                      std::uint16_t true_sp,
+                      std::uint16_t max_sp);
     
     //! オートモードで、カウントダウンを表示する
     void auto_mode_countdown(int i);

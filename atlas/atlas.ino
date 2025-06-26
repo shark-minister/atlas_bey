@@ -447,14 +447,18 @@ bool bbp_session(BLEDevice& dev, BLECharacteristic& chr)
             ///////////////////////////////////////////////////////////////
             // ベイブレードがシュートされた
             case atlas::BBPState::FINISHED:
+                // プロファイル解析
+                analyzer.calc_true_sp();
+                // 表示更新
+                g_view.auto_mode_sp(analyzer.bbp_sp(),
+                                    analyzer.true_sp(),
+                                    analyzer.max_sp());
                 // データ更新
-                g_data.update(analyzer.sp());
-                // 表示
-                g_view.auto_mode_sp(analyzer.sp(),
-                                    analyzer.acceleration(),
-                                    analyzer.exp_sp());
+                g_data.update(analyzer.true_sp());
                 // 保存
                 write_data();
+                // データクリア
+                analyzer.clear();
                 break;
 
             ///////////////////////////////////////////////////////////////
