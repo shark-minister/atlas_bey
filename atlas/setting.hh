@@ -34,7 +34,7 @@
 #define  SPI_MASK          0x100   // SPI接続用のマスク（原則変更しない）
 #define  ADAFRUIT_SH1106G      1   // SH1106G
 #define  ADAFRUIT_SSD1306      2   // SSD1306
-#define  DISPLAY_DRIVER        ADAFRUIT_SSD1306
+#define  DISPLAY_DRIVER        ADAFRUIT_SH1106G
 #if  DISPLAY_IS_SPI == 1
 #define  DISPLAY_DRIVER        (DISPLAY_DRIVER | SPI_MASK)
 #endif  
