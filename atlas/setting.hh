@@ -15,7 +15,7 @@
 // 利用形態
 // - 0: 電動ランチャー制御としても使う
 // - 1: SP計測器のみで使う
-#define SP_MEAS_ONLY  1
+#define SP_MEAS_ONLY  0
 
 // SP計測器としてのみ使う場合の定義
 #if SP_MEAS_ONLY > 0
