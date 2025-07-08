@@ -43,7 +43,7 @@ const app = Vue.createApp({
             last_characteristic: null,
             is_gatt_busy: false,
             // データ
-            num_shoots: 0,
+            total: 0,
             min_sp: 0,
             max_sp: 0,
             avg_sp: 0,
