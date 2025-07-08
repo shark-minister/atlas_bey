@@ -29,16 +29,41 @@ void ElectricLauncher::regulate() noexcept
 
 void Params::regulate() noexcept
 {
+    // 電動ランチャー1
     if constexpr (NUM_MOTORS == 1)
     {
         _flags.field.elr_auto_mode = 0;
         _flags.field.num_motors_minus_1 = 0;
     }
     _elr1.regulate();
+
+    // 電動ランチャー2
     if constexpr (NUM_MOTORS == 2)
     {
         _elr2.regulate();
         _flags.field.num_motors_minus_1 = 1;
+    }
+
+    // 実装形態
+    if constexpr (SP_MEAS_ONLY > 0)
+    {
+        // SP計測器としてのみ使う
+        _flags.field.sp_meas_only = 1;
+    }
+    else
+    {
+        // 電動ランチャー制御としても使う
+        _flags.field.sp_meas_only = 0;
+    }
+
+    // スイッチレス
+    if constexpr (SWITCH_LESS > 0)
+    {
+        _flags.field.switch_less = 1;
+    }
+    else
+    {
+        _flags.field.switch_less = 0;
     }
 
     // レイテンシ

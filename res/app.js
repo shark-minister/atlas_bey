@@ -29,8 +29,10 @@ const app = Vue.createApp({
     data() {
         return {
             // パラメータ
-            num_motors: 1,
             elr2_auto: false,
+            num_motors: 1,
+            sp_meas_only: true,
+            switch_less: false,
             latency: 2000,
             delay: 0,
             elr1: new ElectricLauncher(),
@@ -43,7 +45,7 @@ const app = Vue.createApp({
             last_characteristic: null,
             is_gatt_busy: false,
             // データ
-            total: 0,
+            num_shoots: 0,
             min_sp: 0,
             max_sp: 0,
             avg_sp: 0,
@@ -62,7 +64,7 @@ const app = Vue.createApp({
         //---------------------------------------------------------------------
         serialize_params() {
             return new Uint8Array([
-                this.num_motors-1,
+                0, // 読み出し専用なので、適当に0を詰めておく
                 this.latency / 10,
                 this.delay / 2,
                 this.elr1.get_flag(),
@@ -73,8 +75,15 @@ const app = Vue.createApp({
         },
         deserialize_params(data) {
             const first_byte = data.getUint8(0);
-            this.num_motors = (first_byte & 16) > 0 ? 2 : 1;
-            this.elr2_auto = (first_byte & 1) > 0;
+            // 0000 0001 (1)
+            this.elr2_auto    = (first_byte & 1) > 0;
+            // 0000 0010 (2)
+            this.sp_meas_only = (first_byte & 2) > 0 ? true : false;
+            // 0000 0100 (4)
+            this.switch_less  = (first_byte & 4) > 0 ? true : false;
+            // 0001 0000 (16)
+            this.num_motors   = (first_byte & 2) > 0 ? 2 : 1;
+
             this.latency = data.getUint8(1) * 10;
             this.delay = data.getUint8(2) * 2;
             this.elr1.set_flag(data.getUint8(3));
@@ -188,6 +197,14 @@ const app = Vue.createApp({
             if (this.device.gatt.connected && this.service) {
                 return;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
             }
+
+            // デバイスが切断されたときのコールバックを登録
+            this.device.addEventListener('gattserverdisconnected', (event) => {
+                const dev = event.target;
+                console.log(`device ${dev.name} is disconnected.`);
+                this.sp_meas_only = true;
+            });
+
             // 接続実行
             console.log("connecting...");
             this.is_gatt_busy = true;
