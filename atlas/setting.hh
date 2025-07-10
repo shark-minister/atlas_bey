@@ -9,8 +9,38 @@
 #define ATLAS_SETTING_HH
 
 //-----------------------------------------------------------------------------
+// ハードウェアの実装
+//-----------------------------------------------------------------------------
+
+// 利用形態
+// - 0: 電動ランチャー制御としても使う
+// - 1: SP計測器のみで使う
+#define SP_MEAS_ONLY  0
+
+// SP計測器としてのみ使う場合の定義
+#if SP_MEAS_ONLY > 0
+// スイッチを使うかどうか
+// - 0: スイッチでモードを切り替える
+// - 1: スイッチレスのコントローラ
+#define SWITCH_LESS  0
+#endif
+
+//-----------------------------------------------------------------------------
 // デバイス関連
 //-----------------------------------------------------------------------------
+
+// ディスプレイ設定
+#define  SCREEN_WIDTH        128   // スクリーン幅
+#define  SCREEN_HEIGHT        64   // スクリーン高さ
+#define  SCREEN_ADDR        0x3C   // ディスプレイのI2Cアドレス
+#define  DISPLAY_IS_SPI        0   // ディスプレイがSPI接続なら1, I2Cなら0
+#define  SPI_MASK          0x100   // SPI接続用のマスク（原則変更しない）
+#define  ADAFRUIT_SH1106G      1   // SH1106G
+#define  ADAFRUIT_SSD1306      2   // SSD1306
+#define  DISPLAY_DRIVER        ADAFRUIT_SH1106G
+#if  DISPLAY_IS_SPI == 1
+#define  DISPLAY_DRIVER        (DISPLAY_DRIVER | SPI_MASK)
+#endif
 
 // ピン割り当て
 #define  MODE_SW   8   // 切替スイッチの中央端子と繋ぐピン番号
@@ -25,19 +55,6 @@
 #define  SCREEN_SPI_CLK    8  // SCL --> SCK
 #define  SCREEN_SPI_RESET  7  // RES -->
 #define  SCREEN_SPI_CS    20  //  CS --> SS (GPIO20)
-
-// ディスプレイ設定
-#define  SCREEN_WIDTH        128   // スクリーン幅
-#define  SCREEN_HEIGHT        64   // スクリーン高さ
-#define  SCREEN_ADDR        0x3C   // ディスプレイのI2Cアドレス
-#define  DISPLAY_IS_SPI        0   // ディスプレイがSPI接続なら1, I2Cなら0
-#define  SPI_MASK          0x100   // SPI接続用のマスク（原則変更しない）
-#define  ADAFRUIT_SH1106G      1   // SH1106G
-#define  ADAFRUIT_SSD1306      2   // SSD1306
-#define  DISPLAY_DRIVER        ADAFRUIT_SH1106G
-#if  DISPLAY_IS_SPI == 1
-#define  DISPLAY_DRIVER        (DISPLAY_DRIVER | SPI_MASK)
-#endif  
 
 /*
     モーター設定
@@ -168,11 +185,13 @@
 #define  ATLAS_CHR_SHOOT          "32150020-9A86-43AC-B15F-200ED1B7A72A"
 #define  ATLAS_CHR_SHOOT_DESCR    "Manual shoot"
 #define  ATLAS_CHR_HEADER         "32150030-9A86-43AC-B15F-200ED1B7A72A"
-#define  ATLAS_CHR_HEADER_DESCR   "Header for SP statistics"
+#define  ATLAS_CHR_HEADER_DESCR   "Read header for SP statistics"
 #define  ATLAS_CHR_DATA           "32150031-9A86-43AC-B15F-200ED1B7A72A"
-#define  ATLAS_CHR_DATA_DESCR     "Histogram data for SP 4,000-7,999"
+#define  ATLAS_CHR_DATA_DESCR     "Read SP-histogram data"
 #define  ATLAS_CHR_CLEAR          "32150040-9A86-43AC-B15F-200ED1B7A72A"
 #define  ATLAS_CHR_CLEAR_DESCR    "Clear data in flash memory"
+#define  ATLAS_CHR_SWITCH         "32150050-9A86-43AC-B15F-200ED1B7A72A"
+#define  ATLAS_CHR_SWITCH_DESCR   "Switch to auto mode for switchless controller"
 
 // BLEセントラル側のGATT設定（ベイバトルパスのパラメータ）
 #define  BBP_LOCAL_NAME  "BEYBLADE_TOOL01"

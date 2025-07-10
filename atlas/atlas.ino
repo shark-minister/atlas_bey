@@ -11,7 +11,6 @@
 #include <Arduino.h>
 #include <ArduinoBLE.h>       // BLE通信
 #include <SPIFFS.h>           // フラッシュメモリをファイル保存に使う
-#include <DFRobotDFPlayerMini.h>
 
 // ATLAS
 #include "setting.hh"         // 設定
@@ -19,7 +18,6 @@
 #include "analyzer.hh"        // BBPデータ解析
 #include "statistics.hh"      // 統計データ
 #include "view.hh"            // UI
-#include "motor.hh"           // モーター
 
 // ディスプレイドライバ
 #if DISPLAY_DRIVER == ADAFRUIT_SH1106G
@@ -29,9 +27,6 @@ typedef  Adafruit_SH1106G  DisplayDriver;
 #include <Adafruit_SSD1306.h>
 typedef  Adafruit_SSD1306  DisplayDriver;
 #endif
-
-// unsigned longの別名
-typedef unsigned long ulong;
 
 //-----------------------------------------------------------------------------
 // グローバル変数
@@ -45,7 +40,6 @@ atlas::State g_state;                       // 接続状態
 atlas::Statistics g_data;
 std::uint32_t g_data_index = 0;
 std::atomic_bool g_is_auto_mode = true;     // オートモードか否かのフラグ
-std::atomic_ulong g_t0 = 0;                 // 射出指令時刻
 
 // ディスプレイ制御
 #if (DISPLAY_DRIVER & DISPLAY_IS_SPI) == 0
@@ -56,6 +50,17 @@ DisplayDriver g_display(SCREEN_WIDTH, SCREEN_HEIGHT,
                         SCREEN_SPI_RESET, SCREEN_SPI_CS);
 #endif
 atlas::View<DisplayDriver> g_view(g_display, g_data, g_params, g_state);
+
+
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+#if SP_MEAS_ONLY == 0  // 電動ランチャー制御として使う場合
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+#include <DFRobotDFPlayerMini.h>  // オーディオ制御
+#include "motor.hh"               // モーター制御
+
+// 射出指令時刻
+typedef unsigned long ulong;
+std::atomic_ulong g_t0 = 0;
 
 // モーター制御
 atlas::Motor g_motors[NUM_MOTORS];   // モーター制御インスタンス
@@ -68,19 +73,33 @@ void rotate_motor(atlas::Motor& motor,
 // 音声制御
 // 使わないときのためにポインタにしておく
 std::unique_ptr<DFRobotDFPlayerMini> g_dfplayer;
+//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+#endif  // #if SP_MEAS_ONLY == 0
+//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
 void play_audio(int number)
 {
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+#if SP_MEAS_ONLY == 0  // 電動ランチャー制御として使う場合
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     if (g_dfplayer)
     {
         g_dfplayer->playFolder(number, 1);
     }
+//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+#endif  // #if SP_MEAS_ONLY == 0
+//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 }
+
+
 
 //-----------------------------------------------------------------------------
 // セットアップ関数
 //-----------------------------------------------------------------------------
 void setup()
 {
+    //SPIFFS.format();
+
     // シリアル通信開始
     Serial.begin(9600);
     while (!Serial);
@@ -120,14 +139,38 @@ void setup()
             {
                 file.read(reinterpret_cast<std::uint8_t*>(&g_data), sizeof(g_data));
                 file.close();
+                Serial.println("Data file loaded");
             }
             else
             {
-                Serial.println("File size did not match");
+                Serial.println("Size of data file did not match");
             }
+        }
+        else
+        {
+            Serial.println("Failed to open data file");
         }
     }
 
+    // パラメータの読み込み
+    if (SPIFFS.exists(PARAMS_FILE_NAME))
+    {
+        if (File file = SPIFFS.open(PARAMS_FILE_NAME, "r"))
+        {
+            file.read(reinterpret_cast<std::uint8_t*>(&g_params), sizeof(g_params));
+            file.close();
+            Serial.println("Parameter file loaded");
+        }
+        else
+        {
+            Serial.println("Failed to open parameter file");
+        }
+    }
+    g_params.regulate();
+
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+#if SP_MEAS_ONLY == 0  // 電動ランチャー制御として使う場合
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     // 音声制御用通信
     Serial1.begin(9600, SERIAL_8N1, 20, 21);
     if (!Serial1)
@@ -146,24 +189,26 @@ void setup()
         Serial.println(F("Unable to begin DFPlayer"));
     }
 
-    // パラメータの読み込み
-    if (SPIFFS.exists(PARAMS_FILE_NAME))
+    // モーター制御インスタンスの設定
+    g_motors[0].configure(L_PWM_1, R_PWM_1, LR_EN_1, MOTOR1_MAX_RPM);
+    if constexpr (NUM_MOTORS == 2)
     {
-        if (File file = SPIFFS.open(PARAMS_FILE_NAME, "r"))
-        {
-            file.read(reinterpret_cast<std::uint8_t*>(&g_params), sizeof(g_params));
-            file.close();
-        }
-    }
-    g_params.regulate();
+        g_motors[1].configure(L_PWM_1, R_PWM_1, LR_EN_1, MOTOR2_MAX_RPM);
+    };
+//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+#endif
+//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
+    // 2秒間待機
+    delay(2000);
+
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+#if SWITCH_LESS == 0 // スイッチを使う場合
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     // スライドスイッチのスライド中はINPUTピンはどこにも繋がれないので
     // 念のため内蔵のプルアップ抵抗を使う
     pinMode(MODE_SW, INPUT_PULLUP);  
     g_is_auto_mode.store(digitalRead(MODE_SW) == 1);
-
-    // 2秒間待機
-    delay(2000);
 
     // BLE接続タスクの生成・投入
     xTaskCreateUniversal(
@@ -175,13 +220,9 @@ void setup()
         &g_hdl_task_ble,     // タスクハンドル
         PRO_CPU_NUM          // コアID
     );
-
-    // モーター制御インスタンスの設定
-    g_motors[0].configure(L_PWM_1, R_PWM_1, LR_EN_1, MOTOR1_MAX_RPM);
-    if constexpr (NUM_MOTORS == 2)
-    {
-        g_motors[1].configure(L_PWM_1, R_PWM_1, LR_EN_1, MOTOR2_MAX_RPM);
-    };
+//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+#endif  // #if SWITCH_LESS == 0
+//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 }
 
 //-----------------------------------------------------------------------------
@@ -189,9 +230,23 @@ void setup()
 //-----------------------------------------------------------------------------
 void loop()
 {
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+#if SWITCH_LESS == 0 // スイッチを使う場合
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     // モード切替スイッチの状態をチェックして、モード切替
     g_is_auto_mode.store(digitalRead(MODE_SW) == 1);
-    delay(100);
+    Serial.println(digitalRead(MODE_SW));
+    delay(1000);
+//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+#else  // #if SWITCH_LESS == 0
+//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    // スイッチレスの場合は、loop()内でBLE接続タスクを回す
+    g_is_auto_mode.load() ? run_auto_mode() : run_manual_mode();
+    // おまじない
+    delay(1);
+//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+#endif  // #if SWITCH_LESS == 0
+//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 }
 
 //-----------------------------------------------------------------------------
@@ -234,6 +289,7 @@ void run_auto_mode()
     g_state.clear();
 
     // BLE通信開始
+    //BLELocalDevice ble;
     if (!BLE.begin())
     {
         BLE.end();
@@ -292,8 +348,10 @@ void run_auto_mode()
                 {
                     // ベイバトルパス接続完了のアナウンス音
                     play_audio(AUDIO_SE_ACK);
+
                     // キャラクタリスティックの購読に成功したので、状態を更新
                     g_state.set_bbp(true);
+
                     // ヘッダのみ描画
                     g_view.auto_mode_plain();
 
@@ -308,10 +366,12 @@ void run_auto_mode()
             
             // 音声案内
             play_audio(AUDIO_SE_CANCEL);
+
             // ベイバトルパスからの切断
             g_state.set_bbp(false);
             g_state.set_bey(false);
             g_view.auto_mode_plain();
+
             // デバイスからの切断
             dev.disconnect();
 
@@ -342,6 +402,9 @@ bool bbp_session(BLEDevice& dev, BLECharacteristic& chr)
     atlas::BBPAnalyzer analyzer;                // 解析
     atlas::BBPData buf;                         // 読み出し用バッファ
 
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+#if SP_MEAS_ONLY == 0  // 電動ランチャー制御として使う場合
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     // モーター制御・カウントダウンタスク関連
     TaskHandle_t hdl_task_motor = nullptr;        // モーター制御タスクハンドラ
     TaskHandle_t hdl_task_count_view = nullptr;   // カウントダウン表示タスクハンドラ
@@ -353,6 +416,9 @@ bool bbp_session(BLEDevice& dev, BLECharacteristic& chr)
     QueueHandle_t que1 = xQueueCreate(1, sizeof(ulong));  // モーター駆動を中止
     QueueHandle_t que2 = xQueueCreate(1, sizeof(ulong));  // カウントダウン表示を中止
     QueueHandle_t que3 = xQueueCreate(1, sizeof(ulong));  // カウントダウン音声を中止
+//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+#endif
+//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
     // 購読開始
     while (dev.connected())
@@ -368,14 +434,47 @@ bool bbp_session(BLEDevice& dev, BLECharacteristic& chr)
             g_state.set_bey(atlas::is_bey_attached(state));
             switch (state)
             {
-            ///////////////////////////////////////////////////////////////
             // ベイブレードがランチャーにセットされた、外れた
             case atlas::BBPState::BEY_ATTACHED:
             case atlas::BBPState::BEY_DETACHED:
                 g_view.auto_mode_plain();
                 break;
 
-            ///////////////////////////////////////////////////////////////
+            // ベイブレードがシュートされた
+            case atlas::BBPState::FINISHED:
+                // プロファイル解析
+                analyzer.calc_true_sp();
+                // データ更新
+                g_data.update(analyzer.true_sp());
+                // 表示更新
+                g_view.auto_mode_sp(analyzer.bbp_sp(),
+                                    analyzer.true_sp(),
+                                    analyzer.max_sp());
+                // 保存
+                write_data();
+                // データクリア
+                analyzer.clear();
+                break;
+
+            // エラー
+            case atlas::BBPState::ERROR:
+                g_view.auto_mode_error();
+                break;
+
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+#if SP_MEAS_ONLY > 0  // SP計測器としてのみ使う
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+#if SWITCH_LESS > 0   // スイッチレス実装
+            // BBPのボタンがダブルクリックされた
+            case atlas::BBPState::ELR_ENABLED:
+            case atlas::BBPState::ELR_DISABLED:
+                // モードをマニュアル/設定モードに切り替える
+                g_is_auto_mode.store(false);
+                break;
+#endif
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+#else  // 電動ランチャー制御として使う
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
             // BBPのボタンがダブルクリックされた
             case atlas::BBPState::ELR_ENABLED:
                 play_audio(AUDIO_SE_ACK);    // ACK音
@@ -383,7 +482,6 @@ bool bbp_session(BLEDevice& dev, BLECharacteristic& chr)
                 g_view.auto_mode_plain();
                 break;
 
-            ///////////////////////////////////////////////////////////////
             // BBPのボタンがダブルクリックされた
             case atlas::BBPState::ELR_DISABLED:
                 play_audio(AUDIO_SE_CANCEL);    // キャンセル音
@@ -391,7 +489,6 @@ bool bbp_session(BLEDevice& dev, BLECharacteristic& chr)
                 g_view.auto_mode_plain();
                 break;
 
-            ///////////////////////////////////////////////////////////////
             // 射出命令
             case atlas::BBPState::SHOOT_ORDERED:
                 // キューを空にしておく
@@ -432,7 +529,6 @@ bool bbp_session(BLEDevice& dev, BLECharacteristic& chr)
                 );
                 break;
 
-            ///////////////////////////////////////////////////////////////
             // 電動ランチャー連動のシュートか、射出命令キャンセル
             case atlas::BBPState::BEY_DETACHED_2:
                 // キャンセル可能期間内だったら
@@ -443,27 +539,11 @@ bool bbp_session(BLEDevice& dev, BLECharacteristic& chr)
                     xQueueSend(que2, &abort_sig, 0);
                 }
                 break;
+//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+#endif
+//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-            ///////////////////////////////////////////////////////////////
-            // ベイブレードがシュートされた
-            case atlas::BBPState::FINISHED:
-                // データ更新
-                g_data.update(analyzer.sp());
-                // 表示
-                g_view.auto_mode_sp(analyzer.sp(),
-                                    analyzer.acceleration(),
-                                    analyzer.exp_sp());
-                // 保存
-                write_data();
-                break;
-
-            ///////////////////////////////////////////////////////////////
-            // エラー
-            case atlas::BBPState::ERROR:
-                g_view.auto_mode_error();
-                break;
-
-            case atlas::BBPState::NONE:
+            default:
                 break;
             }
 
@@ -495,6 +575,7 @@ void run_manual_mode()
     g_state.clear();
 
     // BLE通信開始
+    //BLELocalDevice ble;
     if (!BLE.begin())
     {
         BLE.end();
@@ -537,6 +618,8 @@ void run_manual_mode()
             BLEWritten,
             [](BLEDevice central, BLECharacteristic chr)
             {
+                play_audio(AUDIO_SE_ACK);
+
                 chr.readValue(&g_params, sizeof(g_params));
                 g_params.regulate();
                 g_view.manual_mode();
@@ -584,6 +667,10 @@ void run_manual_mode()
             BLEWritten,
             [](BLEDevice central, BLECharacteristic chr)
             {
+                // SP測定器としてのみ使うなら、空の実装としておく
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+#if SP_MEAS_ONLY == 0  // 電動ランチャー制御として使う場合
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                 // モータータスクの投入
                 g_t0.store(millis());
                 for (std::uint32_t i = 0; i < NUM_MOTORS; ++i)
@@ -601,6 +688,9 @@ void run_manual_mode()
                         );
                     }
                 }
+//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+#endif
+//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
             }
         );
         // キャラクタリスティックの登録
@@ -674,6 +764,32 @@ void run_manual_mode()
         serv.addCharacteristic(ch);
     }
 
+//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+#if SWITCH_LESS > 0  // スイッチレス
+//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    // characteristic: 
+    {
+        // キャラクタリスティックの作成と初期値の書き込み
+        BLETypedCharacteristic<std::uint8_t> ch(ATLAS_CHR_SWITCH, BLEWrite);
+        // キャラクタリスティックの説明文
+        BLEDescriptor descr("2901", ATLAS_CHR_SWITCH_DESCR);
+        ch.addDescriptor(descr);
+        // イベントハンドラの登録
+        ch.setEventHandler(
+            BLEWritten,
+            [](BLEDevice central, BLECharacteristic chr)
+            {
+                // モードをオートモードに切り替える
+                g_is_auto_mode.store(true);
+            }
+        );
+        // キャラクタリスティックの登録
+        serv.addCharacteristic(ch);
+    }
+//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+#endif  // #if SWITCH_LESS > 0
+//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
     // ローカル名の設定
     BLE.setLocalName(ATLAS_LOCAL_NAME);
 
@@ -698,14 +814,17 @@ void run_manual_mode()
     // リソースの開放
     BLE.end();
 
+    // リセット
+    ESP.restart();
+
     Serial.println(F("[manual mode] out"));
 }
 
-//-----------------------------------------------------------------------------
-// モーター制御
-//-----------------------------------------------------------------------------
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+#if SP_MEAS_ONLY == 0  // 電動ランチャー制御として使う場合
+//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-// マニュアルモードのモータータスク
+// モーター制御: マニュアルモード
 void task_motor_manual(void* pv_params)
 {
     std::uint32_t id = *(static_cast<std::uint32_t*>(pv_params));
@@ -729,7 +848,7 @@ void task_motor_manual(void* pv_params)
     vTaskDelete(nullptr);
 }
 
-// オートモードのモータータスク
+// モーター制御: オートモード
 void task_motor_auto(void* pv_params)
 {
     QueueHandle_t que = static_cast<QueueHandle_t>(pv_params);
@@ -769,9 +888,7 @@ void task_motor_auto(void* pv_params)
     vTaskDelete(nullptr);
 }
 
-//-----------------------------------------------------------------------------
 // 射出前カウントダウン表示
-//-----------------------------------------------------------------------------
 void task_count_view(void* pv_params)
 {
     // Ready Set
@@ -813,6 +930,7 @@ void task_count_view(void* pv_params)
     vTaskDelete(nullptr);
 }
 
+// 射出前カウントダウン音声
 void task_count_voice(void* pv_params)
 {
     // キュー
@@ -834,3 +952,7 @@ void task_count_voice(void* pv_params)
     // タスク終了処理
     vTaskDelete(nullptr);
 }
+
+//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+#endif  // #if SP_MEAS_ONLY == 0
+//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<

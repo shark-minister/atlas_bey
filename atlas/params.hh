@@ -148,7 +148,10 @@ private:
         //! 内部データ
         std::uint8_t data;
 
-        //! フラグ用ビットフィールド
+        /*!
+            フラグ用ビットフィールド
+            読み出し専用
+        */
         struct BitField
         {
             /*! 
@@ -158,18 +161,32 @@ private:
             */
             std::uint8_t elr_auto_mode : 1;
 
+            /*!
+                @brief  電動ランチャー制御として使うどうか
+                - `0`: 電動ランチャー制御として使う
+                - `1`: SP測定器のみに使う
+            */
+            std::uint8_t sp_meas_only : 1;
+
+            /*!
+                @brief  スイッチレスかどうか
+                - `0`: スイッチあり
+                - `1`: スイッチなし
+            */
+            std::uint8_t switch_less : 1;
+
             //! 予約領域
-            std::uint8_t reserved1 : 3;
+            std::uint8_t reserved1 : 1;
 
             /*! 
                 @brief  モーターの数-1
                 - `0`: モータは1つ
                 - `1`: モータは2つ
             */
-           std::uint8_t num_motors_minus_1 : 1;
+            std::uint8_t num_motors_minus_1 : 1;
 
-           //! 予約領域
-           std::uint8_t reserved2 : 3;
+            //! 予約領域
+            std::uint8_t reserved2 : 3;
         } field;
     };
     

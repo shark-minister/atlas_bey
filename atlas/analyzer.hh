@@ -140,10 +140,22 @@ public:
     */
     BBPState analyze(const BBPData& data);
 
-    //! シュートパワーを返す
-    inline std::uint16_t sp() const noexcept
+    //! バトルパスに記録されたシュートパワー値を返す
+    inline std::uint16_t bbp_sp() const noexcept
     {
-        return _sp;
+        return _bbp_sp;
+    }
+
+    //! プロファイル中の最大シュートパワー値を返す
+    inline std::uint16_t max_sp() const noexcept
+    {
+        return _max_sp;
+    }
+
+    //! 誤計測を排除した「真」のシュートパワー値を返す
+    inline std::uint16_t true_sp() const noexcept
+    {
+        return _true_sp;
     }
 
     //! シュートの加速度を返す
@@ -154,6 +166,12 @@ public:
 
     //! シュートの期待SP値を返す
     std::uint16_t exp_sp() const noexcept;
+
+    //! プロファイルの解析（誤計測検知）
+    void calc_true_sp();
+
+    //! 解析データのクリア
+    void clear();
 
 private:
     /*
@@ -187,15 +205,17 @@ private:
     //! ベイの脱着フラグ（記録）
     std::uint8_t _prev_state_bey = 0;
 
-    //! シュートパワー
-    std::uint16_t _sp = 0;
+    //! バトルパスに記録されたシュートパワー値
+    std::uint16_t _bbp_sp = 0;
+
+    //! 真のシュートパワー値
+    std::uint16_t _true_sp = 0;
+
+    //! 最大のシュートパワー値
+    std::uint16_t _max_sp = 0;
 
     //! シュート加速度
     double _accel = 0.0;
-
-private:
-    //! 解析実装
-    bool _analyze_impl();
 };
 
 //-----------------------------------------------------------------------------
