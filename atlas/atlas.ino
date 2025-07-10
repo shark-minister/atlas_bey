@@ -159,11 +159,14 @@ void setup()
         {
             file.read(reinterpret_cast<std::uint8_t*>(&g_params), sizeof(g_params));
             file.close();
+<<<<<<< HEAD
             Serial.println("Parameter file loaded");
         }
         else
         {
             Serial.println("Failed to open parameter file");
+=======
+>>>>>>> origin/main
         }
     }
     g_params.regulate();
@@ -199,9 +202,12 @@ void setup()
 #endif
 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
+<<<<<<< HEAD
     // 2秒間待機
     delay(2000);
 
+=======
+>>>>>>> origin/main
 //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #if SWITCH_LESS == 0 // スイッチを使う場合
 //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -209,6 +215,9 @@ void setup()
     // 念のため内蔵のプルアップ抵抗を使う
     pinMode(MODE_SW, INPUT_PULLUP);  
     g_is_auto_mode.store(digitalRead(MODE_SW) == 1);
+//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+#endif  // #if SWITCH_LESS == 0
+//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
     // BLE接続タスクの生成・投入
     xTaskCreateUniversal(
@@ -220,9 +229,12 @@ void setup()
         &g_hdl_task_ble,     // タスクハンドル
         PRO_CPU_NUM          // コアID
     );
+<<<<<<< HEAD
 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 #endif  // #if SWITCH_LESS == 0
 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+=======
+>>>>>>> origin/main
 }
 
 //-----------------------------------------------------------------------------
@@ -444,12 +456,20 @@ bool bbp_session(BLEDevice& dev, BLECharacteristic& chr)
             case atlas::BBPState::FINISHED:
                 // プロファイル解析
                 analyzer.calc_true_sp();
+<<<<<<< HEAD
                 // データ更新
                 g_data.update(analyzer.true_sp());
+=======
+>>>>>>> origin/main
                 // 表示更新
                 g_view.auto_mode_sp(analyzer.bbp_sp(),
                                     analyzer.true_sp(),
                                     analyzer.max_sp());
+<<<<<<< HEAD
+=======
+                // データ更新
+                g_data.update(analyzer.true_sp());
+>>>>>>> origin/main
                 // 保存
                 write_data();
                 // データクリア

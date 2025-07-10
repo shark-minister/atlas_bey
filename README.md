@@ -1,8 +1,8 @@
-ベイブレードXのマイコン制御電動ランチャーシステムのソースコードです。以下の点にご留意ください。
+ベイブレードXの**マイコン制御電動ランチャーシステム**のソースコードです。以下の点にご留意ください。
 
 - 本稿の図は、ソフトウェアの画面キャプチャを除き、すべて私 "さめ大臣 / shark minister" が実物を元に書き起こしたものです。これらの図の、無断での複製や配布、改変などはご遠慮ください。
 - 本稿を参考に製作や運転をされる場合は、自己責任のもとで実施お願いします。それによって生じたトラブル等については、いかなる責任も負いかねます。
-- 私 "さめ大臣 / shark minister" は電子工作・電気工作の素人につき、ところどころ間違っている恐れがあります。プログラミングも趣味レノレベルを超えません。全てを鵜呑みにするのは危険かもしれませんので、その点をご注意くだされば幸いです。
+- 私 "さめ大臣 / shark minister" は電子工作・電気工作の素人につき、ところどころ間違っている恐れがあります。プログラミングも趣味の域を超えません。全てを鵜呑みにするのは危険かもしれませんので、その点をご注意くだされば幸いです。
 
 # 1. はじめに
 
@@ -13,27 +13,36 @@ ATLASでは、ランチャーにベイをセットしたら自動で検知して
 ATLASの概略図を下に示します。
 
 <p align="center">
-<img width="900" alt="マイコン制御電動ランチャー" src="https://github.com/user-attachments/assets/c2168db2-c99c-4009-9f64-13002556ebe8" />
+<img width="900" alt="マイコン制御電動ランチャー" src="https://github.com/user-attachments/assets/eed27498-140a-43d8-93f9-0c9e69303b3e" />
 </p>
+
+また、電動ランチャー制御機能を削除してSP計測のみに特化した派生版 ATLAS lite もあります。
+<p align="center">
+<img width="750" alt="SP計測機" src="https://github.com/user-attachments/assets/6f0721ff-01c9-4857-af36-9ef2e0d479f0" />
+</p>
+
 
 # 2. 使い方
 
+## 2-1. 給電と起動
+
 ATLASのマイコンへはUSB-Cで電力を供給します。
+お手持ちのUSBアダプタか、モバイルバッテリー等で給電してください。
 立ち上がると1～2秒、スプラッシュスクリーンが表示され、切替スイッチにしたがったモードの画面が表示されます。
 モード切替は電源が入った状態でも行えます。
 
-## 2-1. オートモード
+## 2-2. オートモード (A)
 
-### 2-1-1. 概要
+### 2-2-1. 概要
 
 オートモードは、主に「人」vs「電動ランチャー」で遊ぶモードです。
 ベイバトルパスを装着したランチャーにベイをセットするとそれを検知して自動でカウントダウン（3, 2, 1, ゴー、シュート！）を行い、電動ランチャーにセットされたベイが射出されます。
-また、モーター（電動ランチャー）を連動させずに単なるシュートパワー計測機としても使うことができます。
+
+また、モーターを連動させずに単なる**シュートパワー計測機**としても使うことができます。
 
 **機能**
-- ベイバトルパスとの連動
-  - ブレーダーのシュートパワーを表示
-  - ブレーダーのシュート解析、序盤の加速度を計算・表示
+- ベイバトルパスと連動
+  - ブレーダーのシュートパワーを取得・表示
 - 電動ランチャーによる自動射出
   - 自分のランチャーにベイをセットすることでカウントダウンを開始し射出
 
@@ -47,7 +56,7 @@ ATLASのマイコンへはUSB-Cで電力を供給します。
 オートモードのディスプレイ表示は以下の通りです。
 
 <p align="center">
-<img width="200" alt="オートモード画面" src="https://github.com/user-attachments/assets/bbbf4813-b6c0-41d0-ba84-d5f32e50b676" />
+<img width="200" alt="オートモード画面" src="https://github.com/user-attachments/assets/98624e27-7db8-4cb3-8efe-406e30ec63de" />
 </p>
 
 表示の詳細は以下の通りです。
@@ -58,79 +67,82 @@ ATLASのマイコンへはUSB-Cで電力を供給します。
   - `max` 最大SP値
   - `n` シュート数
   - `avg`　平均SP値（標準偏差含む）
-- `YOUR SP` ブレーダーのシュートパワー
+- `TRUE SP` ブレーダーの「真」のシュートパワー値
 - フッタ領域
-  - `Acc.`　シュートの加速度（最初の8回転分の最小二乗法）
-  - `Exp.SP`　新品のストリングランチャーを用いて、前半の加速度を維持したまま引き切ったときに期待されるシュートパワー
+  - `BBP`　ベイバトルパスに記録されたシュートパワー値（異常値の可能性あり）
+  - `MAX`　ベイバトルパスが記録した瞬間的なシュートパワーの最大値（異常値の可能性あり）
 
-### 2-1-2. ベイバトルパスの接続・切断
+### 2-2-2. ベイバトルパスの接続・切断
 
 オートモードの最初には、ベイバトルパス（以下、BBP）の接続を促すメッセージが表示されます。
 
 <p align="center">
-<img width="200" alt="オートモード画面" src="https://github.com/user-attachments/assets/d4fe3dbd-e7df-4867-a6f3-d571bb262169" />
+<img width="200" alt="オートモード画面" src="https://github.com/user-attachments/assets/66b89fcd-44bd-4565-abb5-1892a15ef57d" />
 </p>
 
 BBPの電源を投入し、BBPの天面ボタンを長押しすることで接続依頼（Bluetoothのアドバタイズ）を行います。ATLASがそれを検知し接続が完了するとBBPのインジケータが緑色の点滅を行います（スマホのベイブレードアプリへの接続と同じです）。また、その際に画面表示が変わって、画面上部のヘッダ領域に`P`が表示されます。
 
 <p align="center">
-<img width="200" alt="オートモード画面" src="https://github.com/user-attachments/assets/febd623c-819c-4814-993f-f77ace9f0055" />
+<img width="200" alt="オートモード画面" src="https://github.com/user-attachments/assets/a4b3044b-256a-4655-be5d-9eedc6dcbdc9" />
 </p>
 
 BBPを切断したいときはBBPのボタンを長押ししてください。インジケータが赤色の点滅を行ったら切断成功です。ヘッダ領域の`P`マークが消えることを確認してください。
 
-### 2-1-3. シュートパワーの計測をしたいだけのときは
+### 2-2-3. シュートパワー計測のみの利用
 
 オートモード起動直後は、安全のためモーターが無効にされています。この状態では、電動ランチャーを連動させずに単なるシュートパワー計測機として使うことができます。ベイをランチャー（BBPは接続済み）にセットするとATLASはそれを感知し、画面上部のヘッダ領域に`B`マークがつきます。ベイを外すと`B`マークは消えます。
 
 <p align="center">
-<img width="200" alt="オートモード画面" src="https://github.com/user-attachments/assets/7213ef60-6dff-47bb-b212-8f5f4257ced6" />
+<img width="200" alt="オートモード画面" src="https://github.com/user-attachments/assets/a7b67763-7017-4e4f-935a-314cfa496bf2" />
 </p>
 
 ベイのシュートを行うと、画面にシュートパワーが表示されます。
 
 <p align="center">
-<img width="200" alt="オートモード画面" src="https://github.com/user-attachments/assets/c3a539a3-3b9d-454b-bc42-e667359b7a2f" />
+<img width="200" alt="オートモード画面" src="https://github.com/user-attachments/assets/8656ffe8-6971-4495-a8ca-9f7015683dfe" />
 </p>
 
-シュートパワー以外にも、シュートの加速度（Acc）と、新品のストリングランチャーを用いて、前半の加速度を維持したまま引き切ったときに期待されるシュートパワー（Exp.SP）を画面下部に表示しています。
-シュート加速度は最初の8回転分の最小二乗法で求めています。あくまで参考値としてご利用ください。
+ここで表示されるシュートパワーは、以下の3つです。
+
+- **TRUE SP**: 異常値を除外したシュートパワー値
+- **BBP**: ベイバトルパスに記録されたシュートパワー値（アプリで読み込まれるのはこの値）
+- **MAX**: ランチャー回転毎の瞬間シュートパワーリスト（シュートパワープロファイル）の中の最も高いシュートパワー値
 
 ベイバトルパスからのデータが正しく送受信されないとチェックサムエラーとなり、画面にERRORと表示されます。
 
 <p align="center">
-<img width="200" alt="オートモード画面" src="https://github.com/user-attachments/assets/74fada94-9b38-499e-8732-abbcb2a883b7" />
+<img width="200" alt="オートモード画面" src="https://github.com/user-attachments/assets/3b573def-1101-4f4c-9d66-145f985665b4" />
 </p>
 
-### 2-1-4. 電動ランチャーを用いるときは
+### 2-2-4. 電動ランチャーの利用
 
 電動ランチャーの射出するベイとバトルしたい場合はモーターを有効にする必要があります。モーターを有効にするには、ランチャーにベイがセットされていない状態でBBPのボタンを2連続で押してください（ダブルクリック）。モーターが有効になるとヘッダ領域に電動ランチャーの情報（番号と回転方向）が表示されます。下の図の例だと、電動ランチャー1が有効で、右回転に設定されています。
 
 <p align="center">
-<img width="200" alt="オートモード画面" src="https://github.com/user-attachments/assets/259d0db0-0014-48b7-9360-d018c1627bbd" />
+<img width="200" alt="オートモード画面" src="https://github.com/user-attachments/assets/6f18a478-5b39-4a45-9fbd-85f3c4422736" />
 </p>
 
 この状態でベイをセットすると、ディスプレイに**ReadySet**と大きく表示されます。
 
 <p align="center">
-<img width="200" alt="オートモード画面" src="https://github.com/user-attachments/assets/26f5b4f3-03a8-4c15-a378-2d99253b43a7" />
+<img width="200" alt="オートモード画面" src="https://github.com/user-attachments/assets/2ed11b5a-5e21-4d7f-8861-6002c4005a41" />
 </p>
 
 ReadySetが表示されている間にベイをランチャーから外すと、電動ランチャー駆動（モーターの回転開始）がキャンセルされます。このキャンセル可能な時間を猶予時間（レイテンシ, latency）と呼び、デフォルトでは1.3秒間で設定されています。猶予時間の値はマニュアル・設定モードで変更することができます（詳細はマニュアル・設定モードを参照）。
 
 <p align="center">
-<img width="200" alt="オートモード画面" src="https://github.com/user-attachments/assets/b7a83744-39a6-4e54-b4e6-0cb3ad48f7ff" />
+<img width="200" alt="オートモード画面" src="https://github.com/user-attachments/assets/3d7dcd3e-620e-4e61-b018-c2c0dcbbd36b" />
 </p>
 
 ベイを外さないでおくとカウントダウンが始まりますので、号令にあわせて自分のシュートを行ってください。電動ランチャーは設定にしたがってベイの射出を行います。ディスプレイには自分のシュートパワーが表示されます。画面の見方は、前述の電動ランチャー無効状態でのシュートパワー測定と同じです（エラー表示も同様）。
 
 <p align="center">
-<img width="200" alt="オートモード画面" src="https://github.com/user-attachments/assets/bbbf4813-b6c0-41d0-ba84-d5f32e50b676" />
+<img width="200" alt="オートモード画面" src="https://github.com/user-attachments/assets/5c5d77dd-d588-4365-869d-2e7b9af3a172" />
 </p>
 
-## 2-2. マニュアル・設定モード
+## 2-3. マニュアル・設定モード (M)
 
-### 2-2-1. 概要
+### 2-3-1. 概要
 
 マニュアル・設定モードは、電動ランチャーの設定を行ったり、電動ランチャー単体で遊ぶモード（手動での操作）です。
 
@@ -147,12 +159,12 @@ ReadySetが表示されている間にベイをランチャーから外すと、
 
 マニュアル・設定モードでは、ATLASとBluetooth接続するため**PC/タブレット/スマートフォン**が必須となります。
 
-### 2-2-2. デバイス側
+### 2-3-2. デバイス側
 
 マニュアルモードのディスプレイ表示は以下の通りです。
 
 <p align="center">
-<img width="200" alt="マニュアル・設定モード画面" src="https://github.com/user-attachments/assets/e93d3d98-007a-4665-8e1e-783617f59eb7" />
+<img width="200" alt="マニュアル・設定モード画面" src="https://github.com/user-attachments/assets/b442df27-6c43-47c1-b48c-9d3fcad101a8" />
 </p>
 
 表示の詳細は以下の通りです。
@@ -175,40 +187,42 @@ ReadySetが表示されている間にベイをランチャーから外すと、
   - `AVG` 平均SP値
   - `STD` SP値の標準偏差
   
-### 2-2-3. クライアント側
+### 2-3-3. クライアント側
 
 ここでは、ATLASと通信するPC、スマホ等で動作させるクライアントソフトウェアについて記述します。
 クライアントソフトウェアはWebアプリとして実装してあります。
 Web Bluetooth APIがChromeでしか動かないため、Chromeをお使いください。
+iPhoneの場合は、BluefyというブラウザでBluetoothが使えるようです。
 
-アプリは以下のULRにアクセスすると使えます。
-???????????????????????????????????????????????????
+ATLASとの通信アプリは以下のULRにアクセスすると使えます。
+
+https://shark-minister.github.io/atlas_bey/
 
 ページを開くと次の画面が現れます。
 
 <p align="center">
-  <img width="400" alt="image" src="https://github.com/user-attachments/assets/0574f447-35fa-49a0-90cb-3342439eda61" />
+  <img width="400" alt="image" src="https://github.com/user-attachments/assets/0df8123e-27bf-4a5e-b628-9387fc8eb26e" />
 </p>
 
 #### 接続
 
-デバイスをマニュアル/設定モードに切り替えた状態で、〔接続する〕ボタンをクリックしてください。
+ATLASをマニュアル/設定モードに切り替えた状態で、〔接続する〕ボタンをクリックしてください。
 
 <p align="center">
-<img width="327" alt="接続" src="https://github.com/user-attachments/assets/83f76098-71ba-4580-891c-90e430cafa72" />
+<img width="327" alt="接続" src="https://github.com/user-attachments/assets/503f0562-9e80-4ec7-aee9-709a2736eb2e" />
 </p>
 
-ATLAS_AUTO_LAUNCHER（Arduionと表示される場合もあり）を選んで〔ペア設定〕をクリックするとデバイスが接続されます。接続されると自動的にデバイスのパラメータが読み込まれます。
+ATLAS_AUTO_LAUNCHER（Arduionと表示される場合もあり）を選んで〔ペア設定〕をクリックするとATLASが接続されます。接続されると自動的にATLASのパラメータが読み込まれます。
 
-もしデバイスが2台のモーターを稼働させる状態になっている場合、以下の設定画面（後述）は以下の通りになります。
+もしATLASが2台のモーターを稼働させる状態になっている場合、以下の設定画面（後述）は以下の通りになります。
 
 <p align="center">
-<img width="450" alt="Webクライアント画面2" src="https://github.com/user-attachments/assets/e34c50bf-66e0-40b0-8ac8-9efbb46c6169" />
+<img width="450" alt="Webクライアント画面2" src="https://github.com/user-attachments/assets/32614eab-dc61-4367-b555-062ab4d92dcf" />
 </p>
 
 #### 切断
 
-〔接続する〕ボタンをクリックすれば、デバイスとの接続を切断できます。
+〔接続する〕ボタンをクリックすれば、ATLASとの接続を切断できます。
 
 #### マニュアル制御
 
@@ -220,24 +234,24 @@ ATLAS_AUTO_LAUNCHER（Arduionと表示される場合もあり）を選んで〔
 - シュートパワー: モーターの回転数を設定します。値は100の倍数である必要があります。
 - 猶予時間: 猶予時間をミリ秒単位で設定します。値は10の倍数である必要があります。
 - 遅延時間: 遅延時間をミリ秒単位で設定します。値は2の倍数である必要があります。
-- ROMに書き込み: 有効であるとき、書き込み時にデバイスのフラッシュメモリに保存され、次回起動するときにそのパラメータになります。
-- 〔読み出す〕ボタン: デバイスで動いているパラメータを読み込みます。
-- 〔書き込む〕ボタン: デバイスにパラメータを送ります。
+- ROMに書き込み: 有効であるとき、書き込み時にATLASのフラッシュメモリに保存され、次回起動するときにそのパラメータになります。
+- 〔読み出す〕ボタン: ATLASで動いているパラメータを読み込みます。
+- 〔書き込む〕ボタン: ATLASにパラメータを送ります。
 
 
 #### シュート情報
 
-デバイスに保存されているシュートパワー統計情報を読み込んで、グラフ表示を行います。
+ATLASに保存されているシュートパワー統計情報を読み込んで、グラフ表示を行います。
 
 - 〔読み出す〕ボタン: シュートパワー統計情報を読み込んで、グラフ表示を行う。
-- 〔初期化〕ボタン: デバイスに保存されているシュート統計情報をクリアする。
+- 〔初期化〕ボタン: ATLASに保存されているシュート統計情報をクリアする。
 
 <p align="center">
-<img width="400" alt="シュート統計" src="https://github.com/user-attachments/assets/e2cfac98-4329-4645-807c-b00e8559282e" />
+<img width="400" alt="シュート統計" src="https://github.com/user-attachments/assets/8f82318d-b840-4a8b-8af7-e0676e78d08a" />
 </p>
 
 <p align="center">
-<img width="400" alt="シュート統計グラフ" src="https://github.com/user-attachments/assets/24b154a9-f7f1-42e2-b9f0-294583851bf6" />
+<img width="400" alt="シュート統計グラフ" src="https://github.com/user-attachments/assets/f001e7fe-d015-423a-80fb-58371c006cdc" />
 </p>
 
 # 4. ハードウェア
@@ -279,7 +293,7 @@ ATLAS_AUTO_LAUNCHER（Arduionと表示される場合もあり）を選んで〔
 - **ジャンプワイヤー等のケーブル**
 
 <p align="center">
-<img width="700" alt="ctrl_devices" src="https://github.com/user-attachments/assets/49496c3c-64a1-4331-9c0e-33a245529d0a" />
+<img width="700" alt="ctrl_devices" src="https://github.com/user-attachments/assets/5bfff615-dbf2-4bd0-9fef-270805743ddb" />
 </p>
 
 ### 4-1-2. 駆動系
@@ -316,13 +330,13 @@ ATLAS_AUTO_LAUNCHER（Arduionと表示される場合もあり）を選んで〔
 1-5のパーツは下記のように組み立てます。
 
 <p align="center">
-<img width="500" alt="motor-assembly" src="https://github.com/user-attachments/assets/157866d5-f824-499b-b0a5-4d10ab48a274" />
+<img width="600" alt="motor-assembly" src="https://github.com/user-attachments/assets/b50a89ba-130a-4447-a269-93e7dd933ac2" />
 </p>
 
 完成すると以下の図のようになります。左回転用は別途用意するか、ランチャーの爪を付け替えます。
 
 <p align="center">
-<img width="300" alt="motor-assembly" src="https://github.com/user-attachments/assets/75785a5a-2328-434d-92a8-1d6b6a12c47d" />
+<img width="360" alt="motor-assembly" src="https://github.com/user-attachments/assets/130de011-55aa-4063-b0c9-21f8ef8e90d3" />
 </p>
 
 > [!NOTE]
@@ -351,8 +365,7 @@ microSDカードに 01, 02, 03, 04のフォルダを作成し、それぞれの�
 下の図の通り配線しました。
 
 <p align="center">
-<!-- <img width="700" alt="system-wiring" src="https://github.com/user-attachments/assets/5ce717db-b21d-435d-a943-38eb230eeeee" /> -->
-<img width="700" alt="system-wiring" src="https://github.com/user-attachments/assets/442bdb62-de9c-4cbf-b16b-3efee3359d2d" />
+<img width="700" alt="system-wiring" src="https://github.com/user-attachments/assets/dacfc4eb-82b9-449b-b29a-65594485c342" />
 </p>
 
 ### 4-2-1. BTS79608
@@ -531,7 +544,7 @@ https://www.arduino.cc/en/software/
 ボードマネージャから、**esp32 by Espressif Systems**をインストールします。
 
 <p align="center">
-<img width="277" alt="board-manager" src="https://github.com/user-attachments/assets/b1cb1103-2dcb-465b-afbf-41d950afb66c" />
+<img width="277" alt="board-manager" src="https://github.com/user-attachments/assets/d106f575-c411-4e75-9f6d-136c5e6c4daa" />
 </p>
 
 ### 5-1-3. ライブラリのインストール
@@ -546,7 +559,7 @@ https://www.arduino.cc/en/software/
 Arduino IDEの場合は、ライブラリマネージャ（左の柱のアイコンの上から3つ目）で、ライブラリ名を検索してインストールできます。
 
 <p align="center">
-<img width="363" alt="library" src="https://github.com/user-attachments/assets/e3b88919-343d-44f3-8e0d-880c029fd44d" />
+<img width="363" alt="library" src="https://github.com/user-attachments/assets/f789d353-7e15-40b6-b5c0-232fb33173e3" />
 </p>
 
 ## 5-2. パラメータの設定値変更
@@ -702,7 +715,7 @@ Arduino IDEの場合は、ライブラリマネージャ（左の柱のアイコ
 ビルドの際は、ボードに**XIAO EPS32-C3**を選んでください。→ボタンを押すとビルドとマイコンへのダウンロードが行われます。
 
 <p align="center">
-<img width="292" alt="board1" src="https://github.com/user-attachments/assets/c0856797-581d-4aa2-b261-37cc2aa7429b" />
+<img width="292" alt="board1" src="https://github.com/user-attachments/assets/b5688cfd-962f-4a72-84d2-cb37284bfe16" />
 </p>
 
 ## 5-4. ATLASのBLE仕様
@@ -758,4 +771,6 @@ ATLASのペリフェラルとしてのGATT仕様は以下の表の通りです�
 となっています。
 汎用のBLE通信アプリを使う場合は、デフォルト値で、00-82-00-00-64-00-64（16進数）です。
 
-<img width="600" alt="data-format" src="https://github.com/user-attachments/assets/2cc4bbc6-1144-41cb-8af5-4a32ec97236d" />
+<p align="center">
+<img width="600" alt="data-format" src="https://github.com/user-attachments/assets/f58e0207-e3e8-4beb-a40f-f4f14530104c" />
+</p>

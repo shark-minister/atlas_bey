@@ -186,7 +186,11 @@ private:
             std::uint8_t num_motors_minus_1 : 1;
 
             //! 予約領域
+<<<<<<< HEAD
             std::uint8_t reserved2 : 3;
+=======
+            std::uint8_t reserved2 : 4;
+>>>>>>> origin/main
         } field;
     };
     
