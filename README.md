@@ -365,7 +365,7 @@ microSDカードに 01, 02, 03, 04のフォルダを作成し、それぞれの�
 下の図の通り配線しました。
 
 <p align="center">
-<img width="700" alt="system-wiring" src="https://github.com/user-attachments/assets/dacfc4eb-82b9-449b-b29a-65594485c342" />
+<img width="700" alt="system-wiring" src="https://github.com/user-attachments/assets/7b44a5d5-8b82-4524-a182-87c6bd5026af" /> 
 </p>
 
 ### 4-2-1. BTS79608
@@ -513,7 +513,7 @@ microSDカードに 01, 02, 03, 04のフォルダを作成し、それぞれの�
   </tr>
   <tr>
     <td>AUTO側のピン</td>
-    <td>3V3 (3.3V)</td>
+    <td>-（内蔵のPULLUPを使う）</td>
   </tr>
   <tr>
     <td>MANUAL側のピン</td>
