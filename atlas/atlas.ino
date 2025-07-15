@@ -91,7 +91,13 @@ void play_audio(int number)
 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 }
 
-
+template <typename T>
+inline void debug_msg(T msg)
+{
+#ifdef DEBUG_MODE
+    Serial.println(msg);
+#endif
+}
 
 //-----------------------------------------------------------------------------
 // セットアップ関数
@@ -100,9 +106,11 @@ void setup()
 {
     //SPIFFS.format();
 
+#ifdef DEBUG_MODE
     // シリアル通信開始
     Serial.begin(9600);
     while (!Serial);
+#endif
 
 #if (DISPLAY_DRIVER & ADAFRUIT_SH1106G) > 0
     // ディスプレイ開始（SH1106）
@@ -115,7 +123,7 @@ void setup()
     if (!g_display.begin())
 #endif
     {
-        Serial.println(F("Display allocation failed!"));
+        debug_msg(F("Display allocation failed!"));
         while (true);
     }
 
@@ -125,7 +133,7 @@ void setup()
     // SPIFFS開始
     if (!SPIFFS.begin(true))
     {
-        Serial.println(F("SPIFFS Mount Failed"));
+        debug_msg(F("SPIFFS Mount Failed"));
         while (true);
     }
 
@@ -139,16 +147,16 @@ void setup()
             {
                 file.read(reinterpret_cast<std::uint8_t*>(&g_data), sizeof(g_data));
                 file.close();
-                Serial.println("Data file loaded");
+                debug_msg(F("Data file loaded"));
             }
             else
             {
-                Serial.println("Size of data file did not match");
+                debug_msg(F("Size of data file did not match"));
             }
         }
         else
         {
-            Serial.println("Failed to open data file");
+            debug_msg(F("Failed to open data file"));
         }
     }
 
@@ -159,14 +167,11 @@ void setup()
         {
             file.read(reinterpret_cast<std::uint8_t*>(&g_params), sizeof(g_params));
             file.close();
-<<<<<<< HEAD
-            Serial.println("Parameter file loaded");
+            debug_msg(F("Parameter file loaded"));
         }
         else
         {
-            Serial.println("Failed to open parameter file");
-=======
->>>>>>> origin/main
+            debug_msg(F("Failed to open parameter file"));
         }
     }
     g_params.regulate();
@@ -178,7 +183,7 @@ void setup()
     Serial1.begin(9600, SERIAL_8N1, 20, 21);
     if (!Serial1)
     {
-        Serial.println(F("Unable to begin Serial1"));
+        debug_msg(F("Unable to begin Serial1"));
     }
     // 音声制御のインスタンス実体化
     g_dfplayer.reset(new DFRobotDFPlayerMini);
@@ -189,7 +194,7 @@ void setup()
     else
     {
         g_dfplayer.reset();
-        Serial.println(F("Unable to begin DFPlayer"));
+        debug_msg(F("Unable to begin DFPlayer"));
     }
 
     // モーター制御インスタンスの設定
@@ -202,22 +207,18 @@ void setup()
 #endif
 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
-<<<<<<< HEAD
     // 2秒間待機
     delay(2000);
 
-=======
->>>>>>> origin/main
 //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #if SWITCH_LESS == 0 // スイッチを使う場合
 //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     // スライドスイッチのスライド中はINPUTピンはどこにも繋がれないので
     // 念のため内蔵のプルアップ抵抗を使う
-    pinMode(MODE_SW, INPUT_PULLUP);  
-    g_is_auto_mode.store(digitalRead(MODE_SW) == 1);
-//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-#endif  // #if SWITCH_LESS == 0
-//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    pinMode(MODE_SW_IN, INPUT_PULLUP);
+//    pinMode(MODE_SW_OUT, OUTPUT);
+//    digitalWrite(MODE_SW_OUT, HIGH);
+    g_is_auto_mode.store(digitalRead(MODE_SW_IN) == 1);
 
     // BLE接続タスクの生成・投入
     xTaskCreateUniversal(
@@ -229,12 +230,9 @@ void setup()
         &g_hdl_task_ble,     // タスクハンドル
         PRO_CPU_NUM          // コアID
     );
-<<<<<<< HEAD
 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 #endif  // #if SWITCH_LESS == 0
 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-=======
->>>>>>> origin/main
 }
 
 //-----------------------------------------------------------------------------
@@ -246,9 +244,8 @@ void loop()
 #if SWITCH_LESS == 0 // スイッチを使う場合
 //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     // モード切替スイッチの状態をチェックして、モード切替
-    g_is_auto_mode.store(digitalRead(MODE_SW) == 1);
-    Serial.println(digitalRead(MODE_SW));
-    delay(1000);
+    g_is_auto_mode.store(digitalRead(MODE_SW_IN) == 1);
+    delay(50);
 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 #else  // #if SWITCH_LESS == 0
 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -295,7 +292,7 @@ void task_ble(void* pv_params)
 //-----------------------------------------------------------------------------
 void run_auto_mode()
 {
-    Serial.println(F("[auto mode] in"));
+    debug_msg(F("[auto mode] in"));
 
     // 初期化
     g_state.clear();
@@ -327,12 +324,12 @@ void run_auto_mode()
             // 接続開始
             if (!dev.connect())
             {
-                Serial.println(F("connection failed"));
+                debug_msg(F("connection failed"));
             }
             // サービス検索
             else if (!dev.discoverService(BBP_SERVICE))
             {
-                Serial.println(F("no service"));
+                debug_msg(F("no service"));
             }
             else
             {
@@ -341,19 +338,19 @@ void run_auto_mode()
                 if (!chr)
                 {
                     // キャラクタリスティックが存在しない
-                    Serial.println(F("no characteristic"));
+                    debug_msg(F("no characteristic"));
                 }
                 // 購読できるかどうか
                 else if (!chr.canSubscribe())
                 {
                     // キャラクタリスティックが購読できない（Notify属性がない）
-                    Serial.println(F("not subscribable"));
+                    debug_msg(F("not subscribable"));
                 }
                 // 購読
                 else if (!chr.subscribe())
                 {
                     // キャラクタリスティックの購読に失敗した
-                    Serial.println(F("subscription failed"));
+                    debug_msg(F("subscription failed"));
                 }
                 // セッション開始
                 else
@@ -403,7 +400,7 @@ void run_auto_mode()
     // リソースの開放
     BLE.end();
 
-    Serial.println(F("[auto mode] out"));
+    debug_msg(F("[auto mode] out"));
 }
 
 // BBPとのBLE通信セッション
@@ -456,20 +453,12 @@ bool bbp_session(BLEDevice& dev, BLECharacteristic& chr)
             case atlas::BBPState::FINISHED:
                 // プロファイル解析
                 analyzer.calc_true_sp();
-<<<<<<< HEAD
                 // データ更新
                 g_data.update(analyzer.true_sp());
-=======
->>>>>>> origin/main
                 // 表示更新
                 g_view.auto_mode_sp(analyzer.bbp_sp(),
                                     analyzer.true_sp(),
                                     analyzer.max_sp());
-<<<<<<< HEAD
-=======
-                // データ更新
-                g_data.update(analyzer.true_sp());
->>>>>>> origin/main
                 // 保存
                 write_data();
                 // データクリア
@@ -484,14 +473,12 @@ bool bbp_session(BLEDevice& dev, BLECharacteristic& chr)
 //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #if SP_MEAS_ONLY > 0  // SP計測器としてのみ使う
 //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-#if SWITCH_LESS > 0   // スイッチレス実装
             // BBPのボタンがダブルクリックされた
             case atlas::BBPState::ELR_ENABLED:
             case atlas::BBPState::ELR_DISABLED:
                 // モードをマニュアル/設定モードに切り替える
                 g_is_auto_mode.store(false);
                 break;
-#endif
 //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 #else  // 電動ランチャー制御として使う
 //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -589,7 +576,7 @@ bool bbp_session(BLEDevice& dev, BLECharacteristic& chr)
 //-----------------------------------------------------------------------------
 void run_manual_mode()
 {
-    Serial.println(F("[manual mode] in"));
+    debug_msg(F("[manual mode] in"));
 
     // 初期化
     g_state.clear();
@@ -784,9 +771,6 @@ void run_manual_mode()
         serv.addCharacteristic(ch);
     }
 
-//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-#if SWITCH_LESS > 0  // スイッチレス
-//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
     // characteristic: 
     {
         // キャラクタリスティックの作成と初期値の書き込み
@@ -806,9 +790,6 @@ void run_manual_mode()
         // キャラクタリスティックの登録
         serv.addCharacteristic(ch);
     }
-//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-#endif  // #if SWITCH_LESS > 0
-//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
     // ローカル名の設定
     BLE.setLocalName(ATLAS_LOCAL_NAME);
@@ -837,7 +818,7 @@ void run_manual_mode()
     // リセット
     ESP.restart();
 
-    Serial.println(F("[manual mode] out"));
+    debug_msg(F("[manual mode] out"));
 }
 
 //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>

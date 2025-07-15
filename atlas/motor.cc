@@ -73,14 +73,7 @@ void Motor::_rotate_impl(std::uint8_t pwm, int sp)
         sp = 1;
     }
 
-    if constexpr (USE_DUMMY_MOTOR > 0)
-    {
-        Serial.print("Motor::rotate_*(): pwm = ");
-        Serial.print(pwm);
-        Serial.print(", SP = ");
-        Serial.println(sp);
-    }
-    else
+    if constexpr (USE_DUMMY_MOTOR == 0)
     {
         // L_EN, R_ENをHIGHにする。これをしないと回らない
         digitalWrite(_lr_en, HIGH);

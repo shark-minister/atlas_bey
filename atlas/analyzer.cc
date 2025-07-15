@@ -6,20 +6,22 @@
 #include "analyzer.hh"
 
 // C++標準ライブラリ
-#include <array>
-#include <cmath>
+//#include <array>
+//#include <cmath>    // std::sqrt()
 
 namespace atlas
 {
 //-----------------------------------------------------------------------------
 
-constexpr int ACC_CALC_MAX = 8;
+//constexpr int ACC_CALC_MAX = 8;
 
+/*
 //! シュートの期待SP値を返す
 std::uint16_t BBPAnalyzer::exp_sp() const noexcept
 {
     return (_accel > 0) ? std::sqrt(24 * 60000 * _accel) : 0;
 }
+*/
 
 BBPState BBPAnalyzer::analyze(const BBPData& data)
 {
@@ -177,13 +179,16 @@ void BBPAnalyzer::calc_true_sp()
     // 経過時間
     std::uint16_t t = 0;
     // プロファイル
-    std::array<std::uint16_t, 32> pf_t;
-    std::array<std::uint16_t, 32> pf_sp;
+    std::uint16_t prof_t[32];
+    std::uint16_t prof_sp[32];
+    //std::array<std::uint16_t, 32> prof_t;
+    //std::array<std::uint16_t, 32> prof_sp;
     // 実効サイズ
     std::uint32_t size = 0;
     // 最大SP値
     _max_sp = 0;
 
+    // プロファイルが収められているデータを走査
     for (auto h = HEADER_PROF_FIRST; h <= HEADER_PROF_LAST; ++h)
     {
         auto& data = _data_map[h];
@@ -205,8 +210,8 @@ void BBPAnalyzer::calc_true_sp()
             // その回転が終了したときの、ランチャー引き始めからの時間t [ms]
             t += static_cast<std::uint16_t>(dt);
             // 格納
-            pf_t[size] = t;
-            pf_sp[size] = sp;
+            prof_t[size] = t;
+            prof_sp[size] = sp;
             size += 1;
             // 最大SP値
             if (_max_sp < sp)
@@ -215,41 +220,60 @@ void BBPAnalyzer::calc_true_sp()
             }
         }
     }
+    
+    // プロファイルのデータ点数が5点に満たない場合は、計算しない
     if (size < 5)
     {
         return;
     }
 
-    std::uint16_t max_sp = 0;
-    std::uint16_t peak_t = 0;
-    std::uint32_t length = size > 13 ? 13 : size;
+    std::uint16_t max_sp = 0;  // プロファイル上の最大SP
+    std::uint16_t peak_t = 0;  // ピーク位置
+    std::uint32_t length = size > 13 ? 13 : size;  // 13回転目以降は見ない
+    // 4回転目から値をチェックする
     for (std::uint32_t i = 4; i < length; ++i)
     {
+        /*
+            チェックするSP
+            sp_m4  i-4  4回転前のSP
+            sp_m2  i-2  2回転前のSP
+            sp_m1  i-1  1回転前のSP
+            sp_0   i    基準となるSP
+            sp_p1  i+1  1回転後のSP
+            sp_p2  i+2  2回転後のSP
+            sp_p4  i+4  4回転後のSP
+        */
+        // 基準となるSPの取得
+        auto sp_0 = prof_sp[i];
+
         // 最大SP値の更新
-        auto sp_0 = pf_sp[i];
         if (sp_0 > max_sp)
         {
             max_sp = sp_0;
         }
+        // ピーク位置の更新
         peak_t = i;
 
-        // 減少に転じた
-        auto t_m1  = pf_t[i-1];
-        auto sp_m1 = pf_sp[i-1];
+        // 1つ前のSP値の取得
+        auto sp_m1 = prof_sp[i-1];
+
+        // 減少に転じている場合
         if (sp_m1 > sp_0)
         {
-            auto sp_p1 = pf_sp[i+1];
-            auto sp_p2 = pf_sp[i+2];
-            // さらに減少していくケース（つまりi-1がピークトップ）
+            // 1, 2つ先のSP値を取得
+            auto sp_p1 = prof_sp[i+1];
+            auto sp_p2 = prof_sp[i+2];
+            // さらに減少していくケース
+            // つまりi-1がピークトップとなっている
             if (sp_0 > sp_p1 && sp_p1 > sp_p2)
             {
-                auto t_m2  = pf_t[i-2];
-                auto t_m4  = pf_t[i-4];
-                auto sp_m2 = pf_sp[i-2];
-                auto sp_m4 = pf_sp[i-4];
+                auto t_m2  = prof_t[i-2];   // 2つ前の時間
+                auto t_m4  = prof_t[i-4];   // 4つ前の時間
+                auto sp_m2 = prof_sp[i-2];  // 2つ前のSP
+                auto sp_m4 = prof_sp[i-4];  // 4つ前のSP
                 // 傾きの計算
                 auto a = static_cast<double>(sp_m2-sp_m4) / (t_m2-t_m4);
-                std::uint16_t ext_sp = a*(t_m1-t_m2) + sp_m2;
+                std::uint16_t ext_sp = a*(prof_t[i-1]-t_m2) + sp_m2;
                 // 真のSP値
                 if (ext_sp < sp_m1)
                 {

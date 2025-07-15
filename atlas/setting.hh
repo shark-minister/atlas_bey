@@ -8,6 +8,8 @@
 #ifndef ATLAS_SETTING_HH
 #define ATLAS_SETTING_HH
 
+#define DEBUG_MODE
+
 //-----------------------------------------------------------------------------
 // ハードウェアの実装
 //-----------------------------------------------------------------------------
@@ -21,12 +23,8 @@
 #if SP_MEAS_ONLY > 0
 // スイッチを使うかどうか
 // - 0: スイッチでモードを切り替える
-<<<<<<< HEAD
 // - 1: スイッチレスのコントローラ
-=======
-// - 1: スイッチレスのハードウェア
->>>>>>> origin/main
-#define SWITCH_LESS  0
+#define SWITCH_LESS 0
 #endif
 
 //-----------------------------------------------------------------------------
@@ -47,10 +45,11 @@
 #endif
 
 // ピン割り当て
-#define  MODE_SW   8   // 切替スイッチの中央端子と繋ぐピン番号
-#define  L_PWM_1   2   // モータードライバー1のL_PWMをつなぐGPIOピン番号
-#define  R_PWM_1   3   // モータードライバー1のR_PWMをつなぐGPIOピン番号
-#define  LR_EN_1   4   // モータードライバー1のL_ENとR_ENをつなぐGPIOピン番号
+#define  MODE_SW_IN   5   // 切替スイッチの中央端子と繋ぐピン番号
+//#define  MODE_SW_OUT 21   // 切替スイッチの電源側端子と繋ぐピン番号
+#define  L_PWM_1      2   // モータードライバー1のL_PWMをつなぐGPIOピン番号
+#define  R_PWM_1      3   // モータードライバー1のR_PWMをつなぐGPIOピン番号
+#define  LR_EN_1      4   // モータードライバー1のL_ENとR_ENをつなぐGPIOピン番号
 //#define  L_PWM_2    9   // モーター2の左回転用のPWMピン番号
 //#define  R_PWM_2   10   // モーター2の右回転用のPWMピン番号
 //#define  LR_EN_2    5   // モーター2のL_EN, R_LENの両方を繋ぐピン番号
@@ -191,11 +190,7 @@
 #define  ATLAS_CHR_HEADER         "32150030-9A86-43AC-B15F-200ED1B7A72A"
 #define  ATLAS_CHR_HEADER_DESCR   "Read header for SP statistics"
 #define  ATLAS_CHR_DATA           "32150031-9A86-43AC-B15F-200ED1B7A72A"
-<<<<<<< HEAD
 #define  ATLAS_CHR_DATA_DESCR     "Read SP-histogram data"
-=======
-#define  ATLAS_CHR_DATA_DESCR     "Histogram data for SP"
->>>>>>> origin/main
 #define  ATLAS_CHR_CLEAR          "32150040-9A86-43AC-B15F-200ED1B7A72A"
 #define  ATLAS_CHR_CLEAR_DESCR    "Clear data in flash memory"
 #define  ATLAS_CHR_SWITCH         "32150050-9A86-43AC-B15F-200ED1B7A72A"
