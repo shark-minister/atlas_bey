@@ -30,15 +30,9 @@ const app = Vue.createApp({
         return {
             // パラメータ
             elr2_auto: false,
-<<<<<<< HEAD
             sp_meas_only: true,
             switch_less: false,
             num_motors: 1,
-=======
-            num_motors: 1,
-            sp_meas_only: true,
-            switch_less: false,
->>>>>>> origin/main
             latency: 2000,
             delay: 0,
             elr1: new ElectricLauncher(),
