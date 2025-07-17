@@ -531,40 +531,61 @@ microSDカードに 01, 02, 03, 04のフォルダを作成し、それぞれの�
 
 ## 5-1. ビルド環境の準備
 
-### 5-1-1. ArduinoIDEのインストール
+### 5-1-1. Arduino IDEのインストール
 
-本ソースコードは、ArduinoIDEでビルドすることを想定しています。PlatformIOでのビルドは検証していません。
-ArduinoIDEをインストールしていない場合は、下記URLから自分のプラットフォーム（OS）にあったものをダウンロードしてインストールしてください。
+本ソースコードは、Arduino IDEでビルドすることを想定しています。PlatformIOでのビルドは検証していません。
+Arduino IDEをインストールしていない場合は、下記URLから自分のプラットフォーム（OS）にあったものをダウンロードしてインストールしてください。
 
-ArduinoIDEの公式ダウンロードページ：
+Arduino IDEの公式ダウンロードページ：
 https://www.arduino.cc/en/software/
+
+<p align="center">
+<img width="701" height="349" alt="Arduino IDE download" src="https://github.com/user-attachments/assets/cd8efcfc-9b93-45bb-880c-25fb97276830" />
+</p>
 
 ### 5-1-2. ボードマネージャのインストール
 
-ボードマネージャから、**esp32 by Espressif Systems**をインストールします。
+次の手順で、ボードマネージャから、**esp32 by Espressif Systems** をインストールします。
+
+1. Arduino IDEを起動する
+2. 左のアイコン列の上から2番目（図の①）をクリックする
+3. 検索窓に **esp32-c3** と入力する（図の②）
+4. **esp32 by Espressif Systems** であることを確認して、「インストール」をクリックする（図の③）
 
 <p align="center">
-<img width="277" alt="board-manager" src="https://github.com/user-attachments/assets/d106f575-c411-4e75-9f6d-136c5e6c4daa" />
+<img width="443" height="343" alt="board-manager" src="https://github.com/user-attachments/assets/008cc653-62ff-48d4-b246-2e0324643ad4" />
 </p>
 
 ### 5-1-3. ライブラリのインストール
 
-ビルドに当たっては、以下のライブラリが必要になります。
+以下のライブラリが必要になります。
 
-- ArduinoBLE
-- Adafruit SH110X（SH1106を使う場合）
-- Adafruit SSD1306（SSD1306を使う場合）
-- DFRobotDFPlayerMini (DFPlayerMiniを使う場合）
+- ArduinoBLE（必須）
+- Adafruit SH110X（1.3インチディスプレイSH1106を使う場合。SP計測器の標準版はこちら）
+- Adafruit SSD1306（0.96インチディスプレイSSD1306を使う場合。SP計測器のコンパクト版はこちら）
+- DFRobotDFPlayerMini (DFPlayerMiniを使う場合、SP計測器の場合は不要）
 
-Arduino IDEの場合は、ライブラリマネージャ（左の柱のアイコンの上から3つ目）で、ライブラリ名を検索してインストールできます。
+次の手順で、各ライブラリをインストールします。
+
+1. 左のアイコン列の上から3番目（図の①）をクリックする
+2. 検索窓に上記のライブラリ名を入力する（図の②）
+3. 一番上に出てくるライブラリの「インストール」をクリックする（図の③）
+4. 必要なライブラリだけ、1-3を繰り返す
 
 <p align="center">
-<img width="363" alt="library" src="https://github.com/user-attachments/assets/f789d353-7e15-40b6-b5c0-232fb33173e3" />
+<img width="304" height="344" alt="library" src="https://github.com/user-attachments/assets/e952eca0-3ef3-4d67-9004-4cddc26505ca" />
 </p>
 
 ## 5-2. パラメータの設定値変更
 
 パラメータ設定は、`setting.hh`で行えます。
+setting.hhのソースコードは、**setting.hh** のタブを選択すると表示されます。
+
+<p align="center">
+<img width="348" height="111" alt="setting.hh" src="https://github.com/user-attachments/assets/82001963-01b6-4dd4-9d67-c7b2df68d82d" />
+</p>
+
+SP計測器で利用する場合は、5-2-6節を参考にしてください。
 
 ### 5-2-1.ピン番号設定
 
@@ -710,9 +731,64 @@ Arduino IDEの場合は、ライブラリマネージャ（左の柱のアイコ
     - カウントダウンコールは、"3, 2, 1, Go, Shoot!" であり、そのコール間隔をミリ秒で指定する。この値は外部から変更できない。
     - デフォルト値: 1,000
 
-## 5-3. ビルド
+### 5-2-6. SP計測器での設定について
 
-ビルドの際は、ボードに**XIAO EPS32-C3**を選んでください。→ボタンを押すとビルドとマイコンへのダウンロードが行われます。
+SP計測器用のプログラムを書き込みたい場合は、setting.hh に以下の書き換えを行ってください。
+（setting.hhの表示の仕方は、5-2節の先頭を参照してください）
+
+#### 利用形態: SP_MEAS_ONLY (20行目)
+
+20行目の **SP_MEAS_ONLY** の値を 0 から 1 に変えてください。
+
+<p align="center">
+<img width="511" height="191" alt="SP_MEAS" src="https://github.com/user-attachments/assets/d30d6709-c9a7-4bda-aa88-1e98dae97cec" />
+</p>
+
+#### ディスプレイタイプ: DISPLAY_DRIVER (39行目)
+
+39行目の **DISPLAY_DRIVER** の値を、手持ちのディスプレイタイプに応じて変更してください。
+37, 38行目の ADAFRUITE_SH1106G, ADAFRUITE_SSD1306 をコピー＆ペーストすると楽です。
+
+- **ADAFRUITE_SH1106G** - 1.3インチディスプレイ（SP計測器の標準版）
+- **ADAFRUITE_SSD1306** - 0.96インチディスプレイ（SP計測器のコンパクト版）
+
+1.3インチディスプレイの場合：
+<p align="center">
+<img width="424" height="83" alt="Display_130" src="https://github.com/user-attachments/assets/7f0b8a81-5b79-4228-9d03-c2dea60078a9" />
+</p>
+
+0.96インチディスプレイの場合：
+<p align="center">
+<img width="457" height="83" alt="Display_096" src="https://github.com/user-attachments/assets/f8e132d0-33c0-408f-a500-2895cfcecb2b" />
+</p>
+
+## 5-3. プログラムの書き込み
+
+使用デバイスにあった設定ができたら、プログラムをビルドして書き込みを行います。
+まず、デバイスをUSBケーブルでつなぎ、ツールバーのデバイスリストの「他のボードとポートを選択」をクリック（画像オレンジ色で囲った部分）します。
+
+<p align="center">
+<img width="424" height="188" alt="board" src="https://github.com/user-attachments/assets/5a0c3b27-57a0-47c6-beb3-d300ea953c88" />
+</p>
+
+以下の手順で、ボードとポートを選択してください。
+
+1. ボードの検索窓に **xiao** と入力する（図の①）
+2. **XIAO_ESP32C3** を選択する（図の②）
+3. ポートは、出てくるUSBポートのものを選ぶ（図の③）
+4. OKを押す（図の④）
+
+<p align="center">
+<img width="554" height="389" alt="board選択" src="https://github.com/user-attachments/assets/11793193-18f3-4fe3-8974-156dfc7cb0c5" />
+</p>
+
+正しく選択できていれば、以下の図のようになります。
+
+<p align="center">
+<img width="345" height="126" alt="board1" src="https://github.com/user-attachments/assets/2f917e44-fa17-4f08-b757-80238d30755f" />
+</p>
+
+→ボタンを押すとビルドとマイコンへの書き込みが行われます。
 
 <p align="center">
 <img width="292" alt="board1" src="https://github.com/user-attachments/assets/b5688cfd-962f-4a72-84d2-cb37284bfe16" />
