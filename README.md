@@ -576,21 +576,67 @@ https://www.arduino.cc/en/software/
 <img width="304" height="344" alt="library" src="https://github.com/user-attachments/assets/e952eca0-3ef3-4d67-9004-4cddc26505ca" />
 </p>
 
-## 5-2. パラメータの設定値変更
+## 5-2. ソースコードのダウンロード
+
+Gitを使ってソースコードを取得する場合は 5-2-1 節、そうでない場合は 5-2-2節 を参照してください。
+
+### 5-2-1. Gitを使う場合
+
+以下のコマンドでダウンロードしてください。
+
+```
+$ git clone git@github.com:shark-minister/atlas_bey.git
+```
+
+### 5-2-2. Gitを使わない場合
+
+このページ最上部で、**<> Code** をクリックして（図の①）、Download Zip を選んでください（図の②）。
+
+<p align="center">
+<img width="698" height="352" alt="download" src="https://github.com/user-attachments/assets/eb3d4c55-26cf-4cfd-b55d-dfa145b8670f" />
+</p>
+
+ダウンロードしたファイルを選択し（図の①）、全て展開をクリックしてください（図の②）。
+
+<p align="center">
+<img width="710" height="353" alt="展開" src="https://github.com/user-attachments/assets/f3ff7f8f-46b5-4e93-9d86-02e7d26c7f6a" />
+</p>
+
+## 5-3. プロジェクトのオープン
+
+Arduino IDEで 5-2節でダウンロードしたソースコードを開いてください。
+
+1. 「ファイル」メニューの「開く...」をクリックする（図の①）
+2. 5-2節でダウンロードしたフォルダの中の **atlas.ino** を選択してください（図の②）。
+   - Gitを使用した場合は、atlas_bey/atlas/atlas.ino
+   - Gitを使用していない場合は、展開によってできたフォルダ atlas_bey-main/atlas_bey-main/atlas/atlas.ino（図の下線部を参照）
+
+<p align="center">
+<img width="723" height="297" alt="open" src="https://github.com/user-attachments/assets/e36dbc08-8380-42b2-ad35-4f7aeef6298c" />
+</p>
+
+プロジェクトを開くと以下の画面になります。
+
+<p align="center">
+<img width="897" height="721" alt="window" src="https://github.com/user-attachments/assets/ebdbd209-9c3a-40b6-b0eb-0bc09d62626c" />
+</p>
+
+## 5-4. パラメータの設定値変更
 
 パラメータ設定は、`setting.hh`で行えます。
 
-### 5-2-1. setting.hh の表示
+### 5-4-1. setting.hh の表示
 
 setting.hhのソースコードは、**setting.hh** のタブを選択すると表示されます。
+setting.hhのタブは、この順番にあるとは限りません。
 
 <p align="center">
 <img width="348" height="111" alt="setting.hh" src="https://github.com/user-attachments/assets/82001963-01b6-4dd4-9d67-c7b2df68d82d" />
 </p>
 
-SP計測器で利用する場合は、5-2-7節を参考にしてください。
+SP計測器で利用する場合は、5-4-7節を参考にしてください。
 
-### 5-2-2.ピン番号設定
+### 5-4-2.ピン番号設定
 
 - `MODE_SW`
    - 切替スイッチの中央端子と繋ぐピン番号
@@ -637,7 +683,7 @@ SP計測器で利用する場合は、5-2-7節を参考にしてください。
 > [!CAUTION]
 > モーター2台体制は未検証です。
 
-### 5-2-3.ディスプレイ設定
+### 5-4-3.ディスプレイ設定
 
 ディスプレイにSSD1306を使用する場合、`DISPLAY_MODEL`を`ADAFRUIT_SSD1306`に変更してください。
 
@@ -657,7 +703,7 @@ SP計測器で利用する場合は、5-2-7節を参考にしてください。
   - ADAFRUIT_SSD1306: SSD1306を使う場合
   - ADAFRUIT_SH1106G: SH1106Gを使う場合
 
-### 5-2-4. モーター設定
+### 5-4-4. モーター設定
 
 - `MOTOR1_MAX_RPM`
   - モーター1の最大回転数
@@ -676,7 +722,7 @@ SP計測器で利用する場合は、5-2-7節を参考にしてください。
 > モーターは、タミヤの<ins>OP.1393 380 スポーツチューンモーター</ins>か、<ins>OP.68 RS-540 スポーツチューンモーター</ins>を想定しています。
 > それ以外のモーターでは動作を検証していません。
 
-### 5-2-5. 音声設定
+### 5-4-5. 音声設定
 
 - `AUDIO_COUNTDOWN`
   - カウントダウン音声の番号
@@ -692,7 +738,7 @@ SP計測器で利用する場合は、5-2-7節を参考にしてください。
   - エラーの効果音の番号
   - デフォルト値: 4 
 
-### 5-2-6. 動作パラメータ設定
+### 5-4-6. 動作パラメータ設定
 
 - BLE通信でPC・スマホから変更可能なパラメータのデフォルト値
   - `DEFAULT_LAUNCHER_SP`
@@ -734,7 +780,7 @@ SP計測器で利用する場合は、5-2-7節を参考にしてください。
     - カウントダウンコールは、"3, 2, 1, Go, Shoot!" であり、そのコール間隔をミリ秒で指定する。この値は外部から変更できない。
     - デフォルト値: 1,000
 
-### 5-2-7. SP計測器での設定について
+### 5-4-7. SP計測器での設定について
 
 SP計測器用のプログラムを書き込みたい場合は、setting.hh に以下の書き換えを行ってください。
 （setting.hhの表示の仕方は、5-2節の先頭を参照してください）
@@ -765,7 +811,7 @@ SP計測器用のプログラムを書き込みたい場合は、setting.hh に�
 <img width="457" height="83" alt="Display_096" src="https://github.com/user-attachments/assets/f8e132d0-33c0-408f-a500-2895cfcecb2b" />
 </p>
 
-## 5-3. プログラムの書き込み
+## 5-5. プログラムの書き込み
 
 使用デバイスにあった設定ができたら、プログラムをビルドして書き込みを行います。
 まず、デバイスをUSBケーブルでつなぎ、ツールバーのデバイスリストの「他のボードとポートを選択」をクリック（画像オレンジ色で囲った部分）します。
@@ -797,7 +843,7 @@ SP計測器用のプログラムを書き込みたい場合は、setting.hh に�
 <img width="292" alt="board1" src="https://github.com/user-attachments/assets/b5688cfd-962f-4a72-84d2-cb37284bfe16" />
 </p>
 
-## 5-4. ATLASのBLE仕様
+## 5-6. ATLASのBLE仕様
 
 ATLASのペリフェラルとしてのGATT仕様は以下の表の通りです。
 
