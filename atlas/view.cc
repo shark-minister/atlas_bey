@@ -338,7 +338,7 @@ void ViewBase::auto_mode_sp(std::uint16_t bbp_sp,
     {
         main_sp = true_sp;
         sub_sp = bbp_sp;
-        this->_text(6, 26, 1, "TRUE");
+        this->_text(6, 26, 1, "EST.");
         this->_text(0, 56, 1, "BBP");
     }
 
