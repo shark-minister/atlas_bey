@@ -8,7 +8,7 @@
 #ifndef ATLAS_SETTING_HH
 #define ATLAS_SETTING_HH
 
-#define DEBUG_MODE
+//#define DEBUG_MODE
 
 //-----------------------------------------------------------------------------
 // ハードウェアの実装
@@ -21,7 +21,7 @@
 
 // スイッチレスでモード切替を行うかどうか
 // - 0: スイッチでモードを切り替える
-// - 1: スイッチレスのコントローラ
+// - 1: スイッチレスのコントローラ（物理スイッチが無効になります）
 #define SWITCH_LESS  0
 
 //-----------------------------------------------------------------------------
@@ -34,8 +34,8 @@
 #define  SCREEN_ADDR        0x3C   // ディスプレイのI2Cアドレス
 #define  DISPLAY_IS_SPI        0   // ディスプレイがSPI接続なら1, I2Cなら0
 #define  SPI_MASK          0x100   // SPI接続用のマスク（原則変更しない）
-#define  ADAFRUIT_SH1106G      1   // SH1106G
-#define  ADAFRUIT_SSD1306      2   // SSD1306
+#define  ADAFRUIT_SH1106G      1   // SH1106G (1.3インチ)
+#define  ADAFRUIT_SSD1306      2   // SSD1306 (0.96インチ)
 #define  DISPLAY_DRIVER        ADAFRUIT_SH1106G
 #if  DISPLAY_IS_SPI == 1
 #define  DISPLAY_DRIVER        (DISPLAY_DRIVER | SPI_MASK)
