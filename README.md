@@ -99,7 +99,7 @@ BBPを切断したいときはBBPのボタンを長押ししてください。�
 ベイのシュートを行うと、画面にシュートパワーが表示されます。
 
 <p align="center">
-<img width="303" height="284" alt="オートモード画面" src="https://github.com/user-attachments/assets/8dc754e8-556f-443a-8306-8492f77cb8e2" />
+<img width="200" alt="オートモード画面" src="https://github.com/user-attachments/assets/8dc754e8-556f-443a-8306-8492f77cb8e2" />
 </p>
 
 ここで表示されるシュートパワーは、以下の3つです。
@@ -137,7 +137,7 @@ ReadySetが表示されている間にベイをランチャーから外すと、
 ベイを外さないでおくとカウントダウンが始まりますので、号令にあわせて自分のシュートを行ってください。電動ランチャーは設定にしたがってベイの射出を行います。ディスプレイには自分のシュートパワーが表示されます。画面の見方は、前述の電動ランチャー無効状態でのシュートパワー測定と同じです（エラー表示も同様）。
 
 <p align="center">
-<img width="200" height="284" alt="オートモード画面" src="https://github.com/user-attachments/assets/6be57d78-848f-4133-90c6-3c414e13fe61" />
+<img width="200" alt="オートモード画面" src="https://github.com/user-attachments/assets/6be57d78-848f-4133-90c6-3c414e13fe61" />
 </p>
 
 ## 2-3. マニュアル・設定モード (M)
