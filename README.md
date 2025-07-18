@@ -333,16 +333,16 @@ https://www.arduino.cc/en/software/
 
 以下のライブラリが必要になります。
 
-- ArduinoBLE
+- **ArduinoBLE**
   - 必須
   - Bluetooth接続を行うためのライブラリ
-- Adafruit SH110X
+- **Adafruit SH110X**
   - 1.3インチディスプレイSH1106を使う場合、必須
   - SP計測器の標準版をお持ちの方はこちら
-- Adafruit SSD1306
+- **Adafruit SSD1306**
   - 0.96インチディスプレイSSD1306を使う場合、必須
   - SP計測器のコンパクト版をお持ちの方はこちら
-- DFRobotDFPlayerMini
+- **DFRobotDFPlayerMini**
   - オーディオプレイヤーのDFPlayerMiniを使う場合、必須
   - SP計測器の場合は不要
 
@@ -350,7 +350,7 @@ https://www.arduino.cc/en/software/
 
 1. 左のアイコン列の上から3番目（図の①）をクリックする
 2. 検索窓にライブラリ名（上記のコピー＆ペーストが便利）を入力する（図の②）
-3. 一番上に出てくるライブラリの「インストール」をクリックする（図の③）
+3. 一番上に出てくるライブラリの「インストール」ボタンをクリックし、インストールを行う（図の③）
 4. 必要なライブラリだけ、1-3を繰り返す
 
 <p align="center">
@@ -363,7 +363,7 @@ Gitを使ってソースコードを取得する場合は 5-2-1 節、そうで�
 
 ### 3-2-1. Gitを使う場合
 
-以下のコマンドでダウンロードしてください。
+適切なディレクトリにて、以下のコマンドでダウンロードしてください。
 
 ```
 $ git clone git@github.com:shark-minister/atlas_bey.git
@@ -377,29 +377,43 @@ $ git clone git@github.com:shark-minister/atlas_bey.git
 <img width="698" height="352" alt="download" src="https://github.com/user-attachments/assets/eb3d4c55-26cf-4cfd-b55d-dfa145b8670f" />
 </p>
 
-ダウンロードしたファイルを選択し（図の①）、全て展開をクリックしてください（図の②）。
+ダウンロードしたファイルを選択し（図の①）、「すべて展開」をクリックしてください（図の②）。
 
 <p align="center">
-<img width="710" height="353" alt="展開" src="https://github.com/user-attachments/assets/f3ff7f8f-46b5-4e93-9d86-02e7d26c7f6a" />
+<img width="654" alt="展開" src="https://github.com/user-attachments/assets/16824325-9e93-4542-855e-4c21f61c6e3c" />
+</p>
+
+展開が終わると、atlas_bey-main といフォルダができます。
+
+<p align="center">
+<img width="600" alt="展開後" src="https://github.com/user-attachments/assets/e9de7b4c-a25a-4167-9bba-2231e31720e0" />
 </p>
 
 ## 3-3. プロジェクトのオープン
 
-Arduino IDEで 5-2節でダウンロードしたソースコードを開いてください。
+Arduino IDEで 3-2節でダウンロードしたプロジェクトを開きます。
 
 1. 「ファイル」メニューの「開く...」をクリックする（図の①）
-2. 5-2節でダウンロードしたフォルダの中の **atlas.ino** を選択してください（図の②）。
-   - Gitを使用した場合は、atlas_bey/atlas/atlas.ino
-   - Gitを使用していない場合は、展開によってできたフォルダ atlas_bey-main/atlas_bey-main/atlas/atlas.ino（図の下線部を参照）
+2. 3-2節でダウンロードしたフォルダの中の **atlas.ino** を選択してください（図の②）。
+   - Gitを使用した場合、以下のフォルダの中にあります
+     - atlas_bey > atlas > atlas.ino
+   - Gitを使用していない場合は、展開によってできたフォルダの中を見ます（図の下線部を参照）
+     - atlas_bey-main > atlas_bey-main > atlas > atlas.ino
 
 <p align="center">
-<img width="723" height="297" alt="open" src="https://github.com/user-attachments/assets/e36dbc08-8380-42b2-ad35-4f7aeef6298c" />
+<img width="723" alt="open" src="https://github.com/user-attachments/assets/e36dbc08-8380-42b2-ad35-4f7aeef6298c" />
+</p>
+
+あるいは、エクスプローラ上で atlas.ino をダブルクリックしても、Arduino IDEで開くことができます。
+
+<p align="center">
+<img width="711" alt="arduino.ino" src="https://github.com/user-attachments/assets/09f48ae9-18de-4df5-bb68-6daf889ea003" />
 </p>
 
 プロジェクトを開くと以下の画面になります。
 
 <p align="center">
-<img width="897" height="721" alt="window" src="https://github.com/user-attachments/assets/ebdbd209-9c3a-40b6-b0eb-0bc09d62626c" />
+<img width="897" alt="window" src="https://github.com/user-attachments/assets/ebdbd209-9c3a-40b6-b0eb-0bc09d62626c" />
 </p>
 
 ## 3-4. パラメータの設定値変更
@@ -412,7 +426,7 @@ setting.hhのソースコードは、**setting.hh** のタブを選択すると�
 setting.hhのタブは、この順番にあるとは限りません。
 
 <p align="center">
-<img width="348" height="111" alt="setting.hh" src="https://github.com/user-attachments/assets/82001963-01b6-4dd4-9d67-c7b2df68d82d" />
+<img width="348" alt="setting.hh" src="https://github.com/user-attachments/assets/82001963-01b6-4dd4-9d67-c7b2df68d82d" />
 </p>
 
 必要に応じて書き換えてください。
