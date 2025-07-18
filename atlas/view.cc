@@ -319,7 +319,6 @@ void ViewBase::auto_mode_sp(std::uint16_t bbp_sp,
     _driver->drawRect(0, 20, 128, 33, _color);
 
     // 見出し
-    this->_text(6, 26, 1, "YOUR");
     this->_text(6, 35, 1, "SP");
 
     std::uint16_t main_sp, sub_sp;
@@ -332,12 +331,14 @@ void ViewBase::auto_mode_sp(std::uint16_t bbp_sp,
         {
             this->_text(24, 35, 2, "?");
         }
+        this->_text(6, 26, 1, "YOUR");
         this->_text(0, 56, 1, "EST");
     }
     else
     {
         main_sp = true_sp;
         sub_sp = bbp_sp;
+        this->_text(6, 26, 1, "TRUE");
         this->_text(0, 56, 1, "BBP");
     }
 
