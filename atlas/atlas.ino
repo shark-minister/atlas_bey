@@ -454,7 +454,10 @@ bool bbp_session(BLEDevice& dev, BLECharacteristic& chr)
                 // プロファイル解析
                 analyzer.calc_true_sp();
                 // データ更新
-                g_data.update(analyzer.true_sp());
+                g_data.update(
+                    g_params.is_bbp_sp_main() ?
+                    analyzer.bbp_sp() : analyzer.true_sp()
+                );
                 // 表示更新
                 g_view.auto_mode_sp(analyzer.bbp_sp(),
                                     analyzer.true_sp(),
