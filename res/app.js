@@ -77,15 +77,15 @@ const app = Vue.createApp({
         deserialize_params(data) {
             const first_byte = data.getUint8(0);
             // 0000 0001 (1)
-            this.elr2_auto    = (first_byte & 1) > 0;
+            this.elr2_auto      = (first_byte & 1) > 0;
             // 0000 0010 (2)
-            this.sp_meas_only = (first_byte & 2) > 0 ? true : false;
+            this.sp_meas_only   = (first_byte & 2) > 0 ? true : false;
             // 0000 0100 (4)
-            this.switch_less  = (first_byte & 4) > 0 ? true : false;
+            this.switch_less    = (first_byte & 4) > 0 ? true : false;
             // 0000 1000 (8)
             this.is_bbp_sp_main = (first_byte & 8) > 0 ? true : false;
             // 0001 0000 (16)
-            this.num_motors   = (first_byte & 16) > 0 ? 2 : 1;
+            this.num_motors     = (first_byte & 16) > 0 ? 2 : 1;
 
             this.latency = data.getUint8(1) * 10;
             this.delay = data.getUint8(2) * 2;

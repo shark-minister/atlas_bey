@@ -635,6 +635,14 @@ void run_manual_mode()
                 g_view.manual_mode();
             }
         );
+        ch.setEventHandler(
+            BLERead,
+            [](BLEDevice central, BLECharacteristic chr)
+            {
+                g_params.regulate();
+                chr.writeValue(&g_params, sizeof(g_params));
+            }
+        );
         // キャラクタリスティックの登録
         serv.addCharacteristic(ch);
     }

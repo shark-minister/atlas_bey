@@ -8,7 +8,7 @@
 #ifndef ATLAS_SETTING_HH
 #define ATLAS_SETTING_HH
 
-//#define DEBUG_MODE
+#define DEBUG_MODE
 
 //-----------------------------------------------------------------------------
 // ハードウェアの実装
