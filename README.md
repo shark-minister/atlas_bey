@@ -886,6 +886,12 @@ SP計測器用のプログラムを書き込みたい場合は、setting.hh に�
 <img width="292" alt="board1" src="https://github.com/user-attachments/assets/b5688cfd-962f-4a72-84d2-cb37284bfe16" />
 </p>
 
+書き込みが終わると以下のような出力がなされ、デバイスも再起動します。
+
+<p align="center">
+<img width="734" alt="output1" src="https://github.com/user-attachments/assets/be7a7660-21f9-453b-be90-94c67d63af10" />
+</p>
+
 ## 5-6. ATLASのBLE仕様
 
 ATLASのペリフェラルとしてのGATT仕様は以下の表の通りです。
