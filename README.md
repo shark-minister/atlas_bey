@@ -222,21 +222,21 @@ ATLASとの通信アプリは以下のULRにアクセスすると使えます。
 
 https://shark-minister.github.io/atlas_bey/
 
-ページを開くと次の画面が現れます。
-
-<p align="center">
-  <img width="400" alt="image" src="https://github.com/user-attachments/assets/0df8123e-27bf-4a5e-b628-9387fc8eb26e" />
-</p>
-
 #### 接続
 
 ATLASをマニュアル/設定モードに切り替えた状態で、〔接続する〕ボタンをクリックしてください。
 
 <p align="center">
+<img width="458" height="132" alt="connection" src="https://github.com/user-attachments/assets/8d7c9f5f-cbde-4e8c-8149-cef886d0df34" />
+</p>
+
+付近のATLASを検知したら、デバイスのリストに ATLAS_AUTO_LAUNCHER（Arduionの場合もあり）が表示されます。
+
+<p align="center">
 <img width="327" alt="接続" src="https://github.com/user-attachments/assets/503f0562-9e80-4ec7-aee9-709a2736eb2e" />
 </p>
 
-ATLAS_AUTO_LAUNCHER（Arduionと表示される場合もあり）を選んで〔ペア設定〕をクリックするとATLASが接続されます。接続されると自動的にATLASのパラメータが読み込まれます。
+ATLAS_AUTO_LAUNCHER（or Arduiono）を選んで〔ペア設定〕をクリックするとATLASが接続されます。接続されると自動的にATLASのパラメータが読み込まれます。
 
 もしATLASが2台のモーターを稼働させる状態になっている場合、以下の設定画面（後述）は以下の通りになります。
 
@@ -247,6 +247,10 @@ ATLAS_AUTO_LAUNCHER（Arduionと表示される場合もあり）を選んで〔
 #### 切断
 
 〔接続する〕ボタンをクリックすれば、ATLASとの接続を切断できます。
+
+<p align="center">
+<img width="466" height="140" alt="disconnection" src="https://github.com/user-attachments/assets/2063e49c-7411-492f-813c-39aad4d65d32" />
+</p>
 
 #### SP計測モードに切替（SP計測器で、かつスイッチレスの場合のみ表示）
 
@@ -276,6 +280,9 @@ ATLAS_AUTO_LAUNCHER（Arduionと表示される場合もあり）を選んで〔
 - 〔読み出す〕ボタン: ATLASで動いているパラメータを読み込みます。
 - 〔書き込む〕ボタン: ATLASにパラメータを送ります。
 
+<p align="center">
+<img width="466" height="479" alt="setting" src="https://github.com/user-attachments/assets/f898cd02-4f02-4c01-9057-edb1c8f4df9d" />
+</p>
 
 #### シュート情報
 
