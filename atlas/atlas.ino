@@ -216,8 +216,8 @@ void setup()
     // スライドスイッチのスライド中はINPUTピンはどこにも繋がれないので
     // 念のため内蔵のプルアップ抵抗を使う
     pinMode(MODE_SW_IN, INPUT_PULLUP);
-//    pinMode(MODE_SW_OUT, OUTPUT);
-//    digitalWrite(MODE_SW_OUT, HIGH);
+    pinMode(MODE_SW_OUT, OUTPUT);
+    digitalWrite(MODE_SW_OUT, HIGH);
     g_is_auto_mode.store(digitalRead(MODE_SW_IN) == 1);
 
     // BLE接続タスクの生成・投入

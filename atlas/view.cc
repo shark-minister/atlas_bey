@@ -318,16 +318,31 @@ void ViewBase::auto_mode_sp(std::uint16_t bbp_sp,
     // 囲い
     _driver->drawRect(0, 20, 128, 33, _color);
 
-    // バトルパスに記録されたSP
+    // 見出し
     this->_text(6, 26, 1, "YOUR");
     this->_text(6, 35, 1, "SP");
-    if (true_sp < bbp_sp)
+
+    std::uint16_t main_sp, sub_sp;
+    if (_params->is_bbp_sp_main())
     {
-        this->_text(24, 35, 1, "?");
+        main_sp = bbp_sp;
+        sub_sp = true_sp;
+
+        if (true_sp < bbp_sp)
+        {
+            this->_text(24, 35, 2, "?");
+        }
+        this->_text(0, 56, 1, "EST");
     }
-    
+    else
+    {
+        main_sp = true_sp;
+        sub_sp = bbp_sp;
+        this->_text(0, 56, 1, "BBP");
+    }
+
     char buf[6];
-    auto n = std::sprintf(buf, "%u", bbp_sp);
+    auto n = std::sprintf(buf, "%u", main_sp);
     for (int i = n-1; i >= 0; i -= 1)
     {
         this->_image(
@@ -338,12 +353,9 @@ void ViewBase::auto_mode_sp(std::uint16_t bbp_sp,
             24
         );
     }
+    this->_number(24, 56, 1, sub_sp);
 
-    // 見込みSP
-    this->_text(0, 56, 1, "EST");
-    this->_number(24, 56, 1, true_sp);
-
-    // exp.SP
+    // 最大SP
     this->_text(64, 56, 1, "MAX");
     this->_number(88, 56, 1, max_sp);
 

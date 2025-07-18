@@ -17,7 +17,7 @@
 // 利用形態
 // - 0: 電動ランチャー制御としても使う
 // - 1: SP計測器のみで使う
-#define SP_MEAS_ONLY  0
+#define SP_MEAS_ONLY  1
 
 // スイッチレスでモード切替を行うかどうか
 // - 0: スイッチでモードを切り替える
@@ -36,7 +36,7 @@
 #define  SPI_MASK          0x100   // SPI接続用のマスク（原則変更しない）
 #define  ADAFRUIT_SH1106G      1   // SH1106G (1.3インチ)
 #define  ADAFRUIT_SSD1306      2   // SSD1306 (0.96インチ)
-#define  DISPLAY_DRIVER        ADAFRUIT_SH1106G
+#define  DISPLAY_DRIVER        ADAFRUIT_SSD1306
 #if  DISPLAY_IS_SPI == 1
 #define  DISPLAY_DRIVER        (DISPLAY_DRIVER | SPI_MASK)
 #endif

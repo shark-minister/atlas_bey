@@ -36,127 +36,140 @@
               <div class="eng">launch Beyblade</div>
             </button>
           </div>
-
-          <!-- 設定 -->
-          <h1 class="heading">設定 <span>/ parameters</span></h1>
-          <div class="menu-container">
-            <table>
-              <tr v-if="num_motors == 2">
-                <td></td>
-                <th class="header-elr">ELR #1</th>
-                <th class="header-elr">ELR #2</th>
-              </tr>
-              <tr>
-                <th class="header-item">
-                  回転方向
-                  <div class="eng">rotation</div>
-                </th>
-                <td>
-                  <label class="toggle-lr">
-                    <input type="checkbox" id="elr1-rot" v-model="elr1.rot_is_right" />
-                  </label>
-                </td>
-                <td v-if="num_motors == 2">
-                  <label class="toggle-lr">
-                    <input type="checkbox" id="elr2-rot" v-model="elr2.rot_is_right" />
-                  </label>
-                </td>
-              </tr>
-              <tr>
-                <th class="header-item">
-                  シュートパワー
-                  <div class="eng">shoot power</div>
-                </th>
-                <td>
-                  <input type="number" class="number" id="elr1-sp"
-                        min="3000" max="24000" step="100"
-                        v-model.number="elr1.sp" />
-                  <div class="note">※100の倍数</div>
-                </td>
-                <td v-if="num_motors == 2">
-                  <input type="number" class="number" id="elr2-sp"
-                        min="3000" max="24000" step="100"
-                        v-model.number="elr2.sp" />
-                  <div class="note">※100の倍数</div>
-                </td>
-              </tr>
-              <tr v-if="num_motors == 2">
-                <th class="header-item">
-                  マニュアルモード
-                  <div class="eng">manual mode</div>
-                </th>
-                <td>
-                  <label class="toggle-btn">
-                    <input type="checkbox" id="elr1-manual" v-model="elr1.enabled_manual" />
-                  </label>
-                </td>
-                <td>
-                  <label class="toggle-btn">
-                    <input type="checkbox" id="elr2-manual" v-model="elr2.enabled_manual" />
-                  </label>
-                </td>
-              </tr>
-              <tr v-if="num_motors == 2">
-                <th class="header-item">
-                  オートモード
-                  <div class="eng">auto mode</div>
-                </th>
-                <td colspan="2">
-                  <label class="toggle-12">
-                    <input type="checkbox" id="elr-auto" v-model="elr2_auto" />
-                  </label>
-                </td>
-              </tr>
-              <tr>
-                <th class="header-item">
-                  猶予時間 [ms]
-                  <div class="eng">latency</div>
-                </th>
-                <td :colspan="num_motors">
-                  <input type="number" class="number" id="latency"
-                        min="500" max="2560" step="10"
-                        v-model.number="latency" />
-                  <div class="note">※10の倍数</div>
-                </td>
-              </tr>
-              <tr>
-                <th class="header-item">
-                  遅延時間 [ms]
-                  <div class="eng">delay</div>
-                </th>
-                <td :colspan="num_motors">
-                  <input type="number" class="number" id="delay"
-                        min="0" max="500" step="2"
-                        v-model.number="delay" />
-                  <div class="note">※偶数</div>
-                </td>
-              </tr>
-              <tr>
-                <th class="header-item">
-                  ROMに書き込み
-                  <div class="eng">write to ROM</div>
-                </th>
-                <td :colspan="num_motors">
-                  <label class="toggle-btn">
-                    <input type="checkbox" id="write-rom" v-model="write_rom" />
-                  </label>
-                </td>
-              </tr>
-              <tr class="btn-margin">
-                <td :colspan="num_motors+1">
-                  <button @click="read_params()" :disabled="is_button_busy">
-                    読み出す
-                    <div class="eng">read parameters</div>
-                  </button>
-                  <button @click="write_params()" :disabled="is_button_busy">
-                    書き込む
-                    <div class="eng">write parameters</div>
-                  </button>
-                </td>
-              </tr>
-            </table>
-          </div>
         </template>
+
+        <!-- 設定 -->
+        <h1 class="heading">設定 <span>/ parameters</span></h1>
+        <div class="menu-container">
+          <table>
+            <template v-if="!sp_meas_only">
+            <tr v-if="num_motors == 2">
+              <td></td>
+              <th class="header-elr">ELR #1</th>
+              <th class="header-elr">ELR #2</th>
+            </tr>
+            <tr>
+              <th class="header-item">
+                回転方向
+                <div class="eng">rotation</div>
+              </th>
+              <td>
+                <label class="toggle-lr">
+                  <input type="checkbox" id="elr1-rot" v-model="elr1.rot_is_right" />
+                </label>
+              </td>
+              <td v-if="num_motors == 2">
+                <label class="toggle-lr">
+                  <input type="checkbox" id="elr2-rot" v-model="elr2.rot_is_right" />
+                </label>
+              </td>
+            </tr>
+            <tr>
+              <th class="header-item">
+                シュートパワー
+                <div class="eng">shoot power</div>
+              </th>
+              <td>
+                <input type="number" class="number" id="elr1-sp"
+                      min="3000" max="24000" step="100"
+                      v-model.number="elr1.sp" />
+                <div class="note">※100の倍数</div>
+              </td>
+              <td v-if="num_motors == 2">
+                <input type="number" class="number" id="elr2-sp"
+                      min="3000" max="24000" step="100"
+                      v-model.number="elr2.sp" />
+                <div class="note">※100の倍数</div>
+              </td>
+            </tr>
+            <tr v-if="num_motors == 2">
+              <th class="header-item">
+                マニュアルモード
+                <div class="eng">manual mode</div>
+              </th>
+              <td>
+                <label class="toggle-btn">
+                  <input type="checkbox" id="elr1-manual" v-model="elr1.enabled_manual" />
+                </label>
+              </td>
+              <td>
+                <label class="toggle-btn">
+                  <input type="checkbox" id="elr2-manual" v-model="elr2.enabled_manual" />
+                </label>
+              </td>
+            </tr>
+            <tr v-if="num_motors == 2">
+              <th class="header-item">
+                オートモード
+                <div class="eng">auto mode</div>
+              </th>
+              <td colspan="2">
+                <label class="toggle-12">
+                  <input type="checkbox" id="elr-auto" v-model="elr2_auto" />
+                </label>
+              </td>
+            </tr>
+            <tr>
+              <th class="header-item">
+                猶予時間 [ms]
+                <div class="eng">latency</div>
+              </th>
+              <td :colspan="num_motors">
+                <input type="number" class="number" id="latency"
+                      min="500" max="2560" step="10"
+                      v-model.number="latency" />
+                <div class="note">※10の倍数</div>
+              </td>
+            </tr>
+            <tr>
+              <th class="header-item">
+                遅延時間 [ms]
+                <div class="eng">delay</div>
+              </th>
+              <td :colspan="num_motors">
+                <input type="number" class="number" id="delay"
+                      min="0" max="500" step="2"
+                      v-model.number="delay" />
+                <div class="note">※偶数</div>
+              </td>
+            </tr>
+            </template>
+            <tr>
+              <th class="header-item">
+                BBPの記録値をメインにする
+                <div class="eng">BBP SP main</div>
+              </th>
+              <td :colspan="num_motors">
+                <label class="toggle-btn">
+                  <input type="checkbox" id="winder" v-model="is_bbp_sp_main" />
+                </label>
+              </td>
+            </tr>
+            <tr>
+              <th class="header-item">
+                ROMに書き込み
+                <div class="eng">write to ROM</div>
+              </th>
+              <td :colspan="num_motors">
+                <label class="toggle-btn">
+                  <input type="checkbox" id="write-rom" v-model="write_rom" />
+                </label>
+              </td>
+            </tr>
+            <tr class="btn-margin">
+              <td :colspan="num_motors+1">
+                <button @click="read_params()" :disabled="is_button_busy">
+                  読み出す
+                  <div class="eng">read parameters</div>
+                </button>
+                <button @click="write_params()" :disabled="is_button_busy">
+                  書き込む
+                  <div class="eng">write parameters</div>
+                </button>
+              </td>
+            </tr>
+          </table>
+        </div>
 
         <!-- シュート情報取得 -->
         <h1 class="heading">シュート情報 <span>/ shoot data</span></h1>

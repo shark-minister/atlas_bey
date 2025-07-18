@@ -32,6 +32,7 @@ const app = Vue.createApp({
             elr2_auto: false,
             sp_meas_only: true,
             switch_less: false,
+            is_bbp_sp_main: false,
             num_motors: 1,
             latency: 2000,
             delay: 0,
@@ -64,7 +65,7 @@ const app = Vue.createApp({
         //---------------------------------------------------------------------
         serialize_params() {
             return new Uint8Array([
-                0, // 読み出し専用なので、適当に0を詰めておく
+                this.is_bbp_sp_main ? 8 : 0,
                 this.latency / 10,
                 this.delay / 2,
                 this.elr1.get_flag(),
@@ -81,8 +82,10 @@ const app = Vue.createApp({
             this.sp_meas_only = (first_byte & 2) > 0 ? true : false;
             // 0000 0100 (4)
             this.switch_less  = (first_byte & 4) > 0 ? true : false;
+            // 0000 1000 (8)
+            this.is_bbp_sp_main = (first_byte & 8) > 0 ? true : false;
             // 0001 0000 (16)
-            this.num_motors   = (first_byte & 2) > 0 ? 2 : 1;
+            this.num_motors   = (first_byte & 16) > 0 ? 2 : 1;
 
             this.latency = data.getUint8(1) * 10;
             this.delay = data.getUint8(2) * 2;

@@ -5,10 +5,6 @@
 */
 #include "analyzer.hh"
 
-// C++標準ライブラリ
-//#include <array>
-//#include <cmath>    // std::sqrt()
-
 namespace atlas
 {
 //-----------------------------------------------------------------------------
@@ -212,6 +208,7 @@ void BBPAnalyzer::calc_true_sp()
             // 格納
             prof_t[size] = t;
             prof_sp[size] = sp;
+
             size += 1;
             // 最大SP値
             if (_max_sp < sp)
@@ -229,7 +226,7 @@ void BBPAnalyzer::calc_true_sp()
 
     std::uint16_t max_sp = 0;  // プロファイル上の最大SP
     std::uint16_t peak_t = 0;  // ピーク位置
-    std::uint32_t length = size > 13 ? 13 : size;  // 13回転目以降は見ない
+    std::uint32_t length = size > 14 ? 14 : size;  // 13回転目以降は見ない
     // 4回転目から値をチェックする
     for (std::uint32_t i = 4; i < length; ++i)
     {
@@ -299,11 +296,7 @@ void BBPAnalyzer::calc_true_sp()
     {
         _true_sp = max_sp;
     }
-    else if (peak_t < 4)
-    {
-        _true_sp = 0;
-    }
-    else if (_true_sp > _bbp_sp)
+    else if (peak_t < 4 || _true_sp > _bbp_sp)
     {
         _true_sp = _bbp_sp;
     }

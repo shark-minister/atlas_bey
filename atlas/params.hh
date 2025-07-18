@@ -138,6 +138,12 @@ public:
         return static_cast<std::uint16_t>(_latency) * 10;
     }
 
+    //! 真のSP値をメインに表示するかどうかを返す
+    inline bool is_bbp_sp_main() const noexcept
+    {
+        return _flags.field.bbp_sp_main > 0;
+    }
+
     //! 値を適正化する
     void regulate() noexcept;
 
@@ -175,8 +181,12 @@ private:
             */
             std::uint8_t switch_less : 1;
 
-            //! 予約領域
-            std::uint8_t reserved1 : 1;
+            /*!
+                @brief  BBP記録値をメインに表示するか
+                - `0`: 「真」のSP値をメインに表示する
+                - `1`: BBP記録値をメインに表示する
+            */
+            std::uint8_t bbp_sp_main : 1;
 
             /*! 
                 @brief  モーターの数-1
