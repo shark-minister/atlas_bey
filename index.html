@@ -19,10 +19,12 @@
             切断する
             <div class="eng">disconnect</div>
           </button>
-          <button @click="switch_to_automode()" :disabled="is_button_busy">
-            SP計測モードに切替
-            <div class="eng">switch to SP meas. mode</div>
-          </button>
+          <template v-if="switch_less">
+            <button @click="switch_to_automode()" :disabled="is_button_busy">
+              SP計測モードに切替
+              <div class="eng">switch to SP meas. mode</div>
+            </button>
+          </template>
         </div>
 
         <template v-if="!sp_meas_only">
