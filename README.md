@@ -287,7 +287,345 @@ ATLASに保存されているシュートパワー統計情報を読み込んで
 <img width="400" alt="シュート統計グラフ" src="https://github.com/user-attachments/assets/f001e7fe-d015-423a-80fb-58371c006cdc" />
 </p>
 
-# 4. ハードウェア
+
+# 3. ソフトウェアのビルドと書き込み
+
+ここでは、マイコンで動作するプログラムについて記述します。
+
+SP計測器をお持ちの方で、プログラムのアップデートをされる場合は、3-1節～3-5節をご覧下さい。
+具体的には、以下の節を読んで頂ければプログラムの更新が可能です。
+
+- 3-1節: ビルド環境の準備
+- 3-2節: ソースコードのダウンロード（Gitを使われる方を除き、3-2-2節の方）
+- 3-3節: ソースコードのオープン
+- 3-4-1節: setting.hhの表示
+- 3-4-7節: SP計測器での設定について（setting.hhの書き換え）
+- 3-5節: プログラムのビルドと書き込み
+
+## 3-1. ビルド環境の準備
+
+### 3-1-1. Arduino IDEのインストール
+
+本ソースコードは、Arduino IDEでビルドすることを想定しています。PlatformIOでのビルドは検証していません。
+Arduino IDEをインストールしていない場合は、下記URLから自分のプラットフォーム（OS）にあったものをダウンロードしてインストールしてください。
+
+Arduino IDEの公式ダウンロードページ：
+https://www.arduino.cc/en/software/
+
+<p align="center">
+<img width="701" height="349" alt="Arduino IDE download" src="https://github.com/user-attachments/assets/cd8efcfc-9b93-45bb-880c-25fb97276830" />
+</p>
+
+### 3-1-2. ボードマネージャのインストール
+
+次の手順で、ボードマネージャから、**esp32 by Espressif Systems** をインストールします。
+
+1. Arduino IDEを起動する
+2. 左のアイコン列の上から2番目（図の①）をクリックする
+3. 検索窓に **esp32-c3** と入力する（図の②）
+4. **esp32 by Espressif Systems** であることを確認して、「インストール」をクリックする（図の③）
+
+<p align="center">
+<img width="443" height="343" alt="board-manager" src="https://github.com/user-attachments/assets/008cc653-62ff-48d4-b246-2e0324643ad4" />
+</p>
+
+### 3-1-3. ライブラリのインストール
+
+以下のライブラリが必要になります。
+
+- ArduinoBLE（必須）
+- Adafruit SH110X（1.3インチディスプレイSH1106を使う場合。SP計測器の標準版はこちら）
+- Adafruit SSD1306（0.96インチディスプレイSSD1306を使う場合。SP計測器のコンパクト版はこちら）
+- DFRobotDFPlayerMini (DFPlayerMiniを使う場合、SP計測器の場合は不要）
+
+次の手順で、各ライブラリをインストールします。
+
+1. 左のアイコン列の上から3番目（図の①）をクリックする
+2. 検索窓に上記のライブラリ名を入力する（図の②）
+3. 一番上に出てくるライブラリの「インストール」をクリックする（図の③）
+4. 必要なライブラリだけ、1-3を繰り返す
+
+<p align="center">
+<img width="304" height="344" alt="library" src="https://github.com/user-attachments/assets/e952eca0-3ef3-4d67-9004-4cddc26505ca" />
+</p>
+
+## 3-2. ソースコードのダウンロード
+
+Gitを使ってソースコードを取得する場合は 5-2-1 節、そうでない場合は 5-2-2節 を参照してください。
+
+### 3-2-1. Gitを使う場合
+
+以下のコマンドでダウンロードしてください。
+
+```
+$ git clone git@github.com:shark-minister/atlas_bey.git
+```
+
+### 3-2-2. Gitを使わない場合
+
+このページ最上部で、**<> Code** をクリックして（図の①）、Download Zip を選んでください（図の②）。
+
+<p align="center">
+<img width="698" height="352" alt="download" src="https://github.com/user-attachments/assets/eb3d4c55-26cf-4cfd-b55d-dfa145b8670f" />
+</p>
+
+ダウンロードしたファイルを選択し（図の①）、全て展開をクリックしてください（図の②）。
+
+<p align="center">
+<img width="710" height="353" alt="展開" src="https://github.com/user-attachments/assets/f3ff7f8f-46b5-4e93-9d86-02e7d26c7f6a" />
+</p>
+
+## 3-3. プロジェクトのオープン
+
+Arduino IDEで 5-2節でダウンロードしたソースコードを開いてください。
+
+1. 「ファイル」メニューの「開く...」をクリックする（図の①）
+2. 5-2節でダウンロードしたフォルダの中の **atlas.ino** を選択してください（図の②）。
+   - Gitを使用した場合は、atlas_bey/atlas/atlas.ino
+   - Gitを使用していない場合は、展開によってできたフォルダ atlas_bey-main/atlas_bey-main/atlas/atlas.ino（図の下線部を参照）
+
+<p align="center">
+<img width="723" height="297" alt="open" src="https://github.com/user-attachments/assets/e36dbc08-8380-42b2-ad35-4f7aeef6298c" />
+</p>
+
+プロジェクトを開くと以下の画面になります。
+
+<p align="center">
+<img width="897" height="721" alt="window" src="https://github.com/user-attachments/assets/ebdbd209-9c3a-40b6-b0eb-0bc09d62626c" />
+</p>
+
+## 3-4. パラメータの設定値変更
+
+パラメータ設定は、`setting.hh`で行えます。
+
+### 3-4-1. setting.hh の表示
+
+setting.hhのソースコードは、**setting.hh** のタブを選択すると表示されます。
+setting.hhのタブは、この順番にあるとは限りません。
+
+<p align="center">
+<img width="348" height="111" alt="setting.hh" src="https://github.com/user-attachments/assets/82001963-01b6-4dd4-9d67-c7b2df68d82d" />
+</p>
+
+必要に応じて書き換えてください。
+SP計測器で利用する場合は、4-4-7節を参考にしてください。
+
+### 3-4-2.ピン番号設定
+
+- `MODE_SW`
+   - 切替スイッチの中央端子と繋ぐピン番号
+   - デフォルト値: 8
+- `L_PWM_1` 
+   - モータードライバー1のL_PWMをつなぐGPIOピン番号
+   - デフォルト値: 2
+   - 左回転用PWM
+- `R_PWM_1` 
+   - モータードライバー1のR_PWMをつなぐGPIOピン番号
+   - デフォルト値: 3
+   - 右回転用PWM
+- `LR_EN_1` 
+   - モータードライバー1のL_ENとR_ENをつなぐGPIOピン番号
+   - デフォルト値: 4
+- `L_PWM_2` 
+   - モータードライバー2のL_PWMをつなぐGPIOピン番号
+   - デフォルト値: 9
+   - 左回転用PWM、コメントアウト済み、未検証
+- `R_PWM_2` 
+   - モータードライバー2のR_PWMをつなぐGPIOピン番号
+   - デフォルト値: 10
+   - 右回転用PWM、コメントアウト済み、未検証
+- `LR_EN_2` 
+   - モータードライバー2のL_ENとR_ENをつなぐGPIOピン番号
+   - デフォルト値: 5
+   - コメントアウト済み、未検証
+- `SCREEN_SPI_MOSI`
+   - SSD1309のSDAをつなぐGPIOピン番号（MOSI）
+   - デフォルト値: 10
+- `SCREEN_SPI_DC`
+   - SSD1309のDCをつなぐGPIOピン番号（MISO）
+   - デフォルト値: 9
+- `SCREEN_SPI_CLK`
+   - SSD1309のSCLをつなぐGPIOピン番号（SCK）
+   - デフォルト値: 8
+- `SCREEN_SPI_CS`
+   - SSD1309のCSをつなぐGPIOピン番号（SS）
+   - デフォルト値: 20
+- `SCREEN_SPI_RESET`
+   - SSD1309のRESをつなぐGPIOピン番号（RESET）
+   - デフォルト値: 7
+
+> [!CAUTION]
+> モーター2台体制は未検証です。
+
+### 3-4-3.ディスプレイ設定
+
+ディスプレイにSSD1306を使用する場合、`DISPLAY_MODEL`を`ADAFRUIT_SSD1306`に変更してください。
+
+- `SCREEN_WIDTH`
+  - スクリーンの幅
+  - デフォルト値: 128
+- `SCREEN_HEIGHT`
+  - スクリーンのt高さ
+  - デフォルト値: 64
+- `SCREEN_ADDR`
+  - I2Cアドレス
+  - デフォルト値: 0x3C
+- `DISPLYA_IS_SPI`
+  - ディスプレイがSPI接続のときは1，I2Cのときは0
+- `DISPLAY_DRIVER`
+  - ディスプレイのモデル。以下のいずれかの値をとる
+  - ADAFRUIT_SSD1306: SSD1306を使う場合
+  - ADAFRUIT_SH1106G: SH1106Gを使う場合
+
+### 3-4-4. モーター設定
+
+- `MOTOR1_MAX_RPM`
+  - モーター1の最大回転数
+  - デフォルト値: 24,900
+- `MOTOR2_MAX_RPM`
+  - モーター2の最大回転数
+  - デフォルト値: 24,900
+- `NUM_MOTORS`
+  - 使用するモーターの数
+  - デフォルト値: 1
+- `USE_DUMMY_MOTOR`
+  - モーターをダミーモードにする。デバッグ用。モータードライバーに接続せず、Serial通信でデバッグ文を出力するのみとなる。
+  - デフォルト値: 0
+
+> [!CAUTION]
+> モーターは、タミヤの<ins>OP.1393 380 スポーツチューンモーター</ins>か、<ins>OP.68 RS-540 スポーツチューンモーター</ins>を想定しています。
+> それ以外のモーターでは動作を検証していません。
+
+### 3-4-5. 音声設定
+
+- `AUDIO_COUNTDOWN`
+  - カウントダウン音声の番号
+  — 3, 2, 1, Go, shootの間隔は1秒とする
+  - デフォルト値: 1
+- `AUDIO_SE_ACK`
+  - 成功の効果音の番号
+  - デフォルト値: 2
+- `AUDIO_SE_CANCEL`
+  - キャンセルの効果音の番号
+  - デフォルト値: 3 
+- `AUDIO_SE_ERROR`
+  - エラーの効果音の番号
+  - デフォルト値: 4 
+
+### 3-4-6. 動作パラメータ設定
+
+- BLE通信でPC・スマホから変更可能なパラメータのデフォルト値
+  - `DEFAULT_LAUNCHER_SP`
+    - 電動ランチャーのSPデフォルト値
+    - 電動ランチャーでベイを射出するときのシュートパワーSPのデフォルト値を指定する。SPの内部パラメータは、外部からBLE通信で変更できる。
+    - デフォルト値: 10,000
+  - `DEFAULT_DELAY`
+    - 射出遅延時間のデフォルト値 [ms]
+    - モーター停止（ベイ射出）の間隔（射出遅延）のデフォルト値をミリ秒で指定する。遅延時間の内部パラメータは、外部からBLE通信で変更できる。
+    - デフォルト値: 0
+  - `DEFAULT_LATENCY`
+    - 猶予時間のデフォルト値 [ms]
+    - オートモードでのカウントダウン最初の "ReadySet" と "3" までの間隔のデフォルト値をミリ秒で指定する。この猶予時間内にベイをランチャーから外すとカウントダウンとモーター駆動開始がキャンセルされる。猶予時間の内部パラメータは、外部からBLE通信で変更できる。
+    - デフォルト値: 1,300
+- ソフトウェアリミット
+  - `LAUNCHER_SP_UPPER_LIMIT`
+    - 電動ランチャーのSP上限値（ソフトウェアリミット）
+    - 電動ランチャーでベイを射出するときのシュートパワーSPの上限値を指定する。モーターの最高回転数以下にすることが望ましい。この値は外部から変更できない。
+    - デフォルト値: 24,900
+  - `LAUNCHER_SP_LOWER_LIMIT`
+    - 電動ランチャーのSP下限値（ソフトウェアリミット）
+    - 電動ランチャーでベイを射出するときのシュートパワーSPの下限値を指定する。この値は外部から変更できない。
+    - デフォルト値: 3,000
+  - `DELAY_UPPER_LIMIT`
+    - 射出遅延時間の上限値（ソフトウェアリミット） [ms]
+    - オートモードでのカウントダウン最後の "Shoot!" の言い始めとモーター停止（ベイ射出）の間隔（射出遅延）の上限値をミリ秒で指定する。この値は外部から変更できない。
+    - デフォルト値: 500
+  - `LATENCY_LOWER_LIMIT`
+    - 猶予時間の下限値（ソフトウェアリミット） [ms]
+    - オートモードでのカウントダウン最初の "ReadySet" と "3" までの間隔の下限値をミリ秒で指定する。この値は外部から変更できない。
+    - デフォルト値: 500
+- その他
+  - `MOTOR_PREPARATORY_TIME`
+    - モーター加速の余裕時間 [ms]
+    - モーターが最大回転数になるまでにはある程度の時間が必要であり、それを考慮した値をミリ秒で指定する。この値は外部から変更できない。マニュアルモード時のみ使用される。
+    - デフォルト値: 2,000
+  - `COUNTDOWN_INTERVAL`
+    - カウントダウンコールの間隔 [ms]
+    - カウントダウンコールは、"3, 2, 1, Go, Shoot!" であり、そのコール間隔をミリ秒で指定する。この値は外部から変更できない。
+    - デフォルト値: 1,000
+
+### 3-4-7. SP計測器での設定について
+
+SP計測器用のプログラムを書き込みたい場合は、setting.hh に以下の書き換えを行ってください。
+（setting.hhの表示の仕方は、5-2節の先頭を参照してください）
+
+#### 利用形態: SP_MEAS_ONLY (20行目)
+
+20行目の **SP_MEAS_ONLY** の値を 0 から 1 に変えてください。
+
+<p align="center">
+<img width="511" height="191" alt="SP_MEAS" src="https://github.com/user-attachments/assets/d30d6709-c9a7-4bda-aa88-1e98dae97cec" />
+</p>
+
+#### ディスプレイタイプ: DISPLAY_DRIVER (39行目)
+
+39行目の **DISPLAY_DRIVER** の値を、手持ちのディスプレイタイプに応じて変更してください。
+37, 38行目の ADAFRUITE_SH1106G, ADAFRUITE_SSD1306 をコピー＆ペーストすると楽です。
+
+- **ADAFRUITE_SH1106G** - 1.3インチディスプレイ（SP計測器の標準版）
+- **ADAFRUITE_SSD1306** - 0.96インチディスプレイ（SP計測器のコンパクト版）
+
+1.3インチディスプレイの場合：
+<p align="center">
+<img width="424" height="83" alt="Display_130" src="https://github.com/user-attachments/assets/7f0b8a81-5b79-4228-9d03-c2dea60078a9" />
+</p>
+
+0.96インチディスプレイの場合：
+<p align="center">
+<img width="457" height="83" alt="Display_096" src="https://github.com/user-attachments/assets/f8e132d0-33c0-408f-a500-2895cfcecb2b" />
+</p>
+
+## 3-5. プログラムの書き込み
+
+使用デバイスにあった設定ができたら、プログラムをビルドして書き込みを行います。
+まず、デバイスをUSBケーブルでつなぎ、ツールバーのデバイスリストの「他のボードとポートを選択」をクリック（画像オレンジ色で囲った部分）します。
+
+<p align="center">
+<img width="424" height="188" alt="board" src="https://github.com/user-attachments/assets/5a0c3b27-57a0-47c6-beb3-d300ea953c88" />
+</p>
+
+以下の手順で、ボードとポートを選択してください。
+
+1. ボードの検索窓に **xiao** と入力する（図の①）
+2. **XIAO_ESP32C3** を選択する（図の②）
+3. ポートは、出てくるUSBポートのものを選ぶ（図の③）
+4. OKを押す（図の④）
+
+<p align="center">
+<img width="554" height="389" alt="board選択" src="https://github.com/user-attachments/assets/11793193-18f3-4fe3-8974-156dfc7cb0c5" />
+</p>
+
+正しく選択できていれば、以下の図のようになります。
+
+<p align="center">
+<img width="345" height="126" alt="board1" src="https://github.com/user-attachments/assets/2f917e44-fa17-4f08-b757-80238d30755f" />
+</p>
+
+→ボタンを押すとビルドとマイコンへの書き込みが行われます。
+
+<p align="center">
+<img width="292" alt="board1" src="https://github.com/user-attachments/assets/b5688cfd-962f-4a72-84d2-cb37284bfe16" />
+</p>
+
+書き込みが終わると以下のような出力がなされ、デバイスも再起動します。
+
+<p align="center">
+<img width="734" alt="output1" src="https://github.com/user-attachments/assets/be7a7660-21f9-453b-be90-94c67d63af10" />
+</p>
+
+
+
+# 4. ハードウェア構成
 
 ## 4-1. 構成部品
 
@@ -557,337 +895,3 @@ microSDカードに 01, 02, 03, 04のフォルダを作成し、それぞれの�
     <td>GPIO4</td>
   </tr>
 </table>
-
-# 5. ソフトウェア
-
-ここでは、マイコンで動作するプログラムについて記述します。
-
-SP計測器をお持ちの方で、プログラムのアップデートをされる場合は、5-1節～5-5節をご覧下さい。
-具体的には、以下の節を読んで頂ければプログラムの更新が可能です。
-
-- 5-1節: ビルド環境の準備
-- 5-2節: ソースコードのダウンロード（Gitを使われる方を除き、5-2-2節の方）
-- 5-3節: ソースコードのオープン
-- 5-4-1節: setting.hhの表示
-- 5-4-7節: SP計測器での設定について（setting.hhの書き換え）
-- 5-5節: プログラムのビルドと書き込み
-
-## 5-1. ビルド環境の準備
-
-### 5-1-1. Arduino IDEのインストール
-
-本ソースコードは、Arduino IDEでビルドすることを想定しています。PlatformIOでのビルドは検証していません。
-Arduino IDEをインストールしていない場合は、下記URLから自分のプラットフォーム（OS）にあったものをダウンロードしてインストールしてください。
-
-Arduino IDEの公式ダウンロードページ：
-https://www.arduino.cc/en/software/
-
-<p align="center">
-<img width="701" height="349" alt="Arduino IDE download" src="https://github.com/user-attachments/assets/cd8efcfc-9b93-45bb-880c-25fb97276830" />
-</p>
-
-### 5-1-2. ボードマネージャのインストール
-
-次の手順で、ボードマネージャから、**esp32 by Espressif Systems** をインストールします。
-
-1. Arduino IDEを起動する
-2. 左のアイコン列の上から2番目（図の①）をクリックする
-3. 検索窓に **esp32-c3** と入力する（図の②）
-4. **esp32 by Espressif Systems** であることを確認して、「インストール」をクリックする（図の③）
-
-<p align="center">
-<img width="443" height="343" alt="board-manager" src="https://github.com/user-attachments/assets/008cc653-62ff-48d4-b246-2e0324643ad4" />
-</p>
-
-### 5-1-3. ライブラリのインストール
-
-以下のライブラリが必要になります。
-
-- ArduinoBLE（必須）
-- Adafruit SH110X（1.3インチディスプレイSH1106を使う場合。SP計測器の標準版はこちら）
-- Adafruit SSD1306（0.96インチディスプレイSSD1306を使う場合。SP計測器のコンパクト版はこちら）
-- DFRobotDFPlayerMini (DFPlayerMiniを使う場合、SP計測器の場合は不要）
-
-次の手順で、各ライブラリをインストールします。
-
-1. 左のアイコン列の上から3番目（図の①）をクリックする
-2. 検索窓に上記のライブラリ名を入力する（図の②）
-3. 一番上に出てくるライブラリの「インストール」をクリックする（図の③）
-4. 必要なライブラリだけ、1-3を繰り返す
-
-<p align="center">
-<img width="304" height="344" alt="library" src="https://github.com/user-attachments/assets/e952eca0-3ef3-4d67-9004-4cddc26505ca" />
-</p>
-
-## 5-2. ソースコードのダウンロード
-
-Gitを使ってソースコードを取得する場合は 5-2-1 節、そうでない場合は 5-2-2節 を参照してください。
-
-### 5-2-1. Gitを使う場合
-
-以下のコマンドでダウンロードしてください。
-
-```
-$ git clone git@github.com:shark-minister/atlas_bey.git
-```
-
-### 5-2-2. Gitを使わない場合
-
-このページ最上部で、**<> Code** をクリックして（図の①）、Download Zip を選んでください（図の②）。
-
-<p align="center">
-<img width="698" height="352" alt="download" src="https://github.com/user-attachments/assets/eb3d4c55-26cf-4cfd-b55d-dfa145b8670f" />
-</p>
-
-ダウンロードしたファイルを選択し（図の①）、全て展開をクリックしてください（図の②）。
-
-<p align="center">
-<img width="710" height="353" alt="展開" src="https://github.com/user-attachments/assets/f3ff7f8f-46b5-4e93-9d86-02e7d26c7f6a" />
-</p>
-
-## 5-3. プロジェクトのオープン
-
-Arduino IDEで 5-2節でダウンロードしたソースコードを開いてください。
-
-1. 「ファイル」メニューの「開く...」をクリックする（図の①）
-2. 5-2節でダウンロードしたフォルダの中の **atlas.ino** を選択してください（図の②）。
-   - Gitを使用した場合は、atlas_bey/atlas/atlas.ino
-   - Gitを使用していない場合は、展開によってできたフォルダ atlas_bey-main/atlas_bey-main/atlas/atlas.ino（図の下線部を参照）
-
-<p align="center">
-<img width="723" height="297" alt="open" src="https://github.com/user-attachments/assets/e36dbc08-8380-42b2-ad35-4f7aeef6298c" />
-</p>
-
-プロジェクトを開くと以下の画面になります。
-
-<p align="center">
-<img width="897" height="721" alt="window" src="https://github.com/user-attachments/assets/ebdbd209-9c3a-40b6-b0eb-0bc09d62626c" />
-</p>
-
-## 5-4. パラメータの設定値変更
-
-パラメータ設定は、`setting.hh`で行えます。
-
-### 5-4-1. setting.hh の表示
-
-setting.hhのソースコードは、**setting.hh** のタブを選択すると表示されます。
-setting.hhのタブは、この順番にあるとは限りません。
-
-<p align="center">
-<img width="348" height="111" alt="setting.hh" src="https://github.com/user-attachments/assets/82001963-01b6-4dd4-9d67-c7b2df68d82d" />
-</p>
-
-SP計測器で利用する場合は、5-4-7節を参考にしてください。
-
-### 5-4-2.ピン番号設定
-
-- `MODE_SW`
-   - 切替スイッチの中央端子と繋ぐピン番号
-   - デフォルト値: 8
-- `L_PWM_1` 
-   - モータードライバー1のL_PWMをつなぐGPIOピン番号
-   - デフォルト値: 2
-   - 左回転用PWM
-- `R_PWM_1` 
-   - モータードライバー1のR_PWMをつなぐGPIOピン番号
-   - デフォルト値: 3
-   - 右回転用PWM
-- `LR_EN_1` 
-   - モータードライバー1のL_ENとR_ENをつなぐGPIOピン番号
-   - デフォルト値: 4
-- `L_PWM_2` 
-   - モータードライバー2のL_PWMをつなぐGPIOピン番号
-   - デフォルト値: 9
-   - 左回転用PWM、コメントアウト済み、未検証
-- `R_PWM_2` 
-   - モータードライバー2のR_PWMをつなぐGPIOピン番号
-   - デフォルト値: 10
-   - 右回転用PWM、コメントアウト済み、未検証
-- `LR_EN_2` 
-   - モータードライバー2のL_ENとR_ENをつなぐGPIOピン番号
-   - デフォルト値: 5
-   - コメントアウト済み、未検証
-- `SCREEN_SPI_MOSI`
-   - SSD1309のSDAをつなぐGPIOピン番号（MOSI）
-   - デフォルト値: 10
-- `SCREEN_SPI_DC`
-   - SSD1309のDCをつなぐGPIOピン番号（MISO）
-   - デフォルト値: 9
-- `SCREEN_SPI_CLK`
-   - SSD1309のSCLをつなぐGPIOピン番号（SCK）
-   - デフォルト値: 8
-- `SCREEN_SPI_CS`
-   - SSD1309のCSをつなぐGPIOピン番号（SS）
-   - デフォルト値: 20
-- `SCREEN_SPI_RESET`
-   - SSD1309のRESをつなぐGPIOピン番号（RESET）
-   - デフォルト値: 7
-
-> [!CAUTION]
-> モーター2台体制は未検証です。
-
-### 5-4-3.ディスプレイ設定
-
-ディスプレイにSSD1306を使用する場合、`DISPLAY_MODEL`を`ADAFRUIT_SSD1306`に変更してください。
-
-- `SCREEN_WIDTH`
-  - スクリーンの幅
-  - デフォルト値: 128
-- `SCREEN_HEIGHT`
-  - スクリーンのt高さ
-  - デフォルト値: 64
-- `SCREEN_ADDR`
-  - I2Cアドレス
-  - デフォルト値: 0x3C
-- `DISPLYA_IS_SPI`
-  - ディスプレイがSPI接続のときは1，I2Cのときは0
-- `DISPLAY_DRIVER`
-  - ディスプレイのモデル。以下のいずれかの値をとる
-  - ADAFRUIT_SSD1306: SSD1306を使う場合
-  - ADAFRUIT_SH1106G: SH1106Gを使う場合
-
-### 5-4-4. モーター設定
-
-- `MOTOR1_MAX_RPM`
-  - モーター1の最大回転数
-  - デフォルト値: 24,900
-- `MOTOR2_MAX_RPM`
-  - モーター2の最大回転数
-  - デフォルト値: 24,900
-- `NUM_MOTORS`
-  - 使用するモーターの数
-  - デフォルト値: 1
-- `USE_DUMMY_MOTOR`
-  - モーターをダミーモードにする。デバッグ用。モータードライバーに接続せず、Serial通信でデバッグ文を出力するのみとなる。
-  - デフォルト値: 0
-
-> [!CAUTION]
-> モーターは、タミヤの<ins>OP.1393 380 スポーツチューンモーター</ins>か、<ins>OP.68 RS-540 スポーツチューンモーター</ins>を想定しています。
-> それ以外のモーターでは動作を検証していません。
-
-### 5-4-5. 音声設定
-
-- `AUDIO_COUNTDOWN`
-  - カウントダウン音声の番号
-  — 3, 2, 1, Go, shootの間隔は1秒とする
-  - デフォルト値: 1
-- `AUDIO_SE_ACK`
-  - 成功の効果音の番号
-  - デフォルト値: 2
-- `AUDIO_SE_CANCEL`
-  - キャンセルの効果音の番号
-  - デフォルト値: 3 
-- `AUDIO_SE_ERROR`
-  - エラーの効果音の番号
-  - デフォルト値: 4 
-
-### 5-4-6. 動作パラメータ設定
-
-- BLE通信でPC・スマホから変更可能なパラメータのデフォルト値
-  - `DEFAULT_LAUNCHER_SP`
-    - 電動ランチャーのSPデフォルト値
-    - 電動ランチャーでベイを射出するときのシュートパワーSPのデフォルト値を指定する。SPの内部パラメータは、外部からBLE通信で変更できる。
-    - デフォルト値: 10,000
-  - `DEFAULT_DELAY`
-    - 射出遅延時間のデフォルト値 [ms]
-    - モーター停止（ベイ射出）の間隔（射出遅延）のデフォルト値をミリ秒で指定する。遅延時間の内部パラメータは、外部からBLE通信で変更できる。
-    - デフォルト値: 0
-  - `DEFAULT_LATENCY`
-    - 猶予時間のデフォルト値 [ms]
-    - オートモードでのカウントダウン最初の "ReadySet" と "3" までの間隔のデフォルト値をミリ秒で指定する。この猶予時間内にベイをランチャーから外すとカウントダウンとモーター駆動開始がキャンセルされる。猶予時間の内部パラメータは、外部からBLE通信で変更できる。
-    - デフォルト値: 1,300
-- ソフトウェアリミット
-  - `LAUNCHER_SP_UPPER_LIMIT`
-    - 電動ランチャーのSP上限値（ソフトウェアリミット）
-    - 電動ランチャーでベイを射出するときのシュートパワーSPの上限値を指定する。モーターの最高回転数以下にすることが望ましい。この値は外部から変更できない。
-    - デフォルト値: 24,900
-  - `LAUNCHER_SP_LOWER_LIMIT`
-    - 電動ランチャーのSP下限値（ソフトウェアリミット）
-    - 電動ランチャーでベイを射出するときのシュートパワーSPの下限値を指定する。この値は外部から変更できない。
-    - デフォルト値: 3,000
-  - `DELAY_UPPER_LIMIT`
-    - 射出遅延時間の上限値（ソフトウェアリミット） [ms]
-    - オートモードでのカウントダウン最後の "Shoot!" の言い始めとモーター停止（ベイ射出）の間隔（射出遅延）の上限値をミリ秒で指定する。この値は外部から変更できない。
-    - デフォルト値: 500
-  - `LATENCY_LOWER_LIMIT`
-    - 猶予時間の下限値（ソフトウェアリミット） [ms]
-    - オートモードでのカウントダウン最初の "ReadySet" と "3" までの間隔の下限値をミリ秒で指定する。この値は外部から変更できない。
-    - デフォルト値: 500
-- その他
-  - `MOTOR_PREPARATORY_TIME`
-    - モーター加速の余裕時間 [ms]
-    - モーターが最大回転数になるまでにはある程度の時間が必要であり、それを考慮した値をミリ秒で指定する。この値は外部から変更できない。マニュアルモード時のみ使用される。
-    - デフォルト値: 2,000
-  - `COUNTDOWN_INTERVAL`
-    - カウントダウンコールの間隔 [ms]
-    - カウントダウンコールは、"3, 2, 1, Go, Shoot!" であり、そのコール間隔をミリ秒で指定する。この値は外部から変更できない。
-    - デフォルト値: 1,000
-
-### 5-4-7. SP計測器での設定について
-
-SP計測器用のプログラムを書き込みたい場合は、setting.hh に以下の書き換えを行ってください。
-（setting.hhの表示の仕方は、5-2節の先頭を参照してください）
-
-#### 利用形態: SP_MEAS_ONLY (20行目)
-
-20行目の **SP_MEAS_ONLY** の値を 0 から 1 に変えてください。
-
-<p align="center">
-<img width="511" height="191" alt="SP_MEAS" src="https://github.com/user-attachments/assets/d30d6709-c9a7-4bda-aa88-1e98dae97cec" />
-</p>
-
-#### ディスプレイタイプ: DISPLAY_DRIVER (39行目)
-
-39行目の **DISPLAY_DRIVER** の値を、手持ちのディスプレイタイプに応じて変更してください。
-37, 38行目の ADAFRUITE_SH1106G, ADAFRUITE_SSD1306 をコピー＆ペーストすると楽です。
-
-- **ADAFRUITE_SH1106G** - 1.3インチディスプレイ（SP計測器の標準版）
-- **ADAFRUITE_SSD1306** - 0.96インチディスプレイ（SP計測器のコンパクト版）
-
-1.3インチディスプレイの場合：
-<p align="center">
-<img width="424" height="83" alt="Display_130" src="https://github.com/user-attachments/assets/7f0b8a81-5b79-4228-9d03-c2dea60078a9" />
-</p>
-
-0.96インチディスプレイの場合：
-<p align="center">
-<img width="457" height="83" alt="Display_096" src="https://github.com/user-attachments/assets/f8e132d0-33c0-408f-a500-2895cfcecb2b" />
-</p>
-
-## 5-5. プログラムの書き込み
-
-使用デバイスにあった設定ができたら、プログラムをビルドして書き込みを行います。
-まず、デバイスをUSBケーブルでつなぎ、ツールバーのデバイスリストの「他のボードとポートを選択」をクリック（画像オレンジ色で囲った部分）します。
-
-<p align="center">
-<img width="424" height="188" alt="board" src="https://github.com/user-attachments/assets/5a0c3b27-57a0-47c6-beb3-d300ea953c88" />
-</p>
-
-以下の手順で、ボードとポートを選択してください。
-
-1. ボードの検索窓に **xiao** と入力する（図の①）
-2. **XIAO_ESP32C3** を選択する（図の②）
-3. ポートは、出てくるUSBポートのものを選ぶ（図の③）
-4. OKを押す（図の④）
-
-<p align="center">
-<img width="554" height="389" alt="board選択" src="https://github.com/user-attachments/assets/11793193-18f3-4fe3-8974-156dfc7cb0c5" />
-</p>
-
-正しく選択できていれば、以下の図のようになります。
-
-<p align="center">
-<img width="345" height="126" alt="board1" src="https://github.com/user-attachments/assets/2f917e44-fa17-4f08-b757-80238d30755f" />
-</p>
-
-→ボタンを押すとビルドとマイコンへの書き込みが行われます。
-
-<p align="center">
-<img width="292" alt="board1" src="https://github.com/user-attachments/assets/b5688cfd-962f-4a72-84d2-cb37284bfe16" />
-</p>
-
-書き込みが終わると以下のような出力がなされ、デバイスも再起動します。
-
-<p align="center">
-<img width="734" alt="output1" src="https://github.com/user-attachments/assets/be7a7660-21f9-453b-be90-94c67d63af10" />
-</p>
