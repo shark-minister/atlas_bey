@@ -44,6 +44,9 @@ public:
     //! 値を適正化する
     void regulate() noexcept;
 
+    //! 値を初期化する
+    void init() noexcept;
+
 private:
     union Flags
     {
@@ -146,6 +149,9 @@ public:
 
     //! 値を適正化する
     void regulate() noexcept;
+
+    //! 値を初期化する
+    void init() noexcept;
 
 private:
     union Flags

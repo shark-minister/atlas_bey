@@ -8,7 +8,7 @@
 #ifndef ATLAS_SETTING_HH
 #define ATLAS_SETTING_HH
 
-#define DEBUG_MODE
+//#define DEBUG_MODE
 
 //-----------------------------------------------------------------------------
 // ハードウェアの実装
@@ -180,8 +180,8 @@
 #define  ATLAS_SERVICE            "32150000-9A86-43AC-B15F-200ED1B7A72A"
 #define  ATLAS_CHR_SET            "32150001-9A86-43AC-B15F-200ED1B7A72A"
 #define  ATLAS_CHR_SET_DESCR      "Parameters for Electric Launcher"
-#define  ATLAS_CHR_SAVE           "32150010-9A86-43AC-B15F-200ED1B7A72A"
-#define  ATLAS_CHR_SAVE_DESCR     "Save parameters to flash memory"
+//#define  ATLAS_CHR_SAVE           "32150010-9A86-43AC-B15F-200ED1B7A72A"
+//#define  ATLAS_CHR_SAVE_DESCR     "Save parameters to flash memory"
 #define  ATLAS_CHR_SHOOT          "32150020-9A86-43AC-B15F-200ED1B7A72A"
 #define  ATLAS_CHR_SHOOT_DESCR    "Manual shoot"
 #define  ATLAS_CHR_HEADER         "32150030-9A86-43AC-B15F-200ED1B7A72A"

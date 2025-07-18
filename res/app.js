@@ -297,14 +297,17 @@ const app = Vue.createApp({
                     "32150001-9a86-43ac-b15f-200ed1b7a72a",
                     this.serialize_params()
                 );
+                /*
                 if (this.write_rom) {
                     // 本体ROMへパラメータを記憶させる
                     await this.store_params();
                 }
+                */
                 return;
             }
             alert("値が適切ではありません");
         },
+        /*
         async store_params() {
             console.log("storing params in flash memory...");
             await this.write(
@@ -312,6 +315,7 @@ const app = Vue.createApp({
                 new Uint8Array([1])
             );
         },
+        */
         async launch() {
             console.log("launching beyblade...");
             await this.write(

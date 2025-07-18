@@ -161,6 +161,7 @@ void setup()
     }
 
     // パラメータの読み込み
+    g_params.init();
     if (SPIFFS.exists(PARAMS_FILE_NAME))
     {
         if (File file = SPIFFS.open(PARAMS_FILE_NAME, "r"))
@@ -633,6 +634,15 @@ void run_manual_mode()
                 chr.readValue(&g_params, sizeof(g_params));
                 g_params.regulate();
                 g_view.manual_mode();
+
+                if (File file = SPIFFS.open(PARAMS_FILE_NAME, "w"))
+                {
+                    file.write(
+                        reinterpret_cast<const std::uint8_t*>(&g_params),
+                        sizeof(g_params)
+                    );
+                    file.close();
+                }
             }
         );
         ch.setEventHandler(
@@ -647,6 +657,7 @@ void run_manual_mode()
         serv.addCharacteristic(ch);
     }
     
+    /*
     // characteristic: 現在の設定を保存する
     {
         // キャラクタリスティックの作成と初期値の書き込み
@@ -672,6 +683,7 @@ void run_manual_mode()
         // キャラクタリスティックの登録
         serv.addCharacteristic(ch);
     }
+    */
 
     // characteristic: 手動シュート
     {

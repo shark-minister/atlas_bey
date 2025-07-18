@@ -27,6 +27,21 @@ void ElectricLauncher::regulate() noexcept
     }
 }
 
+void ElectricLauncher::init() noexcept
+{
+    _sp = DEFAULT_LAUNCHER_SP;
+    _flags.data = 0;
+}
+
+void Params::init() noexcept
+{
+    _latency = DEFAULT_LATENCY;
+    _delay = DEFAULT_DELAY;
+    _flags.data = 0;
+    _elr1.init();
+    _elr2.init();
+}
+
 void Params::regulate() noexcept
 {
     // 電動ランチャー1
