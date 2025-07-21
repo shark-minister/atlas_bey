@@ -294,7 +294,7 @@ ATLAS_AUTO_LAUNCHER（or Arduiono）を選んで〔ペア設定〕をクリッ�
 - 〔書き込む〕ボタン: ATLASにパラメータを送ります。
 
 <p align="center">
-<img width="932" height="824" alt="setting" src="https://github.com/user-attachments/assets/fa751ba9-6b9b-40f7-ad32-69a90144e6ed" />
+<img width="340" alt="setting" src="https://github.com/user-attachments/assets/fa751ba9-6b9b-40f7-ad32-69a90144e6ed" />
 </p>
 
 #### シュート情報
