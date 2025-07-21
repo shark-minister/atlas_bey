@@ -790,6 +790,12 @@ microSDカードに 01, 02, 03, 04のフォルダを作成し、それぞれの�
 <img width="700" alt="system-wiring" src="https://github.com/user-attachments/assets/99161839-0404-41be-8381-0233858652f3" />
 </p>
 
+SP計測器専用（ATLAS lite）での配線は以下の通りです。
+
+<p align="center">
+<img width="600" alt="wiring_compact" src="https://github.com/user-attachments/assets/d5d03ed4-40e4-42b1-85ed-b06e3847521f" />
+</p>
+
 ### 4-2-1. BTS79608
 
 モータードライバー BTS79608 の配線は以下の通りです。
