@@ -621,9 +621,9 @@ SP計測器用のプログラムを書き込みたい場合は、setting.hh に�
 <img width="511" height="191" alt="SP_MEAS" src="https://github.com/user-attachments/assets/d30d6709-c9a7-4bda-aa88-1e98dae97cec" />
 </p>
 
-#### ディスプレイタイプ: DISPLAY_DRIVER (39行目)
+#### ディスプレイタイプ: DISPLAY_DRIVER (37行目)
 
-39行目の **DISPLAY_DRIVER** の値を、手持ちのディスプレイタイプに応じて変更してください。デフォルトでは、1.3インチの方（ADAFRUITE_SH1106G）になっています。変更する場合は、37, 38行目の ADAFRUITE_SH1106G, ADAFRUITE_SSD1306 をコピー＆ペーストすると楽です。
+37行目の **DISPLAY_DRIVER** の値を、手持ちのディスプレイタイプに応じて変更してください。デフォルトでは、1.3インチの方（ADAFRUITE_SH1106G）になっています。変更する場合は、35, 36行目の ADAFRUITE_SH1106G, ADAFRUITE_SSD1306 をコピー＆ペーストすると楽です。
 
 - **ADAFRUITE_SH1106G** - 1.3インチディスプレイ（SP計測器の標準版）
 - **ADAFRUITE_SSD1306** - 0.96インチディスプレイ（SP計測器のコンパクト版）
