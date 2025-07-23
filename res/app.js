@@ -38,7 +38,7 @@ const app = Vue.createApp({
             delay: 0,
             elr1: new ElectricLauncher(),
             elr2: new ElectricLauncher(),
-            write_rom: false,
+            has_write_rom_char: false,
             // Bluetooth
             device: null,
             service: null,
@@ -213,6 +213,15 @@ const app = Vue.createApp({
             this.is_gatt_busy = true;
             const server = await this.device.gatt.connect();
             this.service = await server.getPrimaryService(ATLAS_SERVICE);
+            chars = await this.service.getCharacteristics();
+            console.log("gettting a list of charecteristics...");
+            this.has_write_rom_char = false;
+            for (let i = 0; i < chars.length; ++i) {
+                const ch = chars[i].uuid;
+                if (ch == "32150010-9a86-43ac-b15f-200ed1b7a72a") {
+                    this.has_write_rom_char = true;
+                }
+            }
             this.is_gatt_busy = false;
             console.log("connecting...done");
         },
@@ -298,7 +307,9 @@ const app = Vue.createApp({
                     this.serialize_params()
                 );
                 // 本体ROMへパラメータを記憶させる
-                await this.store_params();
+                if (this.has_write_rom_char) {
+                    await this.store_params();
+                }
                 return;
             }
             alert("値が適切ではありません");
