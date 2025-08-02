@@ -3,13 +3,20 @@ const { createApp } = Vue
 // constants
 const ATLAS_SERVICE ="32150000-9a86-43ac-b15f-200ed1b7a72a";
 
+/*
+    電動ランチャーの設定を保持するクラス
+*/
 class ElectricLauncher {
+    // コンストラクタ
     constructor() {
+        // マニュアルモードで利用するか否か
         this.enabled_manual = false;
+        // 右回転か否か。falseなら左回転
         this.rot_is_right = true;
+        // 設定SP
         this.sp = 10000;
     }
-    get_flag() {
+    serialize_flag() {
         let result = 0;
         if (this.enabled_manual) {
             result |= 1;
@@ -19,7 +26,7 @@ class ElectricLauncher {
         }
         return result;
     }
-    set_flag(value) {
+    deserialize_flag(value) {
         this.enabled_manual = ((value & 1) > 0);
         this.rot_is_right = ((value & 16) == 0);
     }
@@ -28,17 +35,51 @@ class ElectricLauncher {
 const app = Vue.createApp({
     data() {
         return {
-            // パラメータ
-            elr2_auto: false,
-            sp_meas_only: true,
+            //-----------------------------------------------------------------
+            // デバイス情報
+            //-----------------------------------------------------------------
+            /*
+                バージョン（16ビット整数）
+                - 0xF000: メジャーバージョン
+                - 0x0F00: マイナーバージョン
+                - 0x00FF: リビジョン
+            */
+            version: 0,
+            /*
+                利用形態。SP計測器としての実装か否か
+                - 0: 電動ランチャー制御器
+                - 1: SP測定器
+           */
+            format: 1,
+            /*
+                スイッチレスか否か
+                - True:  スイッチなし
+                - False: スイッチあり
+            */
             switch_less: false,
+            // 使用するモーター数
+            num_elrs: 1,
+            // モーター1の最大回転数
+            elr1_max_rpm: 0,
+            // モーター2の最大回転数
+            elr2_max_rpm: 0,
+            //-----------------------------------------------------------------
+            // パラメータ
+            //-----------------------------------------------------------------
+            /*
+                オートモードで利用する電動ランチャー
+                - False: ELR 1
+                - True:  ELR 2
+            */
+            elr2_auto: false,
+            // オートモードにて、表示するSP値の種類
+            // - True:  BBPの値をメインに表示する
+            // - False: 真のSP値をメインに表示する
             is_bbp_sp_main: false,
-            num_motors: 1,
             latency: 2000,
             delay: 0,
             elr1: new ElectricLauncher(),
             elr2: new ElectricLauncher(),
-            has_write_rom_char: false,
             // Bluetooth
             device: null,
             service: null,
@@ -57,6 +98,16 @@ const app = Vue.createApp({
     computed: {
         is_button_busy() {
             return this.device === null || this.is_gatt_busy;
+        },
+        is_sp_meas_only() {
+            return this.format === 1;
+        },
+        version_str() {
+            return (
+                (this.version >> 12).toString() + "." +
+                ((this.version >> 8) & 0xF).toString() + "." +
+                (this.version & 0xFF).toString()
+            );
         }
     },
     methods: {
@@ -68,34 +119,48 @@ const app = Vue.createApp({
                 this.is_bbp_sp_main ? 8 : 0,
                 this.latency / 10,
                 this.delay / 2,
-                this.elr1.get_flag(),
+                this.elr1.serialize_flag(),
                 this.elr1.sp / 100,
-                this.elr2.get_flag(),
+                this.elr2.serialize_flag(),
                 this.elr2.sp / 100
             ]);
         },
         deserialize_params(data) {
+            // 先頭の1バイトを取得
             const first_byte = data.getUint8(0);
-            // 0000 0001 (1)
-            this.elr2_auto      = (first_byte & 1) > 0;
-            // 0000 0010 (2)
-            this.sp_meas_only   = (first_byte & 2) > 0 ? true : false;
-            // 0000 0100 (4)
-            this.switch_less    = (first_byte & 4) > 0 ? true : false;
-            // 0000 1000 (8)
-            this.is_bbp_sp_main = (first_byte & 8) > 0 ? true : false;
-            // 0001 0000 (16)
-            this.num_motors     = (first_byte & 16) > 0 ? 2 : 1;
+            // 0000 0001
+            this.elr2_auto      = (first_byte & 0b1) > 0;
+            // 0000 1000
+            this.is_bbp_sp_main = (first_byte & 0b1000) > 0 ? true : false;
 
+            // Ver.1.2未満は、デバイス情報を取得するキャラクタリスティックがない一方、
+            // 一部の情報はパラメータに入っているので、取得する。
+            // これらの値は読み込み専用
+            if (this.version < 0x1200) {
+                console.log("version < 0x1200: read format, switch less, #elrs from params");
+                // 0000 0010
+                this.format = (first_byte & 0b10) > 0 ? 1 : 0;
+                // 0000 0100
+                this.switch_less = (first_byte & 0b100) > 0 ? true : false;
+                // 0001 0000
+                this.num_elrs = (first_byte & 0b10000) > 0 ? 2 : 1;
+            }
+
+            // レイテンシー（オートモードの猶予時間 /ms）
             this.latency = data.getUint8(1) * 10;
+            // ベイ射出遅延時間 /ms
             this.delay = data.getUint8(2) * 2;
-            this.elr1.set_flag(data.getUint8(3));
+            // 電動ランチャー1の設定
+            this.elr1.deserialize_flag(data.getUint8(3));
+            // 電動ランチャー1のSP値 /rpm
             this.elr1.sp = data.getUint8(4) * 100;
-            this.elr2.set_flag(data.getUint8(5));
+            // 電動ランチャー2の設定
+            this.elr2.deserialize_flag(data.getUint8(5));
+            // 電動ランチャー2のSP値 /rpm
             this.elr2.sp = data.getUint8(6) * 100;    
         },
         deserialize_data(header, hists) {
-            // ヘッダ情報
+            // ヘッダ情報（全てリトルエンディアン）
             this.total = header.getUint16(0, true);
             this.max_sp = header.getUint16(2, true);
             this.min_sp = header.getUint16(4, true);
@@ -128,6 +193,9 @@ const app = Vue.createApp({
         plot() {
             if (this.chart) {
                 this.chart.destroy();
+            }
+            if (this.total == 0) {
+                return;
             }
             const ctx = document.getElementById("histogram").getContext('2d');
             this.chart = new Chart(ctx, {
@@ -205,7 +273,7 @@ const app = Vue.createApp({
             this.device.addEventListener('gattserverdisconnected', (event) => {
                 const dev = event.target;
                 console.log(`device ${dev.name} is disconnected.`);
-                this.sp_meas_only = true;
+                this.format = 1;
             });
 
             // 接続実行
@@ -213,15 +281,6 @@ const app = Vue.createApp({
             this.is_gatt_busy = true;
             const server = await this.device.gatt.connect();
             this.service = await server.getPrimaryService(ATLAS_SERVICE);
-            chars = await this.service.getCharacteristics();
-            console.log("gettting a list of charecteristics...");
-            this.has_write_rom_char = false;
-            for (let i = 0; i < chars.length; ++i) {
-                const ch = chars[i].uuid;
-                if (ch == "32150010-9a86-43ac-b15f-200ed1b7a72a") {
-                    this.has_write_rom_char = true;
-                }
-            }
             this.is_gatt_busy = false;
             console.log("connecting...done");
         },
@@ -284,10 +343,50 @@ const app = Vue.createApp({
         //---------------------------------------------------------------------
         async connect_to_atlas() {
             await this.connect();
+            await this.check_version();
             await this.read_params();
         },
         async disconnect_from_atlas() {
             await this.disconnect();
+        },
+        async check_version() {
+            this.version = 0x1100;
+            // すべてのキャラクタリスティックを取得
+            const chars = await this.service.getCharacteristics();
+            for (let i = 0; i < chars.length; ++i) {
+                const uuid = chars[i].uuid;
+                console.log(uuid);
+
+                // デバイス情報を読み取れるキャラクタリスティック
+                // ver.1.2.0 以降に実装されている
+                if (uuid == "32150060-9a86-43ac-b15f-200ed1b7a72a") {
+                    // デバイス情報を取得する
+                    const characteristic = await this.get_characteristic(uuid);
+                    const data = await characteristic.readValue();
+
+                    // バージョン（リトルエンディアン）
+                    this.version = data.getUint16(0, true);
+
+                    // コンディション（リトルエンディアン）
+                    const cond = data.getUint16(2, true);
+                    // 0000 0011
+                    this.format = (cond & 0b11);
+                    // 0000 0100
+                    this.switch_less = (cond & 0b100) > 0 ? true : false;
+                    // 0001 1000
+                    this.num_elrs = ((cond & 0b11000) >> 3) + 1;
+
+                    // モーターの最大回転数
+                    this.elr1_max_rpm = data.getUint8(4);
+                    this.elr2_max_rpm = data.getUint8(5);
+                }
+                // パラメータをROMに書き込むかどうかを設定するためのキャラクタリスティック
+                // ver. 1.1.0 以前に実装されていて、現在は廃止
+                else if (uuid == "32150010-9a86-43ac-b15f-200ed1b7a72a") {
+                    this.version = 0x1000;
+                }
+            }
+            console.log("version == 0x" + this.version.toString(16));
         },
         async read_params() {
             console.log("reading params...");
@@ -298,7 +397,7 @@ const app = Vue.createApp({
             console.log("writing params...");
             // 値が有効な場合のみ
             if (document.getElementById("elr1-sp").checkValidity() &&
-                (this.num_motors == 1 || document.getElementById("elr2-sp").checkValidity()) &&
+                (this.num_elrs == 1 || document.getElementById("elr2-sp").checkValidity()) &&
                 document.getElementById("delay").checkValidity() &&
                 document.getElementById("latency").checkValidity())
             {
@@ -306,20 +405,18 @@ const app = Vue.createApp({
                     "32150001-9a86-43ac-b15f-200ed1b7a72a",
                     this.serialize_params()
                 );
-                // 本体ROMへパラメータを記憶させる
-                if (this.has_write_rom_char) {
-                    await this.store_params();
+                // Ver.1.0.0のみ本体ROMへパラメータを記録させる
+                // Ver.1.1.0以降のバージョンでは、"32150001-9a86-43ac-b15f-200ed1b7a72a" の中で記録される
+                if (this.version === 0x1000) {
+                    console.log("storing params in flash memory...");
+                    await this.write(
+                        "32150010-9a86-43ac-b15f-200ed1b7a72a",
+                        new Uint8Array([1])
+                    );
                 }
                 return;
             }
             alert("値が適切ではありません");
-        },
-        async store_params() {
-            console.log("storing params in flash memory...");
-            await this.write(
-                "32150010-9a86-43ac-b15f-200ed1b7a72a",
-                new Uint8Array([1])
-            );
         },
         async launch() {
             console.log("launching beyblade...");
@@ -336,11 +433,9 @@ const app = Vue.createApp({
                 console.log("reading data...");
                 hists[i] = await this.read("32150031-9a86-43ac-b15f-200ed1b7a72a");
             }
-            const result = this.deserialize_data(headr, hists);
+            this.deserialize_data(headr, hists);
             console.log("reading data...done");
-            if (result) {
-                this.plot();
-            }
+            this.plot();
         },
         async clear_shoot_data() {
             if (confirm("コントローラ内のデータを初期化しますか？")) {

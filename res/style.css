@@ -13,7 +13,7 @@ h1.heading {
     background-color: #e2eef5;
 }
 
-h1.heading:first-child {
+h1.heading:first-of-type {
     margin-top: 0;
 }
 
@@ -38,6 +38,15 @@ h1.heading span {
         0 8px 10px 1px rgba(0, 0, 0, 0.14),
         0 3px 14px 2px rgba(0, 0, 0, 0.12),
         0 5px 5px -3px rgba(0, 0, 0, 0.2)
+}
+
+.hidden {
+    display: none;
+}
+
+#version-info {
+    font-size: x-small;
+    font-style: italic;
 }
 
 /******************************************************************************
