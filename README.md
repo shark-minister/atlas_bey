@@ -802,9 +802,9 @@ SP計測器専用（ATLAS lite）での配線は以下の通りです。
 <img width="600" alt="wiring_compact" src="https://github.com/user-attachments/assets/d5d03ed4-40e4-42b1-85ed-b06e3847521f" />
 </p>
 
-### 4-2-1. BTS79608
+### 4-2-1. BTS7960
 
-モータードライバー BTS79608 の配線は以下の通りです。
+モータードライバー BTS7960 の配線は以下の通りです。
 
 > [!IMPORTANT]
 > モータードライバーと電源・モーター間のケーブルは大きい電流が流れるので、1.25sq以上の太さのケーブルを使ってください。
@@ -812,7 +812,7 @@ SP計測器専用（ATLAS lite）での配線は以下の通りです。
 
 <table>
   <tr>
-    <th>BTS79608</th>
+    <th>BTS7960</th>
     <th>ESP32-C3</th>
     <th>モーター</th>
     <th>電源 (7.2V)</th>
