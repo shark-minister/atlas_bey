@@ -36,7 +36,7 @@ const app = Vue.createApp({
     data() {
         return {
             //-----------------------------------------------------------------
-            // デバイス情報
+            // デバイス実装情報
             //-----------------------------------------------------------------
             /*
                 バージョン（16ビット整数）
@@ -96,12 +96,15 @@ const app = Vue.createApp({
         }
     },
     computed: {
+        // ボタンが押せる状態かどうか
         is_button_busy() {
             return this.device === null || this.is_gatt_busy;
         },
+        // デバイスがSP計測器オンリーの実装か
         is_sp_meas_only() {
             return this.format === 1;
         },
+        // バージョン表記
         version_str() {
             return (
                 (this.version >> 12).toString() + "." +
@@ -112,62 +115,279 @@ const app = Vue.createApp({
     },
     methods: {
         //---------------------------------------------------------------------
-        // データ
+        // Bluetooth Low Energy
         //---------------------------------------------------------------------
-        serialize_params() {
-            return new Uint8Array([
-                this.is_bbp_sp_main ? 8 : 0,
-                this.latency / 10,
-                this.delay / 2,
-                this.elr1.serialize_flag(),
-                this.elr1.sp / 100,
-                this.elr2.serialize_flag(),
-                this.elr2.sp / 100
-            ]);
+        // 接続
+        async connect() {
+            // デバイスが見つかっていなければ
+            if (this.device == null) {
+                // スキャン実行
+                console.log("finding device...");
+                this.is_gatt_busy = true;
+                this.device = await navigator.bluetooth.requestDevice({
+                    filters: [{
+                        // サービス名は固定
+                        services: [ATLAS_SERVICE],
+                    }]
+                });
+                console.log("finding device...done");
+            }
+            
+            // GATTサービスに接続済みであれば
+            if (this.device.gatt.connected && this.service) {
+                return;
+            }
+
+            // デバイスが切断されたときのコールバックを登録
+            this.device.addEventListener('gattserverdisconnected', (event) => {
+                const dev = event.target;
+                console.log(`device ${dev.name} is disconnected.`);
+                this.format = 1;
+            });
+
+            // 接続実行
+            console.log("connecting...");
+            this.is_gatt_busy = true;
+            const server = await this.device.gatt.connect();
+            this.service = await server.getPrimaryService(ATLAS_SERVICE);
+            this.is_gatt_busy = false;
+            console.log("connecting...done");
         },
-        deserialize_params(data) {
+        // キャラクタリスティックの取得
+        async get_characteristic(uuid) {
+            console.log('getting characteristic...');
+            if (this.last_uuid != uuid) {
+                this.is_gatt_busy = true;
+                this.last_characteristic = await this.service.getCharacteristic(uuid);
+                this.is_gatt_busy = false;
+            }
+            return this.last_characteristic;
+        },
+        // キャラクタリスティックの読み出し
+        async read(uuid)
+        {
+            try {
+                await this.connect();
+                console.log("reading characteristic...");
+                this.is_gatt_busy = true;
+                const characteristic = await this.get_characteristic(uuid);
+                const data = await characteristic.readValue();
+                this.is_gatt_busy = false;
+                console.log("reading characteristic...done");
+                return data;
+            }
+            catch (error) {
+                console.log("error: " + error);
+            }
+        },
+        // キャラクタリスティックの書き込み
+        async write(uuid, value)
+        {
+            try {
+                await this.connect();
+                console.log("writing characteristic...");
+                this.is_gatt_busy = true;
+                const characteristic = await this.get_characteristic(uuid);
+                await characteristic.writeValue(value);
+                this.is_gatt_busy = false;
+                console.log("writing characteristic...done");
+                return;
+            }
+            catch (error) {
+                console.log("error: " + error);
+            }
+        },
+        // 切断
+        async disconnect() {
+            if (this.device == null) {
+                return;
+            }
+            if (this.device.gatt.connected) {
+                console.log("disconnecting...");
+                this.is_gatt_busy = true;
+                await this.device.gatt.disconnect();
+                this.is_gatt_busy = false;
+                console.log("disconnecting...done");
+            }
+            this.device = null;
+        },
+        //---------------------------------------------------------------------
+        // Actions
+        //---------------------------------------------------------------------
+        // ATLASに接続する
+        async connect_to_atlas() {
+            await this.connect();
+            await this.check_version();
+            await this.read_params();
+        },
+        // ATLASから切断する
+        async disconnect_from_atlas() {
+            await this.disconnect();
+        },
+        // ATLASのバージョンを確認する
+        async check_version() {
+            // デフォルトのバージョン
+            this.version = 0x1100;
+            // デバイスのキャラクタリスティック一覧を取得
+            const chars = await this.service.getCharacteristics();
+            for (let i = 0; i < chars.length; ++i) {
+                // キャラクタリスティックのUUIDを取得
+                const uuid = chars[i].uuid;
+                console.log(uuid);
+
+                // ver.1.2.0 以降かどうかの判断
+                // デバイス情報を読み取れるキャラクタリスティックの実装
+                if (uuid == "32150060-9a86-43ac-b15f-200ed1b7a72a") {
+                    // デバイス情報を取得する
+                    const characteristic = await this.get_characteristic(uuid);
+                    const data = await characteristic.readValue();
+
+                    // バージョン取得（リトルエンディアン）
+                    this.version = data.getUint16(0, true);
+
+                    // コンディション取得（リトルエンディアン）
+                    const cond = data.getUint16(2, true);
+                    /*
+                        実装フォーマット（マスク：0000 0011） 
+                        - `0`: 電動ランチャー制御器
+                        - `1`: SP測定器
+                        - `2`: 予備
+                        - `3`: 予備
+                    */
+                    this.format = (cond & 0b11);
+                    /*
+                        スイッチレスか否か（マスク：0000 0100） 
+                        - false: スイッチあり
+                        - true: スイッチなし
+                    */
+                    this.switch_less = (cond & 0b100) > 0 ? true : false;
+                    /*
+                        電動ランチャーは2台構成か否か（マスク：0001 1000） 
+                        - `0`: モータは1台構成
+                        - `1`: モータは2台構成
+                        - `2`: 予備
+                        - `3`: 予備
+                    */
+                    this.num_elrs = ((cond & 0b11000) >> 3) + 1;
+
+                    // モーターの最大回転数
+                    this.elr1_max_rpm = data.getUint8(4);
+                    this.elr2_max_rpm = data.getUint8(5);
+                }
+                // パラメータをROMに書き込むかどうかを設定するためのキャラクタリスティック
+                // ver. 1.1.0 以前に実装されていて、現在は廃止
+                else if (uuid == "32150010-9a86-43ac-b15f-200ed1b7a72a") {
+                    this.version = 0x1000;
+                }
+            }
+            console.log("version == 0x" + this.version.toString(16));
+        },
+        // パラメータを読み出す
+        async read_params() {
+            console.log("reading params...");
+            const data = await this.read("32150001-9a86-43ac-b15f-200ed1b7a72a");
+            
             // 先頭の1バイトを取得
             const first_byte = data.getUint8(0);
             // 0000 0001
-            this.elr2_auto      = (first_byte & 0b1) > 0;
+            this.elr2_auto = (first_byte & 0b1) > 0;
             // 0000 1000
-            this.is_bbp_sp_main = (first_byte & 0b1000) > 0 ? true : false;
+            this.is_bbp_sp_main = (first_byte & 0b1000) > 0;
 
-            // Ver.1.2未満は、デバイス情報を取得するキャラクタリスティックがない一方、
-            // 一部の情報はパラメータに入っているので、取得する。
+            // Ver.1.2未満には、デバイス情報を取得するキャラクタリスティックがない。
+            // したがって、必要な情報はパラメータから取得する。
             // これらの値は読み込み専用
             if (this.version < 0x1200) {
                 console.log("version < 0x1200: read format, switch less, #elrs from params");
                 // 0000 0010
                 this.format = (first_byte & 0b10) > 0 ? 1 : 0;
                 // 0000 0100
-                this.switch_less = (first_byte & 0b100) > 0 ? true : false;
+                this.switch_less = (first_byte & 0b100) > 0;
                 // 0001 0000
                 this.num_elrs = (first_byte & 0b10000) > 0 ? 2 : 1;
             }
 
-            // レイテンシー（オートモードの猶予時間 /ms）
+            // 射出猶予時間 [ms]
+            // 値は 1/10 で送られてくる
             this.latency = data.getUint8(1) * 10;
-            // ベイ射出遅延時間 /ms
+            // ベイ射出遅延時間 [ms]
+            // 値は 1/2 で送られてくる
             this.delay = data.getUint8(2) * 2;
             // 電動ランチャー1の設定
             this.elr1.deserialize_flag(data.getUint8(3));
-            // 電動ランチャー1のSP値 /rpm
+            // 電動ランチャー1のSP値 [rpm]
+            // 値は 1/100 で送られてくる
             this.elr1.sp = data.getUint8(4) * 100;
             // 電動ランチャー2の設定
             this.elr2.deserialize_flag(data.getUint8(5));
-            // 電動ランチャー2のSP値 /rpm
-            this.elr2.sp = data.getUint8(6) * 100;    
+            // 値は 1/100 で送られてくる
+            // 電動ランチャー2のSP値 [rpm]
+            this.elr2.sp = data.getUint8(6) * 100;   
         },
-        deserialize_data(header, hists) {
+        // パラメータを書き込む
+        async write_params() {
+            console.log("writing params...");
+            // 値が有効な場合のみ
+            if (document.getElementById("elr1-sp").checkValidity() &&
+                (this.num_elrs == 1 || document.getElementById("elr2-sp").checkValidity()) &&
+                document.getElementById("delay").checkValidity() &&
+                document.getElementById("latency").checkValidity())
+            {
+                const flag = (this.elr2_auto ? 0b1 : 0) |
+                             (this.is_bbp_sp_main ? 0b1000 : 0);
+                await this.write(
+                    "32150001-9a86-43ac-b15f-200ed1b7a72a",
+                    new Uint8Array([
+                        flag,
+                        this.latency / 10,
+                        this.delay / 2,
+                        this.elr1.serialize_flag(),
+                        this.elr1.sp / 100,
+                        this.elr2.serialize_flag(),
+                        this.elr2.sp / 100
+                    ])
+                );
+                // Ver.1.0.0のみ本体ROMへパラメータを記録させる
+                // Ver.1.1.0以降のバージョンでは、"32150001-9a86-43ac-b15f-200ed1b7a72a" の中で記録される
+                if (this.version === 0x1000) {
+                    console.log("storing params in flash memory...");
+                    await this.write(
+                        "32150010-9a86-43ac-b15f-200ed1b7a72a",
+                        new Uint8Array([1])
+                    );
+                }
+                return;
+            }
+            alert("値が適切ではありません");
+        },
+        // マニュアル射出
+        async launch() {
+            console.log("launching beyblade...");
+            await this.write(
+                "32150020-9a86-43ac-b15f-200ed1b7a72a",
+                new Uint8Array([1])
+            );
+        },
+        // シュートデータの読み出し
+        async read_shoot_data() {
+            // ヘッダ情報
+            console.log("reading header...");
+            const headr = await this.read("32150030-9a86-43ac-b15f-200ed1b7a72a");
+            const hists = [null, null, null];
+            // ヒストグラムデータ（3回読む）
+            for (let i = 0; i < 3; i += 1) {
+                console.log("reading data...");
+                hists[i] = await this.read("32150031-9a86-43ac-b15f-200ed1b7a72a");
+            }
+
             // ヘッダ情報（全てリトルエンディアン）
-            this.total = header.getUint16(0, true);
-            this.max_sp = header.getUint16(2, true);
-            this.min_sp = header.getUint16(4, true);
-            this.avg_sp = header.getUint16(6, true);
-            this.std_sp = header.getUint16(8, true);
-            this.hist_begin = header.getUint8(10);
-            this.hist_end = header.getUint8(11);
+            this.total = headr.getUint16(0, true);
+            this.max_sp = headr.getUint16(2, true);
+            this.min_sp = headr.getUint16(4, true);
+            this.avg_sp = headr.getUint16(6, true);
+            this.std_sp = headr.getUint16(8, true);
+            this.hist_begin = headr.getUint8(10);
+            this.hist_end = headr.getUint8(11);
 
             if (this.total > 0) {
                 // ヒストグラムのビン数
@@ -182,15 +402,36 @@ const app = Vue.createApp({
                     this.data[i - this.hist_begin] = hists[block].getUint8(index);
                     this.label[i - this.hist_begin] = String(4000 + i * 200);
                 }
-                return true;
             }
             else {
                 this.label = []
                 this.data = []
-                return false;
+            }
+
+            console.log("reading data...done");
+            await this.plot();
+        },
+        async clear_shoot_data() {
+            if (confirm("コントローラ内のデータを初期化しますか？")) {
+                console.log("clearing data...");
+                await this.write(
+                    "32150040-9a86-43ac-b15f-200ed1b7a72a",
+                    new Uint8Array([1])
+                );
+                console.log("clearing data...done");
             }
         },
-        plot() {
+        async switch_to_automode() {
+            if (confirm("コントローラを計測モード(A)に切り替えますか？")) {
+                console.log("switching...");
+                await this.write(
+                    "32150050-9a86-43ac-b15f-200ed1b7a72a",
+                    new Uint8Array([1])
+                );
+                console.log("switching...done");
+            }
+        },
+        async plot() {
             if (this.chart) {
                 this.chart.destroy();
             }
@@ -245,217 +486,6 @@ const app = Vue.createApp({
                     },
                 }
             });
-        },
-        //---------------------------------------------------------------------
-        // Bluetooth Low Energy
-        //---------------------------------------------------------------------
-        async connect() {
-            // デバイスが見つかっていなければ
-            if (this.device == null) {
-                // スキャン実行
-                console.log("finding device...");
-                this.is_gatt_busy = true;
-                this.device = await navigator.bluetooth.requestDevice({
-                    filters: [{
-                        // サービス名は固定
-                        services: [ATLAS_SERVICE],
-                    }]
-                });
-                console.log("finding device...done");
-            }
-            
-            // GATTサービスに接続済みであれば
-            if (this.device.gatt.connected && this.service) {
-                return;
-            }
-
-            // デバイスが切断されたときのコールバックを登録
-            this.device.addEventListener('gattserverdisconnected', (event) => {
-                const dev = event.target;
-                console.log(`device ${dev.name} is disconnected.`);
-                this.format = 1;
-            });
-
-            // 接続実行
-            console.log("connecting...");
-            this.is_gatt_busy = true;
-            const server = await this.device.gatt.connect();
-            this.service = await server.getPrimaryService(ATLAS_SERVICE);
-            this.is_gatt_busy = false;
-            console.log("connecting...done");
-        },
-        async get_characteristic(uuid) {
-            console.log('getting characteristic...');
-            if (this.last_uuid != uuid) {
-                this.is_gatt_busy = true;
-                this.last_characteristic = await this.service.getCharacteristic(uuid);
-                this.is_gatt_busy = false;
-            }
-            return this.last_characteristic;
-        },
-        async read(uuid)
-        {
-            try {
-                await this.connect();
-                console.log("reading characteristic...");
-                this.is_gatt_busy = true;
-                const characteristic = await this.get_characteristic(uuid);
-                const data = await characteristic.readValue();
-                this.is_gatt_busy = false;
-                console.log("reading characteristic...done");
-                return data;
-            }
-            catch (error) {
-                console.log("error: " + error);
-            }
-        },
-        async write(uuid, value)
-        {
-            try {
-                await this.connect();
-                console.log("writing characteristic...");
-                this.is_gatt_busy = true;
-                const characteristic = await this.get_characteristic(uuid);
-                await characteristic.writeValue(value);
-                this.is_gatt_busy = false;
-                console.log("writing characteristic...done");
-                return;
-            }
-            catch (error) {
-                console.log("error: " + error);
-            }
-        },
-        async disconnect() {
-            if (this.device == null) {
-                return;
-            }
-            if (this.device.gatt.connected) {
-                console.log("disconnecting...");
-                this.is_gatt_busy = true;
-                await this.device.gatt.disconnect();
-                this.is_gatt_busy = false;
-                console.log("disconnecting...done");
-            }
-            this.device = null;
-        },
-        //---------------------------------------------------------------------
-        // Actions
-        //---------------------------------------------------------------------
-        async connect_to_atlas() {
-            await this.connect();
-            await this.check_version();
-            await this.read_params();
-        },
-        async disconnect_from_atlas() {
-            await this.disconnect();
-        },
-        async check_version() {
-            this.version = 0x1100;
-            // すべてのキャラクタリスティックを取得
-            const chars = await this.service.getCharacteristics();
-            for (let i = 0; i < chars.length; ++i) {
-                const uuid = chars[i].uuid;
-                console.log(uuid);
-
-                // デバイス情報を読み取れるキャラクタリスティック
-                // ver.1.2.0 以降に実装されている
-                if (uuid == "32150060-9a86-43ac-b15f-200ed1b7a72a") {
-                    // デバイス情報を取得する
-                    const characteristic = await this.get_characteristic(uuid);
-                    const data = await characteristic.readValue();
-
-                    // バージョン（リトルエンディアン）
-                    this.version = data.getUint16(0, true);
-
-                    // コンディション（リトルエンディアン）
-                    const cond = data.getUint16(2, true);
-                    // 0000 0011
-                    this.format = (cond & 0b11);
-                    // 0000 0100
-                    this.switch_less = (cond & 0b100) > 0 ? true : false;
-                    // 0001 1000
-                    this.num_elrs = ((cond & 0b11000) >> 3) + 1;
-
-                    // モーターの最大回転数
-                    this.elr1_max_rpm = data.getUint8(4);
-                    this.elr2_max_rpm = data.getUint8(5);
-                }
-                // パラメータをROMに書き込むかどうかを設定するためのキャラクタリスティック
-                // ver. 1.1.0 以前に実装されていて、現在は廃止
-                else if (uuid == "32150010-9a86-43ac-b15f-200ed1b7a72a") {
-                    this.version = 0x1000;
-                }
-            }
-            console.log("version == 0x" + this.version.toString(16));
-        },
-        async read_params() {
-            console.log("reading params...");
-            const data = await this.read("32150001-9a86-43ac-b15f-200ed1b7a72a");
-            this.deserialize_params(data);
-        },
-        async write_params() {
-            console.log("writing params...");
-            // 値が有効な場合のみ
-            if (document.getElementById("elr1-sp").checkValidity() &&
-                (this.num_elrs == 1 || document.getElementById("elr2-sp").checkValidity()) &&
-                document.getElementById("delay").checkValidity() &&
-                document.getElementById("latency").checkValidity())
-            {
-                await this.write(
-                    "32150001-9a86-43ac-b15f-200ed1b7a72a",
-                    this.serialize_params()
-                );
-                // Ver.1.0.0のみ本体ROMへパラメータを記録させる
-                // Ver.1.1.0以降のバージョンでは、"32150001-9a86-43ac-b15f-200ed1b7a72a" の中で記録される
-                if (this.version === 0x1000) {
-                    console.log("storing params in flash memory...");
-                    await this.write(
-                        "32150010-9a86-43ac-b15f-200ed1b7a72a",
-                        new Uint8Array([1])
-                    );
-                }
-                return;
-            }
-            alert("値が適切ではありません");
-        },
-        async launch() {
-            console.log("launching beyblade...");
-            await this.write(
-                "32150020-9a86-43ac-b15f-200ed1b7a72a",
-                new Uint8Array([1])
-            );
-        },
-        async read_shoot_data() {
-            console.log("reading header...");
-            const headr = await this.read("32150030-9a86-43ac-b15f-200ed1b7a72a");
-            const hists = [null, null, null];
-            for (let i = 0; i < 3; i += 1) {
-                console.log("reading data...");
-                hists[i] = await this.read("32150031-9a86-43ac-b15f-200ed1b7a72a");
-            }
-            this.deserialize_data(headr, hists);
-            console.log("reading data...done");
-            this.plot();
-        },
-        async clear_shoot_data() {
-            if (confirm("コントローラ内のデータを初期化しますか？")) {
-                console.log("clearing data...");
-                await this.write(
-                    "32150040-9a86-43ac-b15f-200ed1b7a72a",
-                    new Uint8Array([1])
-                );
-                console.log("clearing data...done");
-            }
-        },
-        async switch_to_automode() {
-            if (confirm("コントローラを計測モード(A)に切り替えますか？")) {
-                console.log("switching...");
-                await this.write(
-                    "32150050-9a86-43ac-b15f-200ed1b7a72a",
-                    new Uint8Array([1])
-                );
-                console.log("switching...done");
-            }
         }
     }
 })

@@ -3,15 +3,16 @@
     Copyright (C) 2025  Shark Minister
     All right reserved.
 */
-#include "statistics.hh"
+#include "stats.hh"
 
+// C++標準ライブラリ
 #include <cmath>
 
 namespace atlas
 {
 //-----------------------------------------------------------------------------
 
-void Statistics::Header::clear() noexcept
+void Statistics::Header::init() noexcept
 {
     total = 0;
     max_sp = 0;
@@ -22,7 +23,7 @@ void Statistics::Header::clear() noexcept
     hist_end = 0;
 }
 
-void Statistics::Histogram::clear() noexcept
+void Statistics::Histogram::init() noexcept
 {
     // ヒストグラムのクリア
     for (std::uint32_t i = 0; i < HIST_LENGTH; ++i)
@@ -31,15 +32,15 @@ void Statistics::Histogram::clear() noexcept
     }
 }
 
-void Statistics::clear() noexcept
+void Statistics::init() noexcept
 {
     // ヘッダ情報のクリア
-    _header.clear();
+    _header.init();
 
     // ヒストグラムのクリア
     for (std::uint32_t i = 0; i < NUM_HISTS; ++i)
     {
-        _hists[i].clear();
+        _hists[i].init();
     }
 
     _latest_sp = 0;
@@ -94,8 +95,7 @@ void Statistics::update(std::uint16_t sp) noexcept
     _header.avg_sp = static_cast<std::uint16_t>(_avg_sp_tmp);
 
     // 標準偏差
-    _std_sp_tmp = std::sqrt(
-        _sum_sp2 / _header.total - _avg_sp_tmp * _avg_sp_tmp);
+    _std_sp_tmp = std::sqrt(_sum_sp2 / _header.total - _avg_sp_tmp * _avg_sp_tmp);
     _header.std_sp = static_cast<std::uint16_t>(_std_sp_tmp);
 
     // 最新SP

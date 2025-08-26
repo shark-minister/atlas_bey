@@ -11,6 +11,9 @@
 // C++標準ライブラリ
 #include <cstdint>  // std::uint8_t
 
+// ATLAS
+#include "setting.hh"
+
 namespace atlas
 {
 //-----------------------------------------------------------------------------

@@ -159,21 +159,10 @@ public:
     }
 
     //! プロファイルの解析（誤計測検知）
-    void calc_true_sp();
+    void analyze_profile();
 
     //! 解析データのクリア
     void clear();
-
-/*
-    //! シュートの加速度を返す
-    inline std::uint16_t acceleration() const
-    {
-        return _accel;
-    }
-
-    //! シュートの期待SP値を返す
-    std::uint16_t exp_sp() const noexcept;
-*/
 
 private:
     /*
@@ -215,9 +204,6 @@ private:
 
     //! 最大のシュートパワー値
     std::uint16_t _max_sp = 0;
-
-    //! シュート加速度
-    //double _accel = 0.0;
 };
 
 //-----------------------------------------------------------------------------

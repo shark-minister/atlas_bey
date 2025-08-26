@@ -48,14 +48,14 @@ public:
         std::uint8_t hist_begin;
         std::uint8_t hist_end;
 
-        void clear() noexcept;
+        void init() noexcept;
     };
 
     //! ヒストグラム
     struct Histogram
     {
         std::uint8_t data[HIST_LENGTH];
-        void clear() noexcept;
+        void init() noexcept;
         inline void increment(std::uint32_t index) noexcept
         {
             data[index] += 1;
@@ -114,8 +114,8 @@ public:
         return &(_hists[i]);
     }
 
-    //! 統計データをクリアする
-    void clear() noexcept;
+    //! 統計データを初期化する
+    void init() noexcept;
 
     /*!
         @brief  統計情報を更新する

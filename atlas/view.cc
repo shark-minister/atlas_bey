@@ -15,7 +15,7 @@
 
 namespace atlas
 {
-//-----------------------------------------------------------------------------
+//=============================================================================
 
 ViewBase::ViewBase(Adafruit_GFX& driver,
                    const Statistics& data,
@@ -51,9 +51,9 @@ void ViewBase::_number(std::int16_t x,
     _driver->print(number);
 }
 
-//-----------------------------------------------------------------------------
+//=============================================================================
 // スプラッシュスクリーン
-//-----------------------------------------------------------------------------
+//=============================================================================
 void ViewBase::splash_screen()
 {
     // セマフォの取得
@@ -63,7 +63,17 @@ void ViewBase::splash_screen()
     this->_clear_display();
     
     // さめ大臣のロゴ表示
-    this->_image(26, 6, img::shark_minister_logo, 76, 52);
+    this->_image(26, 8, img::shark_minister_logo, 76, 52);
+
+    // バージョン表記
+    _driver->setTextColor(_color);
+    char buf[16];
+    auto n = std::sprintf(buf, "%u.%u.%u",
+                          MAJOR_VERSION, MINOR_VERSION, REVISION);
+    this->_text(128-n*6, 0, 1, buf);
+#if SP_MEAS_ONLY > 0
+    this->_text(122, 8, 1, "L");
+#endif
 
     // 表示
     this->_show_display();
@@ -72,9 +82,31 @@ void ViewBase::splash_screen()
     xSemaphoreGive(_smp);
 }
 
-//-----------------------------------------------------------------------------
+void ViewBase::image(std::int16_t x,
+                     std::int16_t y,
+                     const std::uint8_t* bitmap,
+                     std::int16_t w,
+                     std::int16_t h)
+{
+    // セマフォの取得
+    xSemaphoreTake(_smp, portMAX_DELAY);
+
+    // 画面のクリア
+    this->_clear_display();
+    
+    // 画像表示
+    this->_image(x, y, bitmap, w, h);
+
+    // 表示
+    this->_show_display();
+
+    // セマフォの開放
+    xSemaphoreGive(_smp);
+}
+
+//=============================================================================
 // マニュアルモード
-//-----------------------------------------------------------------------------
+//=============================================================================
 void ViewBase::manual_mode()
 {
     // セマフォの取得
@@ -96,53 +128,54 @@ void ViewBase::manual_mode()
         this->_text(26, 8, 1, "*");
     }
 
-//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    // SP表示
+    this->_text(44, 0, 1, "SP-VIEW");
+    this->_text(56, 8, 1, _params->is_bbp_sp_main() ? "BBP" : "EST");
+
+//-----------------------------------------------------------------------------
 #if SP_MEAS_ONLY == 0  // 電動ランチャー制御として使う場合
-//>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-    // オートモードにおける発射待機時間
-    this->_text(44, 0, 1, "LATENCY");
-    this->_number(44, 8, 1, _params->latency());
-
-    // オートモードにおける発射遅延時間
-    this->_text(92, 0, 1, "DELAY");
-    this->_number(92, 8, 1, _params->delay());
-
+//-----------------------------------------------------------------------------
     // ラベル
-    this->_text(0, 19, 1, " ENABLED");
-    this->_text(0, 27, 1, "ROTATION");
-    this->_text(0, 35, 1, " S.POWER");
+    this->_text(0, 19, 1, "ELR1");
+    this->_text(0, 27, 1, "ELR2");
+    this->_text(0, 35, 1, "LTN");
+    this->_text(66, 35, 1, "DEL");
 
     // 電動ランチャー1の設定
-    this->_text(58, 19, 1, _params->automode_elr_index() == 0 ? "A" : "-");
-    this->_text(64, 19, 1, "/");
-    this->_text(70, 19, 1, _params->elr1().enabled_manual() ? "M" : "-");
-    this->_text(58, 27, 1, _params->elr1().is_right() ? "R" : "L");
-    this->_number(58, 35, 1, _params->elr1().sp());
+    this->_text(30, 19, 1, _params->automode_elr_index() == 0 ? "A" : "-");
+    this->_text(36, 19, 1, _params->elr1().enabled_manual() ? "M" : "-");
+    this->_text(48, 19, 1, _params->elr1().is_right() ? "R" : "L");
+    this->_number(60, 19, 1, _params->elr1().sp());
+    this->_number(96, 19, 1, MOTOR1_MAX_RPM);
 
     // 電動ランチャー2の設定
     if constexpr (NUM_MOTORS == 2)
     {
-        this->_text(98, 19, 1, _params->automode_elr_index() == 1 ? "A" : "-");
-        this->_text(104, 19, 1, "/");
-        this->_text(110, 19, 1, _params->elr2().enabled_manual() ? "M" : "-");
-        this->_text(98, 27, 1, _params->elr2().is_right() ? "R" : "L");
-        this->_number(98, 35, 1, _params->elr2().sp());
+        this->_text(30, 27, 1, _params->automode_elr_index() == 1 ? "A" : "-");
+        this->_text(36, 27, 1, _params->elr2().enabled_manual() ? "M" : "-");
+        this->_text(48, 27, 1, _params->elr2().is_right() ? "R" : "L");
+        this->_number(60, 27, 1, _params->elr2().sp());
+        this->_number(96, 27, 1, MOTOR2_MAX_RPM);
     }
     else
     {
-        this->_text(98, 19, 1, "-");
-        this->_text(98, 27, 1, "-");
-        this->_text(98, 35, 1, "-");
+        this->_text(30, 27, 1, "-- - ----- -----");
     }
-//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+    // オートモードにおける発射待機時間
+    this->_number(24, 35, 1, _params->latency());
+
+    // オートモードにおける発射遅延時間
+    this->_number(90, 35, 1, _params->delay());
+//-----------------------------------------------------------------------------
 #else  // #if SP_MEAS_ONLY == 0
-//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+//-----------------------------------------------------------------------------
     this->_text(22, 19, 1, "WEB CLIENT APP");
     this->_text(0, 27, 1, "https://shark-ministe");
     this->_text(0, 35, 1, "r.github.io/atlas_bey");
-//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+//-----------------------------------------------------------------------------
 #endif  // #if SP_MEAS_ONLY == 0
-//<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+//-----------------------------------------------------------------------------
 
     _driver->drawLine(0, 45, 128, 45, _color);
 
@@ -165,9 +198,9 @@ void ViewBase::manual_mode()
     xSemaphoreGive(_smp);
 }
 
-//-----------------------------------------------------------------------------
+//=============================================================================
 // オートモード
-//-----------------------------------------------------------------------------
+//=============================================================================
 
 struct CountDownImage
 {
@@ -219,9 +252,9 @@ void ViewBase::auto_mode_promotion()
         ベイバトルパスを起動して
         ボタンを長押しして下さい
     */
-    this->_text(4, 20, 1, "START YOUR PASS AND");
-    this->_text(4, 28, 1, "HOLD DOWN THE BUTTON");
-    this->_image(4, 39, img::promotion_BBP, 119, 22);
+    this->_text(4, 22, 1, "START YOUR PASS AND");
+    this->_text(4, 30, 1, "HOLD DOWN THE BUTTON");
+    this->_image(4, 42, img::promotion_BBP, 119, 22);
 
     // 表示
     this->_show_display();
@@ -410,13 +443,13 @@ void ViewBase::_auto_mode_header()
     // 電動ランチャーの状態
     if (_state->elr_enabled())
     {
-        this->_number(29, 0, 1, _params->automode_elr_index()+1);
-        this->_text(29, 8, 1, _params->automode_elr().is_right() ? "R" : "L");
+        this->_number(27, 0, 1, _params->automode_elr_index()+1);
+        this->_text(27, 8, 1, _params->automode_elr().is_right() ? "R" : "L");
     }
     else
     {
-        this->_text(29, 0, 1, "-");
-        this->_text(29, 8, 1, "-");
+        this->_text(27, 0, 1, "-");
+        this->_text(27, 8, 1, "-");
     }
 
     // 最大
@@ -434,5 +467,5 @@ void ViewBase::_auto_mode_header()
     this->_number(104, 8, 1, _data->std_sp());
 }
 
-//-----------------------------------------------------------------------------
+//=============================================================================
 } // namespace atlas

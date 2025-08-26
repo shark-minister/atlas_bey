@@ -18,7 +18,16 @@
 // ATLAS
 #include "params.hh"
 #include "state.hh"
-#include "statistics.hh"
+#include "stats.hh"
+#include "setting.hh"
+
+#if DISPLAY_DRIVER == ADAFRUIT_SH1106G
+#include <Adafruit_SH110X.h>
+typedef  Adafruit_SH1106G  DisplayDriver;
+#elif DISPLAY_DRIVER == ADAFRUIT_SSD1306
+#include <Adafruit_SSD1306.h>
+typedef  Adafruit_SSD1306  DisplayDriver;
+#endif
 
 namespace atlas
 {
@@ -48,7 +57,21 @@ public:
 
     //! スプラッシュスクリーンを表示する
     void splash_screen();
-    
+
+    /*!
+        @brief  単一の画像を表示する
+        @param[in]  x       左上のX座標
+        @param[in]  y       左上のY座標
+        @param[in]  bitmap  ビットマップ画像データ配列
+        @param[in]  w       画像の幅
+        @param[in]  h       画像の高さ
+    */
+    void image(std::int16_t x,
+               std::int16_t y,
+               const std::uint8_t* bitmap,
+               std::int16_t w,
+               std::int16_t h);
+
     //! マニュアルモードの画面を表示する
     void manual_mode();
 
@@ -131,7 +154,7 @@ private:
 
         @param[in]  x       左上のX座標
         @param[in]  y       左上のY座標
-        @param[in]  size        文字サイズ
+        @param[in]  size    文字サイズ
         @param[in]  text    テキスト本文
     */
     void _text(std::int16_t x,
@@ -236,6 +259,18 @@ private:
         this->driver()->drawBitmap(x, y, bitmap, w, h, _color);
     }
 };
+
+#if DISPLAY_DRIVER == ADAFRUIT_SH1106G
+inline bool begin_display(DisplayDriver& driver)
+{
+    return driver.begin(SCREEN_ADDR);
+}
+#elif DISPLAY_DRIVER == ADAFRUIT_SSD1306
+inline bool begin_display(DisplayDriver& driver)
+{
+    return driver.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDR);
+}
+#endif
 
 //-----------------------------------------------------------------------------
 } // namespace atlas

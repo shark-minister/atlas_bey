@@ -42,10 +42,28 @@ public:
     }
 
     //! 値を適正化する
-    void regulate() noexcept;
+    void regulate() noexcept
+    {
+        // SPのソフトウェアリミットチェック
+        if (this->sp() > LAUNCHER_SP_UPPER_LIMIT)
+        {
+            _sp = LAUNCHER_SP_UPPER_LIMIT / 100;
+        }
+        else if (this->sp() < LAUNCHER_SP_LOWER_LIMIT)
+        {
+            _sp = LAUNCHER_SP_LOWER_LIMIT / 100;
+        }
+#if NUM_MOTORS == 1
+        _flags.field.enabled_manual = 1;
+#endif
+    }
 
     //! 値を初期化する
-    void init() noexcept;
+    void init() noexcept
+    {
+        _sp = DEFAULT_LAUNCHER_SP / 100;
+        _flags.data = 0;
+    }
 
 private:
     union Flags
@@ -148,10 +166,35 @@ public:
     }
 
     //! 値を適正化する
-    void regulate() noexcept;
+    void regulate() noexcept
+    {
+        _elr1.regulate();    // 電動ランチャー1
+#if NUM_MOTORS == 1
+        _flags.field.elr_auto_mode = 0;
+#elif NUM_MOTORS == 2
+        _elr2.regulate();    // 電動ランチャー2
+#endif
+        // レイテンシ
+        if (this->latency() < LATENCY_LOWER_LIMIT)
+        {
+            _latency = LATENCY_LOWER_LIMIT / 10;
+        }
+        // ディレイ
+        if (this->delay() > DELAY_UPPER_LIMIT)
+        {
+            _delay = DELAY_UPPER_LIMIT / 2;
+        }
+    }
 
     //! 値を初期化する
-    void init() noexcept;
+    void init() noexcept
+    {
+        _latency = DEFAULT_LATENCY / 10;
+        _delay = DEFAULT_DELAY / 2;
+        _flags.data = 0;
+        _elr1.init();
+        _elr2.init();
+    }
 
 private:
     union Flags
@@ -173,19 +216,8 @@ private:
             */
             std::uint8_t elr_auto_mode : 1;
 
-            /*!
-                @brief  電動ランチャー制御として使うどうか
-                - `0`: 電動ランチャー制御として使う
-                - `1`: SP測定器のみに使う
-            */
-            std::uint8_t sp_meas_only : 1;
-
-            /*!
-                @brief  スイッチレスかどうか
-                - `0`: スイッチあり
-                - `1`: スイッチなし
-            */
-            std::uint8_t switch_less : 1;
+            //! 予約領域
+            std::uint8_t reserved1 : 2;
 
             /*!
                 @brief  BBP記録値をメインに表示するか
@@ -194,22 +226,15 @@ private:
             */
             std::uint8_t bbp_sp_main : 1;
 
-            /*! 
-                @brief  モーターの数-1
-                - `0`: モータは1つ
-                - `1`: モータは2つ
-            */
-            std::uint8_t num_motors_minus_1 : 1;
-
             //! 予約領域
-            std::uint8_t reserved2 : 3;
+            std::uint8_t reserved2 : 4;
         } field;
     };
     
     //! フラグ群
     Flags _flags;
     
-    //! オートモードの猶予時間
+    //! オートモードの猶予時間 (_latency * 10) [ms]
     std::uint8_t _latency;
     
     //! オートモードの射出遅延時間 (_delay * 2) [ms]

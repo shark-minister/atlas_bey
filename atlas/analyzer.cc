@@ -9,16 +9,6 @@ namespace atlas
 {
 //-----------------------------------------------------------------------------
 
-//constexpr int ACC_CALC_MAX = 8;
-
-/*
-//! シュートの期待SP値を返す
-std::uint16_t BBPAnalyzer::exp_sp() const noexcept
-{
-    return (_accel > 0) ? std::sqrt(24 * 60000 * _accel) : 0;
-}
-*/
-
 BBPState BBPAnalyzer::analyze(const BBPData& data)
 {
     // ヘッダの取得
@@ -148,7 +138,7 @@ BBPState BBPAnalyzer::analyze(const BBPData& data)
     return BBPState::NONE;
 }
 
-void BBPAnalyzer::calc_true_sp()
+void BBPAnalyzer::analyze_profile()
 {
     /*
         ■ 内容
@@ -173,12 +163,10 @@ void BBPAnalyzer::calc_true_sp()
         ------------------------------------------------------------
     */
     // 経過時間
-    std::uint16_t t = 0;
-    // プロファイル
-    std::uint16_t prof_t[32];
+    std::uint16_t et = 0;
+    // プロファイル（最大32点）
+    std::uint16_t prof_et[32];
     std::uint16_t prof_sp[32];
-    //std::array<std::uint16_t, 32> prof_t;
-    //std::array<std::uint16_t, 32> prof_sp;
     // 実効サイズ
     std::uint32_t size = 0;
     // 最大SP値
@@ -204,9 +192,9 @@ void BBPAnalyzer::calc_true_sp()
             // ランチャーの回転数（シュートパワー）[rpm], 60000 は ms->min の変換
             auto sp = static_cast<std::uint16_t>(60000 / dt);
             // その回転が終了したときの、ランチャー引き始めからの時間t [ms]
-            t += static_cast<std::uint16_t>(dt);
+            et += static_cast<std::uint16_t>(dt);
             // 格納
-            prof_t[size] = t;
+            prof_et[size] = et;
             prof_sp[size] = sp;
 
             size += 1;
@@ -218,118 +206,108 @@ void BBPAnalyzer::calc_true_sp()
         }
     }
     
-    // プロファイルのデータ点数が5点に満たない場合は、計算しない
-    if (size < 5)
+    // プロファイルのデータ点数が7点に満たない場合は、計算しない
+    if (size < 7)
     {
+        _true_sp = _bbp_sp;
         return;
     }
 
     std::uint16_t max_sp = 0;  // プロファイル上の最大SP
-    std::uint16_t peak_t = 0;  // ピーク位置
+    std::uint16_t peak_et = 0;  // ピーク位置
     std::uint32_t length = size > 14 ? 14 : size;  // 13回転目以降は見ない
+    std::uint32_t max_index = length - 1;
     // 4回転目から値をチェックする
     for (std::uint32_t i = 4; i < length; ++i)
     {
         /*
-            チェックするSP
-            sp_m4  i-4  4回転前のSP
-            sp_m2  i-2  2回転前のSP
-            sp_m1  i-1  1回転前のSP
-            sp_0   i    基準となるSP
-            sp_p1  i+1  1回転後のSP
-            sp_p2  i+2  2回転後のSP
-            sp_p4  i+4  4回転後のSP
-        */
-        // 基準となるSPの取得
-        auto sp_0 = prof_sp[i];
+            チェックするポイント
 
+            P4'  i-4  4回転前（変数名 *_m4）
+            P2'  i-2  2回転前（変数名 *_m2）
+            P1'  i-1  1回転前（変数名 *_1）
+            P0   i    基準点（変数名 *_0）
+            P1   i+1  1回転前（変数名 *_p1）
+            P2   i+2  2回転前（変数名 *_p2）
+        */
+
+        // ピーク位置の更新
+        peak_et = i;
+
+        // P0, P1'のSP値の取得
+        auto sp_0 = prof_sp[i];
+        auto sp_m1 = prof_sp[i-1];
+        
         // 最大SP値の更新
         if (sp_0 > max_sp)
         {
             max_sp = sp_0;
         }
-        // ピーク位置の更新
-        peak_t = i;
 
-        // 1つ前のSP値の取得
-        auto sp_m1 = prof_sp[i-1];
-
-        // 減少に転じている場合
+        // P1'→P0で、減少に転じている場合
         if (sp_m1 > sp_0)
         {
-            // 1, 2つ先のSP値を取得
-            auto sp_p1 = prof_sp[i+1];
-            auto sp_p2 = prof_sp[i+2];
-            // さらに減少していくケース
-            // つまりi-1がピークトップとなっている
-            if (sp_0 > sp_p1 && sp_p1 > sp_p2)
+            bool flag = false;
+            if ((i+2) <= max_index)
             {
-                auto t_m2  = prof_t[i-2];   // 2つ前の時間
-                auto t_m4  = prof_t[i-4];   // 4つ前の時間
-                auto sp_m2 = prof_sp[i-2];  // 2つ前のSP
-                auto sp_m4 = prof_sp[i-4];  // 4つ前のSP
-                // 傾きの計算
-                auto a = static_cast<double>(sp_m2-sp_m4) / (t_m2-t_m4);
-                std::uint16_t ext_sp = a*(prof_t[i-1]-t_m2) + sp_m2;
-                // 真のSP値
+                // さらにP1'→P0→P1→P2と減少していくケース
+                // つまりP1'がピークトップとなっている
+                flag = (sp_0 > prof_sp[i+1] && prof_sp[i+1] > prof_sp[i+2]);
+            }
+            else if ((i+1) <= max_index)
+            {
+                flag = (sp_0 >prof_sp[i+1]);
+            }
+
+            // 異常値の検査
+            if (flag)
+            {
+                auto et_m2 = prof_et[i-2];   // P2'の時間
+                auto et_m4 = prof_et[i-4];   // P4'の時間
+                auto sp_m2 = prof_sp[i-2];   // P2'のSP値
+                auto sp_m4 = prof_sp[i-4];   // P4'のSP値
+                // P2'とP4'間の傾き a の計算
+                auto a = static_cast<double>(sp_m2 - sp_m4) / (et_m2 - et_m4);
+                // P2'から傾き a で延長したときの、ピーク位置 P1'における期待SP値の計算
+                // 念のため、4%の安全係数を掛けておく
+                std::uint16_t ext_sp = 1.04 * ( a * (prof_et[i-1] - et_m2) + sp_m2);
+                // 期待値を超えるSPがP1'で記録されている場合は、異常値の可能性が高い
                 if (ext_sp < sp_m1)
                 {
+                    // P2'をピークトップに切替
                     _true_sp = sp_m2;
-                    peak_t = i - 2;
+                    peak_et = i - 2;
                 }
                 else
                 {
+                    // そうでないなら、P1'がそのままピークトップ
                     _true_sp = sp_m1;
-                    peak_t = i - 1;
+                    peak_et = i - 1;
                 }
             }
+            // P1, P2のいずれかで再び増加している場合
+            // ストリングランチャー使用時に、射出の紐巻き戻り加速によるピークが記録
+            // その値がP1'のSP値より高くても使用しない
+            // バトルパスでは多くの場合に記録されてしまうダミーのSP値である
             else
             {
+                // P1'がピークトップ
                 _true_sp = sp_m1;
-                peak_t = i - 1;
+                peak_et = i - 1;
             }
+            // 解析終了
             break;
         }
     }
 
-    if (peak_t == (size -1))
+    if (peak_et == (size -1))
     {
         _true_sp = max_sp;
     }
-    else if (peak_t < 4 || _true_sp > _bbp_sp)
+    else if (peak_et < 4 || _true_sp > _bbp_sp)
     {
         _true_sp = _bbp_sp;
     }
-/*
-    // 加速度計算
-    int pf_size = 0;
-    std::uint32_t sum_xy = 0;
-    std::uint32_t sum_x = 0;
-    std::uint32_t sum_y = 0;
-    std::uint32_t sum_x2 = 0;
-
-    for (std::uint32_t i = 0; i < pf_size; ++i)
-    {
-        // 加速度を解析
-        // 横軸：時間、縦軸：SPで、最小二乗法
-        if (i <= ACC_CALC_MAX)
-        {
-            auto t = prof[i].first;
-            auto sp = prof[i].second;
-            
-            sum_x  += t;
-            sum_y  += sp;
-            sum_xy += t * sp;
-            sum_x2 += t * t;
-
-            if (i == ACC_CALC_MAX)
-            {
-                _accel = ((ACC_CALC_MAX+1) * sum_xy - sum_x * sum_y) /
-                         ((ACC_CALC_MAX+1) * sum_x2 - sum_x * sum_x); 
-            }
-        }
-    }
-*/
 }
 
 void BBPAnalyzer::clear()

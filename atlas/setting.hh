@@ -15,58 +15,87 @@
 //-----------------------------------------------------------------------------
 
 // 利用形態
-// - 0: 電動ランチャー制御としても使う
-// - 1: SP計測器のみで使う
+//  - 0: 電動ランチャー制御としても使う
+//  - 1: SP計測器のみで使う
 #define SP_MEAS_ONLY  0
 
 // スイッチレスでモード切替を行うかどうか
-// - 0: スイッチでモードを切り替える
-// - 1: スイッチレスのコントローラ（物理スイッチが無効になります）
+//  - 0: スイッチでモードを切り替える
+//  - 1: スイッチレスのコントローラ（物理スイッチが無効になります）
 #define SWITCH_LESS  0
+
+// 使用するモーターの数
+#define  NUM_MOTORS  1
+
+// モーターをダミーモードにする
+//  - 0: モーターを駆動する
+//  - 1: モーターを駆動しない（ダミーモード）
+#define  USE_DUMMY_MOTOR  0
 
 //-----------------------------------------------------------------------------
 // ディスプレイ設定
 //-----------------------------------------------------------------------------
-#define  SCREEN_WIDTH        128   // スクリーン幅
-#define  SCREEN_HEIGHT        64   // スクリーン高さ
-#define  SCREEN_ADDR        0x3C   // ディスプレイのI2Cアドレス
-#define  DISPLAY_IS_SPI        0   // ディスプレイがSPI接続なら1, I2Cなら0
-#define  SPI_MASK          0x100   // SPI接続用のマスク（原則変更しない）
-#define  ADAFRUIT_SH1106G      1   // SH1106G (1.3インチ)
-#define  ADAFRUIT_SSD1306      2   // SSD1306 (0.96インチ)
-#define  DISPLAY_DRIVER        ADAFRUIT_SH1106G
-#if  DISPLAY_IS_SPI == 1
-#define  DISPLAY_DRIVER        (DISPLAY_DRIVER | SPI_MASK)
-#endif
+
+// ディスプレイの種類
+#define  ADAFRUIT_SH1106G  1   // SH1106G (1.3インチ)
+#define  ADAFRUIT_SSD1306  2   // SSD1306 (0.96インチ)
+#define  DISPLAY_DRIVER    ADAFRUIT_SH1106G
+
+// ディスプレイのパラメータ
+#define  SCREEN_WIDTH    128   // スクリーン幅
+#define  SCREEN_HEIGHT    64   // スクリーン高さ
+#define  SCREEN_ADDR    0x3C   // ディスプレイのI2Cアドレス
 
 //-----------------------------------------------------------------------------
-// ピン割り当て
+// ピン割り当て：配線にあわせて変更する
 //-----------------------------------------------------------------------------
 
-#define  MODE_SW_IN   5     // 切替スイッチの中央端子と繋ぐピン番号
+// 切替スイッチの中央端子と繋ぐピン番号
+#define  MODE_SW_IN   8     // 初号機は8, デフォルトは5
 
 // 切替スイッチの電源側端子と繋ぐピン番号
+//  - 電動ランチャー制御用のときは、21番ピンをシリアル通信で使うので、10番にしている
+//  - SP計測器用のときは、配線上の利点があるので、21番ピンを使う
 #if SP_MEAS_ONLY == 0
-#define  MODE_SW_OUT 10     
+#define  MODE_SW_OUT 5    // 初号機は5, デフォルトは10
 #else
 #define  MODE_SW_OUT 21
 #endif
 
-#define  L_PWM_1      2   // モータードライバー1のL_PWMをつなぐGPIOピン番号
-#define  R_PWM_1      3   // モータードライバー1のR_PWMをつなぐGPIOピン番号
-#define  LR_EN_1      4   // モータードライバー1のL_ENとR_ENをつなぐGPIOピン番号
+// モータードライバー1と接続するピン
+#define  L_PWM_1  2    // GPIO2: L_PWMを接続
+#define  R_PWM_1  3    // GPIO3: R_PWMを接続
+#define  LR_EN_1  4    // GPIO4: L_ENとR_ENを接続
 
+// モータードライバー2と接続するピン
+#if NUM_MOTORS == 2
+#define  L_PWM_2  8    // 左回転のPWM
+#define  R_PWM_2  9    // 右回転のPWM
+#define  LR_EN_2  4    // L_EN, R_LEN
+#endif
+
+// オーディオプレイヤー
+#define  AUDIO_RX  20  // シリアル通信RX
+#define  AUDIO_TX  21  // シリアル通信TX
+
+//-----------------------------------------------------------------------------
+// オートモードからマニュアルモードへの画面切り替え時のスプラッシュスクリーン設定
+//-----------------------------------------------------------------------------
+
+// オートモードからマニュアルモードへの画面切り替え
+//  - 0: AモードからMモードに切り替えるときに、スプラッシュスクリーンを表示しない
+//  - 1: AモードからMモードに切り替えるときに、スプラッシュスクリーンを表示する
+#define  ENABLE_SPLASH_SCREEN_A2M  0
+#if  ENABLE_SPLASH_SCREEN_A2M == 1
 /*
-#define  L_PWM_2      9   // モーター2の左回転用のPWMピン番号
-#define  R_PWM_2     10   // モーター2の右回転用のPWMピン番号
-#define  LR_EN_2      5   // モーター2のL_EN, R_LENの両方を繋ぐピン番号
+    表示する画像の情報
+    画像自体は、user.hh の user_logo 固定
 */
-
-#define  SCREEN_SPI_MOSI  10  // SDA --> MOSI
-#define  SCREEN_SPI_DC     9  //  DC --> MISO
-#define  SCREEN_SPI_CLK    8  // SCL --> SCK
-#define  SCREEN_SPI_RESET  7  // RES -->
-#define  SCREEN_SPI_CS    20  //  CS --> SS (GPIO20)
+#define  SPLASH_SCREEN_A2M_X    26   // 開始座標X
+#define  SPLASH_SCREEN_A2M_Y    6    // 開始座標Y
+#define  SPLASH_SCREEN_A2M_W    76   // 画像の幅
+#define  SPLASH_SCREEN_A2M_H    52   // 画像の高さ
+#endif
 
 //-----------------------------------------------------------------------------
 // モーター設定
@@ -85,18 +114,25 @@
 */
 #define  MOTOR1_MAX_RPM  24900   // モーター1の最大回転数
 #define  MOTOR2_MAX_RPM  24900   // モーター2の最大回転数
-#define  NUM_MOTORS          1   // 使用するモーターの数
-#define  USE_DUMMY_MOTOR     1   // モーターをダミーモードにする
-
 
 //-----------------------------------------------------------------------------
 // 音声設定
 //-----------------------------------------------------------------------------
 
+/*
+    DFPlayer Miniに使うmicroSDカード内の音声ファイル番号を指定する。
+     - 01: カウントダウン音声（3, 2, 1, Go, shoot）
+     - 02: 成功の効果音
+     - 03: キャンセルの効果音
+     - 04: エラーの効果音
+*/
 #define AUDIO_COUNTDOWN    1   // "3, 2, 1, Go, Shoot!"
 #define AUDIO_SE_ACK       2   // 成功の効果音
 #define AUDIO_SE_CANCEL    3   // キャンセルの効果音
 #define AUDIO_SE_ERROR     4   // エラーの効果音
+
+// デフォルト音量
+#define DEFAULT_VOLUME    20
 
 //-----------------------------------------------------------------------------
 // 動作パラメータ設定
@@ -122,9 +158,10 @@
 /*
     猶予時間のデフォルト値 [ms]
 
-    オートモードでのカウントダウン最初の "ReadySet" と "3" までの
-    間隔のデフォルト値をミリ秒で指定する。この猶予時間内にベイをランチャーから
-    外すとカウントダウンとモーター駆動開始がキャンセルされる。
+    オートモードでのベイ設置感知の "ReadySet" 表示 と
+    カウントダウン開始 "3" までの間隔のデフォルト値をミリ秒で指定する。
+    この猶予時間内にベイをランチャーから外すとカウントダウンと
+    モーター駆動開始がキャンセルされる。
     猶予時間の内部パラメータは、外部からBLE通信で変更できる。
 */
 #define  DEFAULT_LATENCY  1300
@@ -167,7 +204,7 @@
 /*
     モーター加速の余裕時間 [ms]
     
-    モーターが最大回転数になるまでにはある程度の時間が必要であり、
+    マニュアル射出の際、モーターが最大回転数になるまでにはある程度の時間が必要であり、
     それを考慮した値をミリ秒で指定する。
     この値は外部から変更できない。
 */
@@ -187,17 +224,20 @@
 // システム設定（変更しないこと！）
 //-----------------------------------------------------------------------------
 
+// バージョン情報
+#define  MAJOR_VERSION  1
+#define  MINOR_VERSION  2
+#define  REVISION       3
+
 // ファイル名
-#define  PARAMS_FILE_NAME  "/params.dat"
-#define  STATISTICS_FILE_NAME  "/statistics.dat"
+#define  PARAMS_FILE_NAME         "/params.dat"
+#define  STATISTICS_FILE_NAME     "/statistics.dat"
 
 // BLEペリフェラル側のGATT通信設定
 #define  ATLAS_LOCAL_NAME         "ATLAS_AUTO_LAUNCHER"
 #define  ATLAS_SERVICE            "32150000-9A86-43AC-B15F-200ED1B7A72A"
 #define  ATLAS_CHR_SET            "32150001-9A86-43AC-B15F-200ED1B7A72A"
 #define  ATLAS_CHR_SET_DESCR      "Parameters for Electric Launcher"
-//#define  ATLAS_CHR_SAVE           "32150010-9A86-43AC-B15F-200ED1B7A72A"
-//#define  ATLAS_CHR_SAVE_DESCR     "Save parameters to flash memory"
 #define  ATLAS_CHR_SHOOT          "32150020-9A86-43AC-B15F-200ED1B7A72A"
 #define  ATLAS_CHR_SHOOT_DESCR    "Manual shoot"
 #define  ATLAS_CHR_HEADER         "32150030-9A86-43AC-B15F-200ED1B7A72A"
@@ -208,6 +248,8 @@
 #define  ATLAS_CHR_CLEAR_DESCR    "Clear data in flash memory"
 #define  ATLAS_CHR_SWITCH         "32150050-9A86-43AC-B15F-200ED1B7A72A"
 #define  ATLAS_CHR_SWITCH_DESCR   "Switch to auto mode for switchless controller"
+#define  ATLAS_CHR_DEVINFO        "32150060-9A86-43AC-B15F-200ED1B7A72A"
+#define  ATLAS_CHR_DEVINFO_DESCR  "Device information"
 
 // BLEセントラル側のGATT設定（ベイバトルパスのパラメータ）
 #define  BBP_LOCAL_NAME  "BEYBLADE_TOOL01"

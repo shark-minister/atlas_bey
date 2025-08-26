@@ -10,9 +10,6 @@
 // Arduino
 #include <Arduino.h>
 
-// ATLAS
-#include "setting.hh"
-
 namespace atlas
 {
 //-----------------------------------------------------------------------------
@@ -36,28 +33,22 @@ void Motor::configure(std::uint8_t pin_L_PWM,
 
 void Motor::reset()
 {
-    if constexpr (USE_DUMMY_MOTOR > 0)
-    {
-        Serial.println("Motor::reset()");
-    }
-    else
-    {
-        digitalWrite(_l_pwm, LOW);
-        digitalWrite(_r_pwm, LOW);
-        digitalWrite(_lr_en, LOW);
-    }
+#if USE_DUMMY_MOTOR == 0
+    digitalWrite(_l_pwm, LOW);
+    digitalWrite(_r_pwm, LOW);
+    digitalWrite(_lr_en, LOW);
+#else
+    Serial.println("reset motor");
+#endif
 }
 
 void Motor::stop()
 {
-    if constexpr (USE_DUMMY_MOTOR > 0)
-    {
-        Serial.println("Motor::stop()");
-    }
-    else
-    {
-        analogWrite(_cur_pwm, 0);
-    }
+#if USE_DUMMY_MOTOR == 0
+    analogWrite(_cur_pwm, 0);
+#else
+    Serial.println("stop motor");
+#endif
 }
 
 void Motor::_rotate_impl(std::uint8_t pwm, int sp)
@@ -73,22 +64,23 @@ void Motor::_rotate_impl(std::uint8_t pwm, int sp)
         sp = 1;
     }
 
-    if constexpr (USE_DUMMY_MOTOR == 0)
-    {
-        // L_EN, R_ENをHIGHにする。これをしないと回らない
-        digitalWrite(_lr_en, HIGH);
-        
-        // PWMデューティ比を求める
-        int sp_duty = static_cast<int>((static_cast<double>(sp-1) / _max_sp) * 256);
+#if USE_DUMMY_MOTOR == 0
+    // L_EN, R_ENをHIGHにする。これをしないと回らない
+    digitalWrite(_lr_en, HIGH);
+    
+    // PWMデューティ比を求める
+    int sp_duty = static_cast<int>((static_cast<double>(sp-1) / _max_sp) * 256);
 
-        // 所定のデューティ比まで段階的に加速する
-        for (int duty = 1; duty <= sp_duty; duty += 1)
-        {
-            analogWrite(pwm, duty);
-            delay(15);
-        }
-        analogWrite(pwm, sp_duty);
+    // 所定のデューティ比まで段階的に加速する
+    for (int duty = 1; duty <= sp_duty; duty += 1)
+    {
+        analogWrite(pwm, duty);
+        delay(15);
     }
+    analogWrite(pwm, sp_duty);
+#else
+    Serial.println("rotate motor");
+#endif
 
     // PWMピン番号を記憶する
     _cur_pwm = pwm;
