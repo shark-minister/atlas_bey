@@ -87,8 +87,9 @@ void wait_until(ulong expire, ulong cycle = 5)
     while (millis() < expire) delay(cycle);
 }
 
-// 中止信号を監視しつつ待機する
-inline bool standby(QueueHandle_t que, ulong latency)
+// 各タスクが中止信号を監視しつつ待機する
+inline bool standby(QueueHandle_t que,
+                    ulong latency = g_params.latency())
 {
     int sig = 0;
     return xQueueReceive(que, &sig, latency / portTICK_RATE_MS) == pdFALSE;
@@ -764,12 +765,12 @@ void task_motor_manual(void* pv_params)
 {
     // モーターIDの取得
     std::uint32_t id = *(static_cast<std::uint32_t*>(pv_params));
-    // 回転開始
-    rotate_motor(g_motors[id], g_params.elr(id));
-    // 待機実行（モーターの加速準備時間分）
-    wait_until(g_t0.load() + MOTOR_PREPARATORY_TIME);
-    // モーターの急停止による射出実行
-    g_motors[id].stop();
+
+    // 発射
+    rotate_motor(g_motors[id], g_params.elr(id));       // 回転開始
+    wait_until(g_t0.load() + MOTOR_PREPARATORY_TIME);   // 回転が安定するまで待機
+    g_motors[id].stop();                                // 射出
+
     // タスク終了処理
     vTaskDelete(nullptr);
 }
@@ -779,13 +780,14 @@ void task_motor_auto(void* pv_params)
 {
     // 駆動するモーターインスタンスのキャッシュ
     auto& motor = g_motors[g_params.automode_elr_index()];
-    // "latency"で指定する時間だけ、中止信号を待つ
-    if (standby(static_cast<QueueHandle_t>(pv_params), g_params.latency()))
+    // 中止信号を待つ
+    if (standby(static_cast<QueueHandle_t>(pv_params)))
     {
         // 回転開始
         rotate_motor(motor, g_params.automode_elr());
         // 待機実行（射出時刻の計算）
         wait_until(
+            SYNC_ADJ_TIME +         // 同期調整時間
             g_t0.load() +           // 射出指令時のシステム時間（ミリ秒）の取り出し
             g_params.delay() +      // 射出遅延時間
             g_params.latency() +    // ReadySet--3の間の猶予時間
@@ -804,18 +806,22 @@ void task_count_view(void* pv_params)
     // "Ready Set"の表示
     g_view.auto_mode_countdown(0);
     // 各表示の開始時刻
-    ulong t_view = g_t0.load() + g_params.latency();
-    // "latency"で指定する時間だけ、中止信号を待つ
-    if (standby(static_cast<QueueHandle_t>(pv_params), g_params.latency()))
+    ulong t_view = g_t0.load() + g_params.latency() + SYNC_ADJ_TIME;
+    // 中止信号を待つ
+    if (standby(static_cast<QueueHandle_t>(pv_params)))
     {
         // カウントダウン 3, 2, 1, Go
         for (int i = 1; i < 5; ++i)
         {
+            // 同期調整
+            wait_until(t_view);
             // カウントダウンメッセージ
             g_view.auto_mode_countdown(i);
-            // 待機実行
-            wait_until(t_view += COUNTDOWN_INTERVAL);
+            // 次の時間
+            t_view += COUNTDOWN_INTERVAL;
         }
+        // 同期調整
+        wait_until(t_view);
         // SHOOT!
         g_view.auto_mode_countdown(5);
     }
@@ -831,8 +837,8 @@ void task_count_view(void* pv_params)
 // 射出前カウントダウン音声
 void task_count_voice(void* pv_params)
 {
-    // "latency"で指定する時間だけ、中止信号を待つ
-    if (standby(static_cast<QueueHandle_t>(pv_params), g_params.latency()))
+    // 中止信号を待つ
+    if (standby(static_cast<QueueHandle_t>(pv_params)))
     {
         g_player.countdown();  // カウントダウン音声
     }
