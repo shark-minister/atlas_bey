@@ -751,7 +751,7 @@ SP計測器用のプログラムを書き込みたい場合は、setting.hh に�
 6. **電源**
    - 7.2V, 10Aを供給できる安定化電源
    - DROKスイッチング電源 0-12V / 20A など
-   - Amazon.co.jp: https://www.amazon.co.jp/dp/B0B74NT7PR/
+   - Amazon.co.jp: https://www.amazon.co.jp/dp/B0753SX4DT/
 7. **モーター用ケーブル**
    - 2芯1.25sq VCT-F ケーブル
    - 電源・モータードライバー・モーター間の配線に使用する
