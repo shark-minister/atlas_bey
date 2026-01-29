@@ -63,13 +63,13 @@ ATLASのマイコンへはUSB-Cで電力を供給します。
 電源を入れるとオートモードで起動し、ベイバトルパス（以下、BBP）の接続を促すメッセージが表示されます。
 
 <p align="center">
-<img width="200" alt="オートモード画面：バトルパス接続促進" src="https://github.com/user-attachments/assets/e4435738-02c8-4d7d-92c6-68ec0e037a69" />
+<img width="200" alt="オートモード画面：バトルパス接続促進" src="https://github.com/user-attachments/assets/a9715cdc-abd0-4034-8c4e-f2a7be9f517f" />
 </p>
 
 BBPの電源を投入し、BBPの天面ボタンを長押しすることで接続依頼（Bluetoothのアドバタイズ）を行います。ATLASがそれを検知し接続が完了するとBBPのインジケータが緑色の点滅を行います（スマホのベイブレードアプリへの接続と同じです）。また、その際に画面表示が変わって、画面上部のヘッダ領域にBBP接続アイコンが表示されます。
 
 <p align="center">
-<img width="200" alt="オートモード画面：バトルパス接続済み" src="https://github.com/user-attachments/assets/1eff9126-4a18-460b-886b-a0e335c6e00a" />
+<img width="200" alt="オートモード画面：バトルパス接続済み" src="https://github.com/user-attachments/assets/4fa39b84-e534-491a-b797-e4527433c38f" />
 </p>
 
 BBPを切断したいときはBBPのボタンを長押ししてください。インジケータが赤色の点滅を行ったら切断成功です。ヘッダ領域のBBP接続アイコンが消えることを確認してください。
@@ -79,13 +79,13 @@ BBPを切断したいときはBBPのボタンを長押ししてください。�
 オートモード起動直後は、安全のためモーターが無効にされています。この状態では、電動ランチャーを連動させずに単なるシュートパワー計測機として使うことができます。ベイをランチャー（BBPは接続済み）にセットするとATLASはそれを感知し、画面上部のヘッダ領域にベイブレードアイコンがつきます。ベイを外すとベイブレードアイコンは消えます。
 
 <p align="center">
-<img width="200" alt="オートモード画面：ベイ装着済み" src="https://github.com/user-attachments/assets/d31d9ca9-fbc8-4a13-8e08-a22eec9d4c8f" />
+<img width="200" alt="オートモード画面：ベイ装着済み" src="https://github.com/user-attachments/assets/34c79ada-3c26-49f0-a4c9-c6e18b67a35b" />
 </p>
 
 ベイのシュートを行うと、画面にシュートパワーと合計シュート数（下の例だと、#123）が表示されます。
 
 <p align="center">
-<img width="200" alt="オートモード画面" src="https://github.com/user-attachments/assets/c8d06b17-ee8a-4732-b25f-15b8c0c57600" />
+<img width="200" alt="オートモード画面" src="https://github.com/user-attachments/assets/05eb9320-2f63-43f0-924d-7fff0c66e269" />
 </p>
 
 ここで表示されるシュートパワーは、以下の3つです。
@@ -97,7 +97,7 @@ BBPを切断したいときはBBPのボタンを長押ししてください。�
 2-3-3節で説明する設定により、「ベイバトルパスに記録されたシュートパワー値」と「異常値を除外した推定シュートパワー値」を逆の表示位置にすることができます。その場合、以下のような画面になります。
 
 <p align="center">
-<img width="200" alt="auto_sp_rev" src="https://github.com/user-attachments/assets/420493df-0a9b-4ebb-a7ea-e0aa210ddb3f" />
+<img width="200" alt="auto_sp_rev" src="https://github.com/user-attachments/assets/b75573f9-2bda-4fca-a60e-34b4e847b555" />
 </p>
 
 ここで表示されるシュートパワーは、以下の3つです。
@@ -109,7 +109,7 @@ BBPを切断したいときはBBPのボタンを長押ししてください。�
 ベイバトルパスからのデータが正しく送受信されないとチェックサムエラーとなり、画面にCRC ERRORと表示されます。
 
 <p align="center">
-<img width="200" alt="オートモード画面：CRCエラー" src="https://github.com/user-attachments/assets/23d1b64a-ae06-4dec-bf25-e8cd5ee771c3" />
+<img width="200" alt="オートモード画面：CRCエラー" src="https://github.com/user-attachments/assets/78441be7-4df7-4c0a-9faa-0c76f041d430" />
 </p>
 
 ### 2-2-4. 電動ランチャーの利用
@@ -117,25 +117,25 @@ BBPを切断したいときはBBPのボタンを長押ししてください。�
 電動ランチャーの射出するベイとバトルしたい場合はモーターを有効にする必要があります。モーターを有効にするには、ランチャーにベイがセットされていない状態でBBPのボタンを2連続で押してください（ダブルクリック）。モーターが有効になるとヘッダ領域に電動ランチャーの情報が表示されます。下の図の例だと、電動ランチャー1が有効です。
 
 <p align="center">
-<img width="200" alt="オートモード画面：電動ランチャー有効" src="https://github.com/user-attachments/assets/cf186dac-56c9-48f8-9871-9cef5b1e4c23" />
+<img width="200" alt="オートモード画面：電動ランチャー有効" src="https://github.com/user-attachments/assets/d0a3a6a9-5eb0-4a8f-88da-849c9537565a" />
 </p>
 
 この状態でベイをセットすると、ディスプレイに**ReadySet**と大きく表示されます。
 
 <p align="center">
-<img width="200" alt="オートモード画面：ReadySet" src="https://github.com/user-attachments/assets/7de67eae-f82e-475c-a69c-d4d225f8e836" />
+<img width="200" alt="オートモード画面：ReadySet" src="https://github.com/user-attachments/assets/b6cc84c0-597f-4b15-bbd8-a9ac42e3bc4b" />
 </p>
 
 ReadySetが表示されている間にベイをランチャーから外すと、電動ランチャー駆動（モーターの回転開始）がキャンセルされます。このキャンセル可能な時間を猶予時間（レイテンシ, latency）と呼び、デフォルトでは1.3秒間で設定されています。猶予時間の値はマニュアル・設定モードで変更することができます（詳細はマニュアル・設定モードを参照）。
 
 <p align="center">
-<img width="200" alt="オートモード画面：射出キャンセル" src="https://github.com/user-attachments/assets/f15a8c84-7ea3-446a-b687-d1a52d29535a" />
+<img width="200" alt="オートモード画面：射出キャンセル" src="https://github.com/user-attachments/assets/e0c6d7b2-e969-4cf8-bf2d-ac70e578dcc2" />
 </p>
 
 ベイを外さないでおくとカウントダウンが始まりますので、号令にあわせて自分のシュートを行ってください。電動ランチャーは設定にしたがってベイの射出を行います。ディスプレイには自分のシュートパワーが表示されます。画面の見方は、前述の電動ランチャー無効状態でのシュートパワー測定と同じです（エラー表示も同様）。
 
 <p align="center">
-<img width="200" alt="オートモード画面：結果" src="https://github.com/user-attachments/assets/bb61cf77-6535-4e83-959f-562fb2475493" />
+<img width="200" alt="オートモード画面：結果" src="https://github.com/user-attachments/assets/f488a416-c18b-4554-ac6b-dc4b3979d24b"/>
 </p>
 
 ### 2-2-5. 待機画面の切替
@@ -151,7 +151,7 @@ ReadySetが表示されている間にベイをランチャーから外すと、
 オートモードで標準で表示されるのがシュート統計です。シュートパワーの統計情報が表示されます。
 
 <p align="center">
-<img width="200" alt="オートモード画面：統計表示" src="https://github.com/user-attachments/assets/35e52810-58b6-4661-9cb6-5b64c6d7d36e" />
+<img width="200" alt="オートモード画面：統計表示" src="https://github.com/user-attachments/assets/7b7ecd12-14d1-4af3-98d0-f1df88e3c644" />
 </p>
 
 画面の意味は以下の通りです。
@@ -165,7 +165,7 @@ ReadySetが表示されている間にベイをランチャーから外すと、
 横軸をシュートパワー、縦軸を頻度（回数）に取ってシュートパワーの分布を表示します。k（キロ）はx1000です。
 
 <p align="center">
-<img width="200" alt="オートモード画面：ヒストグラム表示" src="https://github.com/user-attachments/assets/ec8518de-9975-469b-a1c3-c90f01e55d16" />
+<img width="200" alt="オートモード画面：ヒストグラム表示" src="https://github.com/user-attachments/assets/1ff227ab-a4ad-4d1f-b08f-b30546b59519" />
 </p>
 
 #### デバイス情報・パラメータの表示
@@ -173,7 +173,7 @@ ReadySetが表示されている間にベイをランチャーから外すと、
 デバイス情報と変更可能なパラメータを表示します。
 
 <p align="center">
-<img width="200" alt="オートモード画面：パラメータ表示" src="https://github.com/user-attachments/assets/d92fdd4f-5eed-45ba-858a-dd191610941d" />
+<img width="200" alt="オートモード画面：パラメータ表示" src="https://github.com/user-attachments/assets/1b1d82dd-105a-426c-abb8-34f1a010c9a5" />
 </p>
 
 画面の意味は以下の通りです。
@@ -220,9 +220,9 @@ SP計測器の場合は「読み出しモード」としています。
 詳細はオートモード2-2-5節を参照してください。
 
 <p align="center">
-<img width="200" alt="マニュアル画面：統計" src="https://github.com/user-attachments/assets/94d06437-1b7c-4ebc-a265-592737979281" />
-<img width="200" alt="マニュアル画面：ヒストグラム" src="https://github.com/user-attachments/assets/85797014-3084-490c-b5db-acdfed0d4d5a" />
-<img width="200" alt="マニュアル画面：パラメータ" src="https://github.com/user-attachments/assets/4c64c315-79e5-465e-bdbe-0a1183b40b57" />
+<img width="200" alt="マニュアル画面：統計" src="https://github.com/user-attachments/assets/a20296cd-9d08-433c-a186-fa0e8650bad8" />
+<img width="200" alt="マニュアル画面：ヒストグラム" src="https://github.com/user-attachments/assets/e2552e46-27d6-407d-ba68-c2932a6bb851" />
+<img width="200" alt="マニュアル画面：パラメータ" src="https://github.com/user-attachments/assets/32e6cea9-b65b-4791-a74f-44d75f16dfe3" />
 </p>
 
 ヘッダ領域の詳細は以下の通りです。
@@ -250,7 +250,7 @@ https://shark-minister.github.io/atlas_bey/
 ATLASをマニュアル/設定モードに切り替えた状態で、〔接続する〕ボタンをクリックしてください。
 
 <p align="center">
-<img width="340" alt="connection" src="https://github.com/user-attachments/assets/8d7c9f5f-cbde-4e8c-8149-cef886d0df34" />
+<img width="400" alt="connection" src="https://github.com/user-attachments/assets/3afbe3c1-41e9-49c1-9252-80afb8db29af" />
 </p>
 
 付近のATLASを検知したら、デバイスのリストに ATLAS_AUTO_LAUNCHER（Arduionの場合もあり）が表示されます。
@@ -260,29 +260,19 @@ ATLASをマニュアル/設定モードに切り替えた状態で、〔接続�
 </p>
 
 ATLAS_AUTO_LAUNCHER（or Arduiono）を選んで〔ペア設定〕をクリックするとATLASが接続されます。接続されると自動的にATLASのパラメータが読み込まれます。
-
-もしATLASが2台のモーターを稼働させる状態になっている場合、以下の設定画面（後述）は以下の通りになります。
+以下の設定画面（後述）は以下の通りになります。
 
 <p align="center">
-<img width="340" alt="Webクライアント画面2" src="https://github.com/user-attachments/assets/32614eab-dc61-4367-b555-062ab4d92dcf" />
+<img width="340" alt="Webクライアント画面2" src="https://github.com/user-attachments/assets/d438f183-53c3-4e5a-945d-c80943a5ca62" />
 </p>
 
 #### 切断
 
 〔接続する〕ボタンをクリックすれば、ATLASとの接続を切断できます。
 
-<p align="center">
-<img width="340" alt="disconnection" src="https://github.com/user-attachments/assets/2063e49c-7411-492f-813c-39aad4d65d32" />
-</p>
-
 #### SP計測モードに切替（SP計測器で、かつスイッチレスの場合のみ表示）
 
-「SP計測モードに切替」ボタンは、SP計測器で、かつスイッチレスの場合のみ表示されます。
-
-<p align="center">
-<img width="340" alt="スクリーンショット 2025-07-18 103753" src="https://github.com/user-attachments/assets/f2f4292d-d82a-4f15-acfd-5e493638c29e" />
-</p>
-
+「Aモードに切替」ボタンは、SP計測器でスイッチレス型かタクトスイッチ型の場合のみ有効です。
 クリックすると、SP計測モードに切り替わります。
 （このボタンを使用せずとも、SP計測器を再起動すればSP計測モードで立ち上がります）
 
@@ -301,10 +291,6 @@ ATLAS_AUTO_LAUNCHER（or Arduiono）を選んで〔ペア設定〕をクリッ�
   - 無効: 異常値を除外した見込みシュートパワー値を大きく表示します（ストリングランチャーではこちらがオススメ）
 - 〔読み出す〕ボタン: ATLASで動いているパラメータを読み込みます。
 - 〔書き込む〕ボタン: ATLASにパラメータを送ります。
-
-<p align="center">
-<img width="340" alt="setting" src="https://github.com/user-attachments/assets/fa751ba9-6b9b-40f7-ad32-69a90144e6ed" />
-</p>
 
 #### シュート情報
 
@@ -678,7 +664,7 @@ setting.hhのタブは、この順番にあるとは限りません。
 SP計測器用のプログラムを書き込みたい場合は、setting.hh に以下の書き換えを行ってください。
 
 <p align="center">
-<img width="514" alt="SP_MEAS" src="https://github.com/user-attachments/assets/23672184-4ef6-422b-94eb-359fd9ca8625" />
+<img width="514" alt="SP_MEAS" src="https://github.com/user-attachments/assets/435fec6d-851e-4350-b96b-cc457e0ef085" />
 </p>
 
 **①利用形態（21行目）**
@@ -844,13 +830,13 @@ microSDカードに 01, 02, 03, 04のフォルダを作成し、それぞれの�
 下の図の通り配線しました。
 
 <p align="center">
-<img width="700" alt="system-wiring" src="https://github.com/user-attachments/assets/04abbe46-f7f3-425e-955c-5b06c8edd406" />
+<img width="700" alt="system-wiring" src="https://github.com/user-attachments/assets/b5dc64ba-1503-43b5-b2b0-5c735af7fa0d" />
 </p>
 
 SP計測器専用（ATLAS lite）での配線は以下の通りです。
 
 <p align="center">
-<img width="600" alt="wiring_compact" src="https://github.com/user-attachments/assets/875a98d2-6d42-4d88-8fb5-4de00dfed098" />
+<img width="600" alt="wiring_compact" src="https://github.com/user-attachments/assets/01a6823d-130f-4b84-ba1e-ef3fa7366c24" />
 </p>
 
 ### 4-2-1. BTS7960
