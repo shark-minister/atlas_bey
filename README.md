@@ -676,32 +676,24 @@ setting.hhのタブは、この順番にあるとは限りません。
 ### 3-4-8. SP計測器での設定について
 
 SP計測器用のプログラムを書き込みたい場合は、setting.hh に以下の書き換えを行ってください。
-（setting.hhの表示の仕方は、5-2節の先頭を参照してください）
-
-#### 利用形態: SP_MEAS_ONLY (20行目)
-
-20行目の **SP_MEAS_ONLY** の値を 0 から 1 に変えてください。
 
 <p align="center">
-<img width="511" height="191" alt="SP_MEAS" src="https://github.com/user-attachments/assets/d30d6709-c9a7-4bda-aa88-1e98dae97cec" />
+<img width="514" alt="SP_MEAS" src="https://github.com/user-attachments/assets/23672184-4ef6-422b-94eb-359fd9ca8625" />
 </p>
 
-#### ディスプレイタイプ: DISPLAY_DRIVER (37行目)
+**①利用形態（21行目）**
+- **ATLAS_FORMAT** の値を **ATLAS_LITE_SP_ONLY** に設定する
 
-37行目の **DISPLAY_DRIVER** の値を、手持ちのディスプレイタイプに応じて変更してください。デフォルトでは、1.3インチの方（ADAFRUITE_SH1106G）になっています。変更する場合は、35, 36行目の ADAFRUITE_SH1106G, ADAFRUITE_SSD1306 をコピー＆ペーストすると楽です。
+**②スイッチの種類（27行目）**
+- **SWITCH_TYPE** の値を 機器のスイッチ形態に合わせて設定する
+  - **SW_NONE** - スイッチがない
+  - **SW_SLIDE** - スライドスイッチ
+  - **SW_TACT** - 押しボタンスイッチ
 
-- **ADAFRUITE_SH1106G** - 1.3インチディスプレイ（SP計測器の標準版）
-- **ADAFRUITE_SSD1306** - 0.96インチディスプレイ（SP計測器のコンパクト版）
-
-1.3インチディスプレイの場合（SP計測器のコンパクト版）：
-<p align="center">
-<img width="424" height="83" alt="Display_130" src="https://github.com/user-attachments/assets/7f0b8a81-5b79-4228-9d03-c2dea60078a9" />
-</p>
-
-0.96インチディスプレイの場合（SP計測器の標準版）：
-<p align="center">
-<img width="457" height="83" alt="Display_096" src="https://github.com/user-attachments/assets/f8e132d0-33c0-408f-a500-2895cfcecb2b" />
-</p>
+**③ディスプレイタイプ（32行目）**
+- **DISPLAY_DRIVER** の値を、機器のディスプレイタイプに合わせて設定する
+  - **ADAFRUITE_SH1106G** - 1.3インチディスプレイ（SP計測器の標準版）
+  - **ADAFRUITE_SSD1306** - 0.96インチディスプレイ（SP計測器のコンパクト版）
 
 ## 3-5. プログラムの書き込み
 
