@@ -19,17 +19,8 @@ void Statistics::Header::init() noexcept
     min_sp = 0;
     avg_sp = 0;
     std_sp = 0;
-    hist_begin = 59;
+    hist_begin = HIST_LENGTH * NUM_HISTS - 1;
     hist_end = 0;
-}
-
-void Statistics::Histogram::init() noexcept
-{
-    // ヒストグラムのクリア
-    for (std::uint32_t i = 0; i < HIST_LENGTH; ++i)
-    {
-        data[i] = 0;
-    }
 }
 
 void Statistics::init() noexcept
@@ -44,6 +35,7 @@ void Statistics::init() noexcept
     }
 
     _latest_sp = 0;
+    _max_count = 0;
 
     // 計算用
     _avg_sp_tmp = 0.0;
@@ -60,7 +52,13 @@ void Statistics::update(std::uint16_t sp) noexcept
         std::uint8_t index = (sp - HIST_MIN_SP) / HIST_BIN_WIDTH;
 
         // ヒストグラム更新
-        _hists[index / HIST_LENGTH].increment(index % HIST_LENGTH);
+        auto v = _hists[index / HIST_LENGTH].increment(index % HIST_LENGTH);
+
+        // 最大カウント値の更新
+        if (_max_count < v)
+        {
+            _max_count = v;
+        }
 
         // インデックス情報の更新
         if (index < _header.hist_begin)

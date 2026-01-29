@@ -52,15 +52,28 @@ public:
     };
 
     //! ヒストグラム
+    template <typename T>
     struct Histogram
     {
-        std::uint8_t data[HIST_LENGTH];
-        void init() noexcept;
-        inline void increment(std::uint32_t index) noexcept
+        T data[HIST_LENGTH];
+        //! ヒストグラムのクリア
+        void init() noexcept
         {
-            data[index] += 1;
+            for (std::uint32_t i = 0; i < HIST_LENGTH; ++i)
+            {
+                data[i] = 0;
+            }
+        }
+        inline T increment(std::uint32_t index, T value = 1) noexcept
+        {
+            return (data[index] += value);
+        }
+        inline T at(std::uint32_t index) const noexcept
+        {
+            return data[index];
         }
     };
+    typedef Histogram<std::uint8_t> Histogram8;
 
     //! 合計シュート回数を返す
     inline std::uint16_t total() const noexcept
@@ -98,6 +111,12 @@ public:
         return _latest_sp;
     }
 
+    //! 最大カウント
+    inline std::uint8_t max_count() const noexcept
+    {
+        return _max_count;
+    }
+
     //! ヘッダ情報
     const Header* header() const noexcept
     {
@@ -109,7 +128,7 @@ public:
         @param[in]  i  ヒストグラムのインデックス
         @return  ヒストグラムインスタンスへのポインタ
     */
-    const Histogram* hist(std::uint32_t i) const noexcept
+    const Histogram8* hist(std::uint32_t i) const noexcept
     {
         return &(_hists[i]);
     }
@@ -128,26 +147,29 @@ private:
     Header _header;
 
     //! ヒストグラムデータ本体
-    Histogram _hists[NUM_HISTS];
+    Histogram8 _hists[NUM_HISTS];
+
+    //! ヒストグラムの最大カウント
+    std::uint8_t _max_count;
 
     // 最新SP
     std::uint16_t _latest_sp;
 
     // 計算用の一時変数
-    double _avg_sp_tmp;          //!< 平均
-    double _std_sp_tmp;          //!< 標準偏差
-    double _sum_sp;              //!< SP値の合計
-    double _sum_sp2;             //!< SP値の二乗の合計
+    double _avg_sp_tmp;     //!< 平均
+    double _std_sp_tmp;     //!< 標準偏差
+    double _sum_sp;         //!< SP値の合計
+    double _sum_sp2;        //!< SP値の二乗の合計
 };
 
-static_assert(sizeof(Statistics::Histogram) == 20,
-              "Size of 'Statistics::Histogram' is not 20 bytes");
+static_assert(sizeof(Statistics::Histogram8) == 20,
+              "Size of 'Statistics::Histogram<std::uint8_t>' is not 20 bytes");
 
 static_assert(sizeof(Statistics::Header) == 12,
-              "Size of 'Statistics::Histogram' is not 12 bytes");
+              "Size of 'Statistics::Header' is not 12 bytes");
 
-static_assert(std::is_trivially_default_constructible_v<Statistics::Histogram>,
-              "'Statistics::Histogram' is not trivially default constructable");
+static_assert(std::is_trivially_default_constructible_v<Statistics::Histogram8>,
+              "'Statistics::Histogram<std::uint8_t>' is not trivially default constructable");
 
 static_assert(std::is_trivially_copyable_v<Statistics>,
               "'Statistics' is not trivially copyable");

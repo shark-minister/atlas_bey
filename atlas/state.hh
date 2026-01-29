@@ -43,6 +43,44 @@ public:
         return _field.client_ready == 1;
     }
 
+    inline std::uint8_t page_a() const noexcept
+    {
+        return _field.page_a;
+    }
+
+    inline std::uint8_t page_m() const noexcept
+    {
+        return _field.page_m;
+    }
+
+    inline void next_page_a() noexcept
+    {
+        auto p = this->page_a() + 1;
+        _field.page_a = (p == MAX_PAGE_A) ? 0 : p;
+    }
+
+    inline void next_page_m() noexcept
+    {
+        auto p = this->page_m() + 1;
+        _field.page_m = (p == MAX_PAGE_M) ? 0 : p;
+    }
+
+    inline void set_page_a(std::uint8_t page) noexcept
+    {
+        if (page < MAX_PAGE_A)
+        {
+            _field.page_a = page;
+        }
+    }
+
+    inline void set_page_m(std::uint8_t page) noexcept
+    {
+        if (page < MAX_PAGE_M)
+        {
+            _field.page_m = page;
+        }
+    }
+
     //! ベイバトルパスが接続されているかどうかを設定する（オートモード）
     inline void set_bbp(bool is_ready) noexcept
     {
@@ -75,7 +113,7 @@ public:
 
 private:
     //! 内部データ
-    std::uint8_t data = 0;
+    std::uint16_t data = 0;
 
     //! フラグ用ビットフィールド
     struct BitField
@@ -108,8 +146,14 @@ private:
         */
         std::uint8_t client_ready : 1;
 
+        //! オートモードのページ
+        std::uint8_t page_a : 3;
+
+        //! マニュアル/設定モードのページ
+        std::uint8_t page_m : 3;
+
         //! 予約領域
-        std::uint8_t reserved : 4;
+        std::uint8_t reserved : 6;
     } _field;
 };
 

@@ -16,20 +16,16 @@
 #include "params.hh"      // パラメータ
 #include "analyzer.hh"    // BBPデータ解析
 #include "stats.hh"       // 統計データ
-#include "view.hh"        // UI
+#include "view.hh"        // 画面表示
 #include "audio.hh"       // オーディオ制御
 #include "info.hh"        // デバイス設定情報
 #include "filesys.hh"     // ファイルシステム
-
-// スプラッシュスクリーンA2M
-#if ENABLE_SPLASH_SCREEN_A2M == 1
-#include "user.hh"
-#endif
-
-typedef unsigned long ulong;  // 時刻用
+#include "mode.hh"        // モード管理
+#include "user.hh"        // ユーザーアイキャッチ
+#include "utils.hh"       // ユーティリティ
 
 //-----------------------------------------------------------------------------
-#if SP_MEAS_ONLY == 0  // 電動ランチャー制御として使う場合
+#if ATLAS_FORMAT == ATLAS_FULL_SPEC  // 電動ランチャー制御として使う場合
 //-----------------------------------------------------------------------------
 #include "motor.hh"  // モーター制御
 
@@ -44,7 +40,7 @@ inline void rotate_motor(atlas::Motor& motor,
     motor.rotate(elr.sp(), elr.is_right());
 }
 //-----------------------------------------------------------------------------
-#endif  // #if SP_MEAS_ONLY == 0
+#endif  // #if ATLAS_FORMAT == ATLAS_FULL_SPEC
 //-----------------------------------------------------------------------------
 
 //=============================================================================
@@ -52,11 +48,11 @@ inline void rotate_motor(atlas::Motor& motor,
 //=============================================================================
 // 状態管理
 const atlas::DeviceInfo g_devinfo = atlas::get_device_info();  // デバイス情報
-atlas::Params g_params;                     // 制御パラメータ
-atlas::State g_state;                       // 接続状態
-atlas::Statistics g_data;                   // 統計データ
-std::uint32_t g_data_index = 0;             // 統計データ読み出し用のインデックス
-std::atomic_bool g_is_auto_mode = true;     // オートモードか否かのフラグ
+atlas::Params g_params;           // 制御パラメータ
+atlas::State g_state;             // 接続状態
+atlas::Statistics g_data;         // 統計データ
+std::uint32_t g_data_index = 0;   // 統計データ読み出し用のインデックス
+atlas::Mode g_mode;               // モード情報
 
 // ファイルシステム
 atlas::FileSys g_fs;
@@ -69,33 +65,6 @@ DisplayDriver g_display(SCREEN_WIDTH, SCREEN_HEIGHT);
 atlas::View<DisplayDriver> g_view(g_display, g_data, g_params, g_state);
 
 //=============================================================================
-// ヘルパー関数
-//=============================================================================
-
-// デバッグ用メッセージ出力
-template <typename T>
-inline void debug_msg(T msg)
-{
-#ifdef DEBUG_MODE
-    Serial.println(msg);
-#endif
-}
-
-// 指定時刻まで待つ
-void wait_until(ulong expire, ulong cycle = 5)
-{
-    while (millis() < expire) delay(cycle);
-}
-
-// 各タスクが中止信号を監視しつつ待機する
-inline bool standby(QueueHandle_t que,
-                    ulong latency = g_params.latency())
-{
-    int sig = 0;
-    return xQueueReceive(que, &sig, latency / portTICK_RATE_MS) == pdFALSE;
-}
-
-//=============================================================================
 // セットアップ関数
 //=============================================================================
 void setup()
@@ -105,6 +74,7 @@ void setup()
     Serial.begin(9600);
     while (!Serial);
 #endif
+
     // ディスプレイの開始
     if (!atlas::begin_display(g_display))
     {
@@ -137,10 +107,10 @@ void setup()
     g_params.regulate();
 
 //-----------------------------------------------------------------------------
-#if SP_MEAS_ONLY == 0  // 電動ランチャー制御として使う場合
+#if ATLAS_FORMAT == ATLAS_FULL_SPEC  // 電動ランチャー制御として使う場合
 //-----------------------------------------------------------------------------
     // 音声制御の開始
-    if (!g_player.begin(Serial1, 9600))
+    if (!g_player.begin(Serial1))
     {
         debug_msg(F("failed to start audio player"));
     }
@@ -152,7 +122,7 @@ void setup()
 //-----------------------------------------------------------------------------
 #endif
 //-----------------------------------------------------------------------------
-#if SWITCH_LESS == 0 // スイッチを使う場合
+#if SWITCH_TYPE == SW_SLIDE // スライドスイッチを使う場合
 //-----------------------------------------------------------------------------
     // スイッチ用のピン設定
     pinMode(MODE_SW_IN, INPUT_PULLUP);  // プローブは、念のため内蔵のプルアップ抵抗
@@ -160,7 +130,7 @@ void setup()
     digitalWrite(MODE_SW_OUT, HIGH);    // Aモード側のピンをHIGH
     
     // 現在のスイッチ状態をセット
-    g_is_auto_mode.store(digitalRead(MODE_SW_IN) == 1);
+    g_mode.set(digitalRead(MODE_SW_IN) == 1);
     // 切替スイッチの状態を監視するタスクの生成・投入
     xTaskCreateUniversal(
         // タスク
@@ -168,7 +138,7 @@ void setup()
         {
             while (true)
             {
-                g_is_auto_mode.store(digitalRead(MODE_SW_IN) == 1);
+                g_mode.set(digitalRead(MODE_SW_IN) == 1);
                 delay(50);   // 50ms間隔でチェック
             }
         },
@@ -180,7 +150,54 @@ void setup()
         PRO_CPU_NUM     // コアID
     );
 //-----------------------------------------------------------------------------
-#endif  // #if SWITCH_LESS == 0
+#elif SWITCH_TYPE == SW_TACT // タクトスイッチを使う場合
+//-----------------------------------------------------------------------------
+    // スイッチ用のピン設定
+    pinMode(MODE_SW_IN, INPUT_PULLUP);  // プローブ（内蔵プルアップ抵抗を使う）
+    // スイッチの入力を監視するタスクの生成・投入
+    xTaskCreateUniversal(
+        // タスク
+        [](void* pv_params)
+        {
+            while (true)
+            {
+                std::uint64_t counter = 0;
+                while (!digitalRead(MODE_SW_IN))
+                {
+                    counter += 1;
+                }
+                // 長押し判定
+                if (counter > TACT_SW_LONG)
+                {
+                    g_mode.change();    // モード切り替え
+                }
+                else if (counter > TACT_SW_SHORT)
+                {
+                    // オートモードにおいて、BBPを接続しているとき
+                    if (g_mode.is_auto_mode() && g_state.bbp_ready())
+                    {
+                        g_state.next_page_a();
+                        g_view.auto_mode_standby();
+                    }
+                    // マニュアルモードにおいて
+                    if (g_mode.is_manual_mode())
+                    {
+                        g_state.next_page_m();
+                        g_view.manual_mode_standby();
+                    }
+                }
+                delay(50);   // 50ms間隔でチェック
+            }
+        },
+        "task_switch",  // タスク名
+        2048,           // スタックメモリ
+        nullptr,        // 起動パラメータ
+        1,              // 優先度（値が大きいほど優先順位が高い）
+        nullptr,        // タスクハンドル
+        PRO_CPU_NUM     // コアID
+    );
+//-----------------------------------------------------------------------------
+#endif  // #if SWITCH_TYPE == SW_TACT
 //-----------------------------------------------------------------------------
 
     // スプラッシュスクリーン表示限度まで待機実行
@@ -193,7 +210,7 @@ void setup()
 void loop()
 {
     // BLE接続タスクを回す
-    g_is_auto_mode.load() ? run_auto_mode() : run_manual_mode();
+    g_mode.is_auto_mode() ? run_auto_mode() : run_manual_mode();
     // おまじない
     delay(1);
 }
@@ -220,7 +237,7 @@ void run_auto_mode()
 
     // オートモード時
     bool mode_change = false;
-    while (g_is_auto_mode.load())
+    while (g_mode.is_auto_mode())
     {
         // BBPのアドバタイズを促すメッセージを表示
         g_view.auto_mode_promotion();
@@ -265,9 +282,9 @@ void run_auto_mode()
                 // セッション開始
                 else
                 {
-                    g_player.se_ack();         // 接続完了のアナウンス音
-                    g_state.set_bbp(true);     // 状態を更新
-                    g_view.auto_mode_plain();  // ヘッダのみ描画
+                    g_player.se_ack();          // 接続完了のアナウンス音
+                    g_state.set_bbp(true);      // 状態を更新
+                    g_view.auto_mode_standby(); // 描画
 
                     // BBPとATLASの通信開始（falseで帰ってくるときはモード切替あり）
                     if (!bbp_session(dev, chr))
@@ -282,7 +299,7 @@ void run_auto_mode()
             g_player.se_cancel();      // 音声案内
             g_state.set_bbp(false);    // 状態更新
             g_state.set_bey(false);    // 状態更新
-            g_view.auto_mode_plain();  // ヘッダのみ描画
+            g_view.auto_mode_promotion();
             dev.disconnect();          // デバイスからの切断（念のため）
 
             // オートモードが終了しているなら、ループを抜け出す
@@ -297,13 +314,9 @@ void run_auto_mode()
     // リソースの開放
     BLE.end();
 
-#if ENABLE_SPLASH_SCREEN_A2M == 1
-    ulong t_logo_end = millis() + 1500;  // ロゴ表示時間は1,500ミリ秒間
-    g_view.image(SPLASH_SCREEN_A2M_X, SPLASH_SCREEN_A2M_Y,
-                 atlas::img::user_logo,
-                 SPLASH_SCREEN_A2M_W, SPLASH_SCREEN_A2M_H);
-    wait_until(t_logo_end);  // スプラッシュスクリーン表示限度まで待機実行
-#endif
+    // マニュアル/設定モードへの切り替え時のアイキャッチ
+    // アイキャッチが有効になっていない場合は即座に制御が返る
+    eyecatch_a2m(g_view, 1500);
 
     debug_msg(F("[auto mode] out"));
 }
@@ -319,7 +332,7 @@ bool bbp_session(BLEDevice& dev, BLECharacteristic& chr)
     atlas::BBPData buf;                         // 読み出し用バッファ
 
 //-----------------------------------------------------------------------------
-#if SP_MEAS_ONLY == 0  // 電動ランチャー制御として使う場合
+#if ATLAS_FORMAT == ATLAS_FULL_SPEC  // 電動ランチャー制御として使う場合
 //-----------------------------------------------------------------------------
     // 射出キャンセル用の信号
     int abort_sig = 1;         // 中止信号（値は適当）
@@ -351,12 +364,13 @@ bool bbp_session(BLEDevice& dev, BLECharacteristic& chr)
             case atlas::BBPState::BEY_ATTACHED:
             case atlas::BBPState::BEY_DETACHED:
                 debug_msg(F("beyblade has been attached / detached"));
-                g_view.auto_mode_plain();   // 表示更新
+                g_view.auto_mode_standby();   // 表示更新
                 break;
 
             // ベイブレードがシュートされた
             case atlas::BBPState::FINISHED:
                 debug_msg(F("beyblade has been shot"));
+                g_state.set_bey(false);
                 // プロファイル解析
                 analyzer.analyze_profile();
                 // データ更新
@@ -375,19 +389,20 @@ bool bbp_session(BLEDevice& dev, BLECharacteristic& chr)
             // エラー
             case atlas::BBPState::ERROR:
                 debug_msg(F("CRC error"));
+                g_state.set_bey(false);
                 g_view.auto_mode_error();   // エラー表示
                 g_player.se_error();        // エラー音
                 break;
 
 //-----------------------------------------------------------------------------
-#if SP_MEAS_ONLY == 0  // 電動ランチャー制御として使う
+#if ATLAS_FORMAT == ATLAS_FULL_SPEC  // 電動ランチャー制御として使う
 //-----------------------------------------------------------------------------
             // BBPのボタンがダブルクリックされた
             case atlas::BBPState::ELR_ENABLED:
                 debug_msg(F("ELR enabled"));
                 g_player.se_ack();          // ACK音
                 g_state.set_elr(true);      // 電動ランチャーを有効にする
-                g_view.auto_mode_plain();   // 表示更新
+                g_view.auto_mode_standby(); // 表示更新
                 break;
 
             // BBPのボタンがダブルクリックされた
@@ -395,7 +410,7 @@ bool bbp_session(BLEDevice& dev, BLECharacteristic& chr)
                 debug_msg(F("ELR disabled"));
                 g_player.se_cancel();       // キャンセル音
                 g_state.set_elr(false);     // 電動ランチャーを無効にする
-                g_view.auto_mode_plain();   // 表示更新
+                g_view.auto_mode_standby(); // 表示更新
                 break;
 
             // 射出命令
@@ -460,14 +475,14 @@ bool bbp_session(BLEDevice& dev, BLECharacteristic& chr)
                 break;
 
 //-----------------------------------------------------------------------------
-#elif SWITCH_LESS > 0  // SP計測器において、スイッチレスで実装
+#elif SWITCH_TYPE != SW_SLIDE  // スイッチレスか、タクトスイッチ（SP計測器のみ）
 //-----------------------------------------------------------------------------
             // BBPのボタンがダブルクリックされた
             case atlas::BBPState::ELR_ENABLED:
             case atlas::BBPState::ELR_DISABLED:
                 debug_msg(F("BBP button double-clicked"));
                 // モードをマニュアル/設定モードに切り替える
-                g_is_auto_mode.store(false);
+                g_mode.set(false);
                 break;
 //-----------------------------------------------------------------------------
 #endif
@@ -478,8 +493,8 @@ bool bbp_session(BLEDevice& dev, BLECharacteristic& chr)
             // バッファの初期化
             buf.init();
         }
-        // モードが変わった
-        if (!g_is_auto_mode.load()) return false;
+        // モードがマニュアルに変わった
+        if (g_mode.is_manual_mode()) return false;
 
         // おまじない
         delay(1);
@@ -510,9 +525,9 @@ void run_manual_mode()
         [](BLEDevice central)
         {
             debug_msg(F("client connected"));
-            g_player.se_ack();         // ACK音を鳴らす
-            g_state.set_client(true);  // クライアントが接続された
-            g_view.manual_mode();      // 画面更新
+            g_player.se_ack();             // ACK音を鳴らす
+            g_state.set_client(true);      // クライアントが接続された
+            g_view.manual_mode_standby();  // 画面更新
         }
     );
 
@@ -522,9 +537,9 @@ void run_manual_mode()
         [](BLEDevice central)
         {
             debug_msg(F("client disconnected"));
-            g_player.se_cancel();       // キャンセル音を鳴らす
-            g_state.set_client(false);  // クライアントが切断された
-            g_view.manual_mode();       // 画面更新
+            g_player.se_cancel();          // キャンセル音を鳴らす
+            g_state.set_client(false);     // クライアントが切断された
+            g_view.manual_mode_standby();  // 画面更新
         }
     );
 
@@ -567,7 +582,8 @@ void run_manual_mode()
                 debug_msg(F("write parameters"));
                 chr.readValue(&g_params, sizeof(g_params)); // パラメータの読み込み
                 g_params.regulate();                        // パラメータの正規化
-                g_view.manual_mode();                       // 画面更新
+                g_state.set_page_m(1);                      // パラメータのページに設定
+                g_view.manual_mode_standby();               // 画面更新
                 g_player.se_ack();                          // ACK音
                 // パラメータをファイルに保存する
                 g_fs.write(PARAMS_FILE_NAME, &g_params, sizeof(g_params));
@@ -614,7 +630,7 @@ void run_manual_mode()
     // データ（ヒストグラム）
     {
         // キャラクタリスティックの作成と初期値の書き込み
-        BLETypedCharacteristic<atlas::Statistics::Histogram> ch(ATLAS_CHR_DATA, BLERead);
+        BLETypedCharacteristic<atlas::Statistics::Histogram8> ch(ATLAS_CHR_DATA, BLERead);
         // キャラクタリスティックの説明文
         BLEDescriptor descr("2901", ATLAS_CHR_DATA_DESCR);
         ch.addDescriptor(descr);
@@ -624,13 +640,13 @@ void run_manual_mode()
             [](BLEDevice central, BLECharacteristic chr)
             {
                 debug_msg(F("read data histogram"));
-                if (g_data_index >= 3)
+                if (g_data_index >= atlas::Statistics::NUM_HISTS)
                 {
                     g_data_index = 0;
                 }
                 // SP統計データをキャラクタリスティックに書き込む
                 chr.writeValue(g_data.hist(g_data_index++),
-                               sizeof(atlas::Statistics::Histogram));
+                               sizeof(atlas::Statistics::Histogram8));
             }
         );
         // キャラクタリスティックの登録
@@ -650,9 +666,10 @@ void run_manual_mode()
             [](BLEDevice central, BLECharacteristic chr)
             {
                 debug_msg(F("clear data"));
-                g_data.init();          // SP統計データを初期化する
-                g_view.manual_mode();   // 画面更新
-                g_player.se_ack();      // ACK音を鳴らす
+                g_data.init();                 // SP統計データを初期化する
+                g_state.set_page_m(1);         // パラメータのページに設定
+                g_view.manual_mode_standby();  // 画面更新
+                g_player.se_ack();             // ACK音を鳴らす
                 // SP統計データ（空）をファイルに保存する
                 g_fs.write(STATISTICS_FILE_NAME, &g_data, sizeof(g_data));
             }
@@ -662,7 +679,7 @@ void run_manual_mode()
     }
 
 //-----------------------------------------------------------------------------
-#if SP_MEAS_ONLY == 0  // 電動ランチャー制御として使う場合
+#if ATLAS_FORMAT == ATLAS_FULL_SPEC  // 電動ランチャー制御として使う場合
 //-----------------------------------------------------------------------------
     // 手動シュート
     {
@@ -702,7 +719,7 @@ void run_manual_mode()
         serv.addCharacteristic(ch);
     }
 //-----------------------------------------------------------------------------
-#elif SWITCH_LESS > 0  // SP計測器のみの場合で、スイッチレスの実装
+#elif SWITCH_TYPE != SW_SLIDE  // スイッチレスか、タクトスイッチ（SP計測器のみ）
 //-----------------------------------------------------------------------------
     // モード切替
     {
@@ -717,7 +734,7 @@ void run_manual_mode()
             [](BLEDevice central, BLECharacteristic chr)
             {
                 debug_msg(F("switch to auto mode"));
-                g_is_auto_mode.store(true);     // オートモードに切り替え
+                g_mode.set(true);     // オートモードに切り替え
             }
         );
         // キャラクタリスティックの登録
@@ -737,10 +754,10 @@ void run_manual_mode()
 
     // 表示
     g_state.set_client(false);
-    g_view.manual_mode();
+    g_view.manual_mode_standby();
 
     // マニュアルモード時
-    while (!g_is_auto_mode.load())
+    while (g_mode.is_manual_mode())
     {
         BLE.poll(1000);   // 1秒間隔でタイムアウト
         delay(1);         // おまじない
@@ -757,7 +774,7 @@ void run_manual_mode()
 }
 
 //-----------------------------------------------------------------------------
-#if SP_MEAS_ONLY == 0  // 電動ランチャー制御として使う場合
+#if ATLAS_FORMAT == ATLAS_FULL_SPEC  // 電動ランチャー制御として使う場合
 //-----------------------------------------------------------------------------
 
 // モーター制御: マニュアルモード
@@ -781,7 +798,7 @@ void task_motor_auto(void* pv_params)
     // 駆動するモーターインスタンスのキャッシュ
     auto& motor = g_motors[g_params.automode_elr_index()];
     // 中止信号を待つ
-    if (standby(static_cast<QueueHandle_t>(pv_params)))
+    if (standby(static_cast<QueueHandle_t>(pv_params), g_params.latency()))
     {
         // 回転開始
         rotate_motor(motor, g_params.automode_elr());
@@ -808,7 +825,7 @@ void task_count_view(void* pv_params)
     // 各表示の開始時刻
     ulong t_view = g_t0.load() + g_params.latency() + SYNC_ADJ_TIME;
     // 中止信号を待つ
-    if (standby(static_cast<QueueHandle_t>(pv_params)))
+    if (standby(static_cast<QueueHandle_t>(pv_params), g_params.latency()))
     {
         // カウントダウン 3, 2, 1, Go
         for (int i = 1; i < 5; ++i)
@@ -838,7 +855,7 @@ void task_count_view(void* pv_params)
 void task_count_voice(void* pv_params)
 {
     // 中止信号を待つ
-    if (standby(static_cast<QueueHandle_t>(pv_params)))
+    if (standby(static_cast<QueueHandle_t>(pv_params), g_params.latency()))
     {
         g_player.countdown();  // カウントダウン音声
     }
@@ -852,5 +869,5 @@ void task_count_voice(void* pv_params)
 }
 
 //-----------------------------------------------------------------------------
-#endif  // #if SP_MEAS_ONLY == 0
+#endif  // #if ATLAS_FORMAT == ATLAS_FULL_SPEC
 //-----------------------------------------------------------------------------

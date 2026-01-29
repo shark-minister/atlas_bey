@@ -11,11 +11,25 @@
 // C++標準ライブラリ
 #include <cstdint>  // std::uint8_t
 
+// Arduino
+#include <Arduino.h>
+
+// ATLAS
+#include "utils.hh"
+#include "view.hh"
+
 namespace atlas
 {
-namespace img
-{
 //-----------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------
+#ifdef USE_EYECATCH_A2M
+//-----------------------------------------------------------------------------
+
+#define  EYECATCH_X  26   // 開始座標X
+#define  EYECATCH_Y   6   // 開始座標Y
+#define  EYECATCH_W  76   // 画像の幅
+#define  EYECATCH_H  52   // 画像の高さ
 
 // オートモードからマニュアルモードに切り替えるときに表示されるロゴ
 // デフォルトでは、さめ大臣ロゴ。
@@ -56,8 +70,27 @@ const std::uint8_t user_logo[] PROGMEM = {
     0xf8, 0x1c, 0x70, 0xc0, 0x31, 0xff, 0xc0, 0x00
 };
 
+inline void eyecatch_a2m(atlas::View<DisplayDriver>& view, ulong duration)
+{
+    // ロゴ表示時間は duration ミリ秒間
+    ulong t_logo_end = millis() + duration;
+    // 画像表示
+    view.image(EYECATCH_X, EYECATCH_Y, user_logo, EYECATCH_W, EYECATCH_H);
+    // スプラッシュスクリーン表示限度まで待機実行
+    wait_until(t_logo_end);
+}
 //-----------------------------------------------------------------------------
-} // namespace img
+#else
+//-----------------------------------------------------------------------------
+inline void eyecatch_a2m(atlas::View<DisplayDriver>& view, ulong duration)
+{
+    // nothing to do.
+}
+//-----------------------------------------------------------------------------
+#endif
+//-----------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------
 } // namespace atlas
 
-#endif
+#endif  // #ifndef ATLAS_USER_IMAGE_HH

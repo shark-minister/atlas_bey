@@ -1,0 +1,22 @@
+* {
+    font-family: "Noto Sans JP", sans-serif;
+    line-height: 100%;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+}
+
+body {
+    background-color: rgb(194, 194, 194);
+}
+
+h2 {
+    font-size: 1rem;
+    color: #0077ae;
+    //background-color: #e2eef5;
+
+    span {
+        font-size: smaller;
+    }
+}
+
+

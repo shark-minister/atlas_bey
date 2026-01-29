@@ -73,10 +73,10 @@ public:
                std::int16_t h);
 
     //! マニュアルモードの画面を表示する
-    void manual_mode();
+    void manual_mode_standby();
 
-    //! オートモードで、ヘッダのみを表示する
-    void auto_mode_plain();
+    //! オートモードの待機画面を表示する
+    void auto_mode_standby();
 
     //! オートモードで、エラーを表示する
     void auto_mode_error();
@@ -175,8 +175,40 @@ private:
                  std::uint8_t size,
                  std::int32_t number);
 
+    void _number_w9(std::int16_t x,
+                    std::int16_t y,
+                    std::uint32_t number,
+                    std::int16_t n_digits = 0);
+
+    void _number_w18(std::int16_t x,
+                     std::int16_t y,
+                     std::uint32_t number,
+                     std::int16_t n_digits = 0);
+
+    void _number_img(std::int16_t x,
+                     std::int16_t y,
+                     std::uint32_t number,
+                     std::int16_t n_digits,
+                     std::int16_t w,
+                     std::int16_t h,
+                     const std::uint8_t** img_list);
+
+    //! マニュアル/設定モードのヘッダ情報を表示する
+    void _manual_mode_header();
+
     //! オートモードのヘッダ情報を表示する
     void _auto_mode_header();
+
+    //! マニュアル/設定モードのクライアント情報を表示する
+    void _show_client_info();
+    void _show_document_info();
+    void _show_page_info(const char* page_header);
+    void _show_stats();
+    void _show_hist();
+    void _show_params();
+
+    void _manual_mode_old();
+    void _auto_mode_old();
 };
 
 /*!

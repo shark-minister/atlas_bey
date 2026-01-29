@@ -51,11 +51,13 @@ union Condition
         std::uint16_t format : 2;
 
         /*!
-            @brief  スイッチレスか否か
-            - `0`: スイッチあり
-            - `1`: スイッチなし
+            @brief  モード切替スイッチタイプ
+            - `0`: スイッチなし
+            - `1`: スライドスイッチ
+            - `2`: タクトスイッチ
+            - `3`-`7`: 予備
         */
-        std::uint16_t switch_less : 1;
+        std::uint16_t switch_type : 3;
 
         /*! 
             @brief  電動ランチャーは2台構成か否か
@@ -67,7 +69,7 @@ union Condition
         std::uint16_t double_elrs : 2;
 
         //! 予約領域
-        std::uint16_t reserved : 11;
+        std::uint16_t reserved : 9;
     } field;
 };
 
@@ -88,8 +90,8 @@ DeviceInfo get_device_info()
     result.version.field.major = MAJOR_VERSION;
     result.version.field.minor = MINOR_VERSION;
     result.version.field.rev = REVISION;
-    result.condition.field.format = SP_MEAS_ONLY;
-    result.condition.field.switch_less = SWITCH_LESS;
+    result.condition.field.format = ATLAS_FORMAT;
+    result.condition.field.switch_type = SWITCH_TYPE;
     result.condition.field.double_elrs = NUM_MOTORS - 1;
     return result;
 }

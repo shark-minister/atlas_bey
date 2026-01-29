@@ -19,21 +19,23 @@ void Motor::configure(std::uint8_t pin_L_PWM,
                       std::uint8_t pin_LR_EN,
                       int max_rpm)
 {
-    _l_pwm = pin_L_PWM;
-    _r_pwm =pin_R_PWM;
-    _lr_en = pin_LR_EN;
-    _cur_pwm =pin_R_PWM;
-    _max_sp = max_rpm;
+    _l_pwm   = pin_L_PWM;
+    _r_pwm   = pin_R_PWM;
+    _lr_en   = pin_LR_EN;
+    _cur_pwm = pin_R_PWM;
+    _max_sp  = max_rpm;
 
+#ifdef USE_DUMMY_MOTOR
     // 全てのピンを出力モードに
     pinMode(_r_pwm, OUTPUT);
     pinMode(_l_pwm, OUTPUT);
     pinMode(_lr_en, OUTPUT);
+#endif
 }
 
 void Motor::reset()
 {
-#if USE_DUMMY_MOTOR == 0
+#ifdef USE_DUMMY_MOTOR
     digitalWrite(_l_pwm, LOW);
     digitalWrite(_r_pwm, LOW);
     digitalWrite(_lr_en, LOW);
@@ -44,7 +46,7 @@ void Motor::reset()
 
 void Motor::stop()
 {
-#if USE_DUMMY_MOTOR == 0
+#ifdef USE_DUMMY_MOTOR
     analogWrite(_cur_pwm, 0);
 #else
     Serial.println("stop motor");
@@ -64,7 +66,7 @@ void Motor::_rotate_impl(std::uint8_t pwm, int sp)
         sp = 1;
     }
 
-#if USE_DUMMY_MOTOR == 0
+#ifdef USE_DUMMY_MOTOR
     // L_EN, R_ENをHIGHにする。これをしないと回らない
     digitalWrite(_lr_en, HIGH);
     
