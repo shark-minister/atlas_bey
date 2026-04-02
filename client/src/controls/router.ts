@@ -11,18 +11,20 @@ const {
 } = useATLAS()
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory('/atlas_bey/'),
   routes: [
-    { path: "/atlas_bey/", component: Home },
-    { path: "/atlas_bey/statistics", component: Statistics },
-    { path: "/atlas_bey/profiles", component: Profiles },
-    { path: "/atlas_bey/parameters", component: Parameters }
+    { path: "/", component: Home },
+    { path: "/statistics", component: Statistics },
+    { path: "/profiles", component: Profiles },
+    { path: "/parameters", component: Parameters }
   ]
 })
 
 router.beforeEach((to) => {
-  if (to.path !== "/atlas_bey/" && !isConnected) {
-    return "/atlas_bey/"
+  const { isConnected } = useATLAS()
+
+  if (to.path !== "/" && !isConnected.value) {
+    return "/"
   }
 })
 

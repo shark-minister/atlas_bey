@@ -21,22 +21,22 @@ const { mobile } = useDisplay()
     >
       <v-list>
         <v-list-item
-          to="/atlas_bey/"
+          to="/"
           title="接続"
         />
         
         <v-list-item
-          to="/atlas_bey/statistics"
+          to="/statistics"
           title="SP統計"
         />
 
         <v-list-item
-          to="/atlas_bey/profiles"
+          to="/profiles"
           title="SPプロファイル"
         />
 
         <v-list-item
-          to="/atlas_bey/parameters"
+          to="/parameters"
           title="パラメータ"
           :disabled="!isConnected"
         />
@@ -54,24 +54,24 @@ const { mobile } = useDisplay()
       v-if="mobile"
       grow
     >
-      <v-btn to="/atlas_bey/">
+      <v-btn to="/">
         <v-icon :icon="mdiCellphoneWireless"/>
       </v-btn>
 
       <v-btn
-        to="/atlas_bey/statistics"
+        to="/statistics"
       >
         <v-icon :icon="mdiChartHistogram"/>
       </v-btn>
 
       <v-btn
-        to="/atlas_bey/profiles"
+        to="/profiles"
       >
         <v-icon :icon="mdiChartLine"/>
       </v-btn>
 
       <v-btn
-        to="/atlas_bey/parameters"
+        to="/parameters"
         :disabled="!isConnected"
       >
         <v-icon :icon="mdiCog"/>
