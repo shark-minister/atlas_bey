@@ -1,0 +1,51 @@
+* {
+    font-family: "Noto Sans JP", sans-serif;
+    line-height: 100%;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+}
+
+h1 {
+    background-color: #eaeaea;
+    font-size: 1.2rem;
+    padding: 1rem;
+    text-align: center;
+    margin: 0;
+}
+
+h2 {
+    font-size: 1rem;
+    color: #0077ae;
+    //background-color: #e2eef5;
+
+    span {
+        font-size: smaller;
+    }
+}
+
+.btn-label-eng {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.card-title {
+    color: #1976D2;
+    margin-bottom: 0.3rem;
+    font-weight: bold;
+}
+
+.card-setting {
+    margin-bottom: 0.3rem;
+
+    &:last-child {
+        margin-bottom: 0;
+    }
+}
+
+.card-description {
+    margin-bottom: 1rem;
+
+    div {
+        line-height: 130%;
+        margin-bottom: 0.3rem;
+    }
+}
