@@ -249,59 +249,55 @@ https://shark-minister.github.io/atlas_bey/
 
 #### 2-3-3-1. 概要
 
-クライアントは4つのページで構成されています。
+クライアントは以下の4つのページで構成されています。
 
 - 接続・制御ページ
 - 統計データページ
 - シュート一覧・プロファイル解析ページ
 - パラメータ設定ページ
 
-<p align="center">
-<img width="800" alt="pages" src="https://github.com/user-attachments/assets/bc989637-9571-4b6a-ab9d-68714def0e30" />
-</p>
-
 #### 2-3-3-2. 接続・制御ページ
 
 ##### 接続
 
-ATLASをマニュアル/設定モードに切り替えた状態で、〔Connect〕ボタンをクリックしてください。
+ATLASをマニュアル/設定モードに切り替えた状態で、〔接続〕ボタンをクリックしてください。
 
 <p align="center">
-<img width="310" height="125" alt="connection" src="https://github.com/user-attachments/assets/f5040e2e-170d-49f6-b17c-5d20e665f212" />
+<img width="362" height="145" alt="connection" src="https://github.com/user-attachments/assets/0a7e5acb-af64-4cf6-8609-b36fda7c333b" />
 </p>
 
 付近のATLASを検知したら、デバイスのリストに ATLAS_AUTO_LAUNCHER（Arduinoの場合もあり）が表示されますので、ATLAS_AUTO_LAUNCHER（or Arduino）を選んで〔ペア設定〕をクリックするとATLASが接続されます。接続されると自動的にATLASのデバイス情報が読み込まれます。
 
 <p align="center">
-<img width="298" height="151" alt="devInfo" src="https://github.com/user-attachments/assets/6e83873c-aaca-4c28-bc42-e5fd06178f1d" />
+<img width="332" height="151" alt="devInfo" src="https://github.com/user-attachments/assets/4c93c9ac-d5cf-46e1-82ed-a41bb70a58ab" />
 </p>
 
 ##### 切断
 
-〔Disconnect〕ボタンをクリックすれば、ATLASとの接続を切断できます。
+〔切断〕ボタンをクリックすれば、ATLASとの接続を切断できます。
 
 <p align="center">
-<img width="310" height="125" alt="disconnection" src="https://github.com/user-attachments/assets/c94f87ee-b612-4e01-8da6-57dae6087a2f" />
+<img width="325" height="135" alt="disconnection" src="https://github.com/user-attachments/assets/c35fd887-b288-47e6-ba37-d8718924b882" />
 </p>
 
 ##### SP計測モードに切替（SP計測器で、かつスライドスイッチ以外の場合のみ表示）
 
-〔Switch mode〕ボタンは、SP計測器でスイッチレス型かタクトスイッチ型の場合のみ有効です。
+〔モード切替〕ボタンは、SP計測器でスイッチレス型かタクトスイッチ型の場合のみ有効です。
 クリックすると、SP計測モードに切り替わります。
 （このボタンを使用せずとも、SP計測器を再起動すればSP計測モードで立ち上がります）
 
 スライドスイッチの機体では無効です。
 
 <p align="center">
-<img width="310" height="138" alt="modeSwitch" src="https://github.com/user-attachments/assets/9f1ced38-74f6-4b23-832f-0946787a628a" />
+<img width="330" height="134" alt="modeSwitch" src="https://github.com/user-attachments/assets/95727738-5e5e-4c15-a30c-a5bf9c9ad98d" />
 </p>
 
 ##### マニュアル制御（電動ランチャー制御として使う場合のみ表示）
 
-〔Launch bey〕ボタンを押すと伝導ランチャーのモータにセットされたベイが射出されます。
+〔ベイ射出〕ボタンを押すと伝導ランチャーのモータにセットされたベイが射出されます。
 
 <p align="center">
-<img width="302" height="125" alt="launchBey" src="https://github.com/user-attachments/assets/788b827e-8eb7-4792-911c-f33aca4f6e4d" />
+<img width="323" height="137" alt="launchBey" src="https://github.com/user-attachments/assets/108a877b-65ce-4307-bd4a-f366d57002da" />
 </p>
 
 #### 2-3-3-3. 統計データページ
@@ -309,20 +305,19 @@ ATLASをマニュアル/設定モードに切り替えた状態で、〔Connect�
 シュートパワーの統計をATLASから読み込み、表示するページです。
 
 <p align="center">
-<img width="343" height="104" alt="readStatsButton" src="https://github.com/user-attachments/assets/49ed5cba-4907-49db-a263-c11024b84314" />
+<img width="334" height="285" alt="readStatsButton" src="https://github.com/user-attachments/assets/ba4e2f89-b99c-4263-972f-64324f74cfe3" />
 </p>
 
 各ボタンの意味は以下の通りです。
 
-- 〔Read〕ボタン: ATLASから統計データを読み込む
-- 〔Clear〕ボタン: ATLASの統計データおよびシュート一覧を全て削除する
-- 〔Export CSV〕ボタン: 統計データをCSV形式でダウンロードする
+- 〔読み出す〕ボタン: ATLASから統計データを読み込む
+- 〔クリア〕ボタン: ATLASの統計データおよびシュート一覧を全て削除する
+- 〔CSV出力〕ボタン: 統計データをCSV形式でダウンロードする
 
 統計データを読み込むと各種統計値とシュートパワー分布のグラフが表示されます。グラフの縦軸がシュートパワー、横軸がシュート数です。
 
 <p align="center">
-<img width="348" height="557" alt="statsHist" src="https://github.com/user-attachments/assets/13df5b77-20da-4ea1-9141-cecd3ddf9214" />
-
+<img width="333" height="595" alt="statsHist" src="https://github.com/user-attachments/assets/8f680137-e441-4233-815f-dd2d775cf02c" />
 </p>
 
 #### 2-3-3-4. シュート一覧・プロファイル解析ページ
@@ -331,20 +326,18 @@ ATLAS 2では、ベイバトルパスから送られてくるシュート情報�
 このページではそれを読み込み、一つ一つのシュート情報の可視化・解析を行います。
 
 <p align="center">
-<img width="341" height="122" alt="listShoots" src="https://github.com/user-attachments/assets/08aafed7-a798-41d9-8c62-795c033beb5c" />
-
+<img width="319" height="153" alt="listShoots" src="https://github.com/user-attachments/assets/351391f8-04df-4188-b56d-7065767663ae" />
 </p>
 
 各ボタンの意味は以下の通りです。
 
-- 〔Read〕ボタン: ATLASからシュート一覧データを読み込む
-- 〔Download〕ボタン: シュート一覧データでダウンロードする（バイナリ形式）
+- 〔読み出す〕ボタン: ATLASからシュート一覧データを読み込む
+- 〔ファイル出力〕ボタン: シュート一覧データでダウンロードする（バイナリ形式）
 
 シュート一覧データを読み込むと表が表示されます。
 
 <p align="center">
 <img width="314" height="240" alt="listShoot2" src="https://github.com/user-attachments/assets/0151ca24-9e40-4a92-9d0c-e900354d4cc9" />
-
 </p>
 
 SPは、シュートパワープロファイルを評価して異常値を排除したSP値です。BBPはベイバトルパスで記録したSP値です。
@@ -353,8 +346,7 @@ Accは、加速度（前半～中盤までの加速度）です。
 表のシュートを1つ選択すると、そのシュートのプロファイルがグラフで表示されます。
 
 <p align="center">
-<img width="347" height="626" alt="prof" src="https://github.com/user-attachments/assets/863cdb4c-9844-4f59-8324-17858d9c67a3" />
-
+<img width="307" height="580" alt="prof" src="https://github.com/user-attachments/assets/ef7e8d5d-1a8a-4d2b-9728-190b7fc955a0" />
 </p>
 
 シュートプロファイルはベイの回転毎のSP値であり、ストリングランチャーであれば、最初の回転からおおよそ12回転目までのSP値がプロットされます。
@@ -365,41 +357,37 @@ Accは、加速度（前半～中盤までの加速度）です。
 #### 2-3-3-5. パラメータ設定ページ
 
 このページではATLASのパラメータの取得・設定を行えます。
-〔Read〕ボタンがパラメータの読み込み、〔Write〕ボタンがパラメータの書き込みを行うボタンです。
+〔読み出す〕ボタンがパラメータの読み込み、〔書き込む〕ボタンがパラメータの書き込みを行うボタンです。
 
 <p align="center">
-<img width="349" height="125" alt="paramsButton" src="https://github.com/user-attachments/assets/fb447e8f-7aa0-473e-bf43-bd31f6f1cb21" />
-
+<img width="325" height="114" alt="paramsButton" src="https://github.com/user-attachments/assets/2c7ede07-a73f-4894-a72a-d3db39fbb6d9" />
 </p>
 
 ##### 表示するシュートパワー種類の設定
 
 オートモード（SP計測モード）におけるシュートパワーの表示を、以下のどちらかに設定できます。
 
-  - `Evaluated SP`: シュートパワープロファイルを評価し、異常値を除外したシュートパワー値を大きく表示する（推奨）。
-  - `BBP-recorded SP`: ベイバトルパスに記録されたSP値を大きく表示する。
+  - `評価SP値`: シュートパワープロファイルを評価し、異常値を除外したシュートパワー値を大きく表示する（推奨）。
+  - `BBP記録SP値`: ベイバトルパスに記録されたSP値を大きく表示する。
 
 <p align="center">
-<img width="349" height="165" alt="viewSP" src="https://github.com/user-attachments/assets/bad922d8-04ef-480d-ab39-5d76759ca7c2" />
-
+<img width="334" height="236" alt="viewSP" src="https://github.com/user-attachments/assets/0cf3caaf-f987-44c7-af9d-59f1fb38e162" />
 </p>
 
 ##### 電動ランチャーのシュートパワー設定
 
-電動ランチャーのシュートパワーを設定します。ここではモーターの回転数を設定します。値は100の倍数である必要があります。
+電動ランチャーのシュートパワーを設定します。ここではモーターの回転数を設定します。
 
 <p align="center">
-<img width="347" height="116" alt="shootPower" src="https://github.com/user-attachments/assets/bc1b695a-7aa1-4cf7-bdf5-d82d1336241d" />
-
+<img width="338" height="156" alt="shootPower" src="https://github.com/user-attachments/assets/d0be4adc-5275-4df9-a42b-a2d48debe76d" />
 </p>
 
 ##### モーターの回転方向設定
 
-モーターの回転方向を設定します。Rightが右回転、Leftが左回転です。
+モーターの回転方向を設定します。
 
 <p align="center">
-<img width="343" height="95" alt="rotation" src="https://github.com/user-attachments/assets/f3af5bb2-afd6-40dc-b120-b32233f07c8d" />
-
+<img width="333" height="106" alt="rotation" src="https://github.com/user-attachments/assets/fc200870-1d9e-4dd5-9412-a2fea0cf0c71" />
 </p>
 
 ##### 猶予時間の設定
@@ -408,8 +396,7 @@ Accは、加速度（前半～中盤までの加速度）です。
 値は10の倍数である必要があります。
 
 <p align="center">
-<img width="347" height="149" alt="latency" src="https://github.com/user-attachments/assets/8d9d718d-26ec-411e-9ffb-4d51a28daec5" />
-
+<img width="338" height="168" alt="latency" src="https://github.com/user-attachments/assets/fe5ee71b-0ec7-4510-8cce-75bb1df18617" />
 </p>
 
 ##### 射出遅延時間の設定
@@ -418,8 +405,15 @@ Accは、加速度（前半～中盤までの加速度）です。
 値は2の倍数である必要があります。
 
 <p align="center">
-<img width="349" height="131" alt="delay" src="https://github.com/user-attachments/assets/bc24fab3-0932-4f2b-8e0a-69d141b143c7" />
+<img width="336" height="132" alt="delay" src="https://github.com/user-attachments/assets/a1680fd0-d1d0-418c-9045-c2eca95b114e" />
+</p>
 
+##### スピーカー音量の設定
+
+スピーカー音量を0-30の間で指定します。
+
+<p align="center">
+<img width="334" height="111" alt="speaker" src="https://github.com/user-attachments/assets/ab1dd306-fac7-4578-8f52-4b709973dc7a" />
 </p>
 
 # 3. ソフトウェアの書き込み（更新も含む）
