@@ -5,12 +5,14 @@
 - 私 "さめ大臣 / shark minister" は電子工作・電気工作の素人につき、ところどころ間違っている恐れがあります。プログラミングも趣味の域を超えません。全てを鵜呑みにするのは危険かもしれませんので、その点をご注意くだされば幸いです。
 
 **スライドスイッチを用いた機体で、使用マニュアルを見たい方は ver.1.2.4 のドキュメントを参照してください。** <br/>
-ver.1.2.4 <br/>
 https://github.com/shark-minister/atlas_bey/tree/v1.2.4
+
+**Ver.1.3.0の使用マニュアルを見たい方は以下のドキュメントを参照してください。** <br/>
+https://github.com/shark-minister/atlas_bey/tree/v1.3.0
 
 # 1. はじめに
 
-マイコン制御電動ランチャーシステムATLAS（**A**u**T**omatic **LA**unching **S**ystem）は、タカラトミーが販売するベイブレードXの遊び・練習を充実させるため、電動ランチャー（モーターによるベイブレード射出機）をマイコンで制御し、リアルのシュートジムを実現してみようと開発したシステムです。
+マイコン制御電動ランチャーシステム ATLAS（**A**u**T**omatic **LA**unching **S**ystem）は、タカラトミーが販売するベイブレードXの遊び・練習を充実させるため、電動ランチャー（モーターによるベイブレード射出機）をマイコンで制御し、リアルのシュートジムを実現してみようと開発したシステムです。
 
 ATLASでは、ランチャーにベイをセットしたら自動で検知してカウントダウン（3, 2, 1, ゴー、シュート！）を行ってからベイブレード射出を行う「オートモード」と、電動ランチャーのシュートパワー（SP）などの設定をPCやスマートフォンから行ったり、手動でベイブレード射出を行ったりできる「マニュアル・設定モード」の2つのモードがあります。
 
@@ -85,26 +87,26 @@ BBPを切断したいときはBBPのボタンを長押ししてください。�
 ベイのシュートを行うと、画面にシュートパワーと合計シュート数（下の例だと、#123）が表示されます。
 
 <p align="center">
-<img width="200" alt="オートモード画面" src="https://github.com/user-attachments/assets/05eb9320-2f63-43f0-924d-7fff0c66e269" />
+<img width="200" alt="オートモードSP画面" src="https://github.com/user-attachments/assets/94e410b4-1232-460d-a5fa-43aebf6a25e9" />
 </p>
 
 ここで表示されるシュートパワーは、以下の3つです。
 
-- **YOUR SP**: ベイバトルパスに記録されたシュートパワー値（アプリで読み込まれるのはこの値）。? が付記され、かつストリングランチャーを使用している場合は、異常値である可能性が高いです。
-- **EST**: 異常値を除外した推定シュートパワー値。ワインダーランチャーの場合は、0となる可能性が高いです。
-- **MAX**: ランチャー回転毎の瞬間シュートパワーリスト（シュートパワープロファイル）の中の最も高いシュートパワー値
+- **BBP SP**: ベイバトルパスに記録されたシュートパワー値（アプリで読み込まれるのはこの値）。? が付記され、かつストリングランチャーを使用している場合は、異常値である可能性が高いです。
+- **EVAL**: シュートパワープロファイルを評価し、異常値を除外したシュートパワー値。
+- **ACC**: シュートパワープロファイルから算出したシュートパワー加速度（前半～中盤までの加速度, 後半4回転分の加速度）。
 
-2-3-3節で説明する設定により、「ベイバトルパスに記録されたシュートパワー値」と「異常値を除外した推定シュートパワー値」を逆の表示位置にすることができます。その場合、以下のような画面になります。
+2-3-3節で説明する設定により、「ベイバトルパスに記録されたシュートパワー値」と「異常値を除外したシュートパワー値」を逆の表示位置にすることができます。その場合、以下のような画面になります。
 
 <p align="center">
-<img width="200" alt="auto_sp_rev" src="https://github.com/user-attachments/assets/b75573f9-2bda-4fca-a60e-34b4e847b555" />
+<img width="200" alt="auto_sp_rev" src="https://github.com/user-attachments/assets/9034f52e-2dd8-4abb-a4f8-cbf3341ca92c" />
 </p>
 
 ここで表示されるシュートパワーは、以下の3つです。
 
-- **EST. SP**: 異常値を除外した推定シュートパワー値。ワインダーランチャーの場合は、0となる可能性があります。
+- **EVAL SP**: シュートパワープロファイルを評価し、異常値を除外したシュートパワー値。
 - **BBP**: ベイバトルパスに記録されたシュートパワー値（アプリで読み込まれるのはこの値）。? が付記され、かつストリングランチャーを使用している場合は、異常値である可能性が高いです。
-- **MAX**: ランチャー回転毎の瞬間シュートパワーリスト（シュートパワープロファイル）の中の最も高いシュートパワー値
+- **ACC**: シュートパワープロファイルから算出したシュートパワー加速度（前半～中盤までの加速度, 後半4回転分の加速度）。
 
 ベイバトルパスからのデータが正しく送受信されないとチェックサムエラーとなり、画面にCRC ERRORと表示されます。
 
@@ -135,7 +137,7 @@ ReadySetが表示されている間にベイをランチャーから外すと、
 ベイを外さないでおくとカウントダウンが始まりますので、号令にあわせて自分のシュートを行ってください。電動ランチャーは設定にしたがってベイの射出を行います。ディスプレイには自分のシュートパワーが表示されます。画面の見方は、前述の電動ランチャー無効状態でのシュートパワー測定と同じです（エラー表示も同様）。
 
 <p align="center">
-<img width="200" alt="オートモード画面：結果" src="https://github.com/user-attachments/assets/f488a416-c18b-4554-ac6b-dc4b3979d24b"/>
+<img width="200" alt="オートモード画面：結果" src="https://github.com/user-attachments/assets/31d38aac-08c3-4865-8dd7-1889feeb8b6e" />
 </p>
 
 ### 2-2-5. 待機画面の切替
@@ -162,10 +164,10 @@ ReadySetが表示されている間にベイをランチャーから外すと、
 
 #### シュートパワー分布の表示
 
-横軸をシュートパワー、縦軸を頻度（回数）に取ってシュートパワーの分布を表示します。k（キロ）はx1000です。
+横軸をシュートパワー、縦軸を頻度（回数）に取ってシュートパワーの分布を表示します。横軸の単位はx1000です。
 
 <p align="center">
-<img width="200" alt="オートモード画面：ヒストグラム表示" src="https://github.com/user-attachments/assets/1ff227ab-a4ad-4d1f-b08f-b30546b59519" />
+<img width="200" alt="オートモード画面：ヒストグラム表示" src="https://github.com/user-attachments/assets/1d9c9d5e-09a8-4896-a641-7f9cd02d1fdd" />
 </p>
 
 #### デバイス情報・パラメータの表示
@@ -173,15 +175,15 @@ ReadySetが表示されている間にベイをランチャーから外すと、
 デバイス情報と変更可能なパラメータを表示します。
 
 <p align="center">
-<img width="200" alt="オートモード画面：パラメータ表示" src="https://github.com/user-attachments/assets/1b1d82dd-105a-426c-abb8-34f1a010c9a5" />
+<img width="200" alt="オートモード画面：パラメータ表示" src="https://github.com/user-attachments/assets/8b9e25de-fecf-43a3-b3ff-f0400c44df6c" />
 </p>
 
 画面の意味は以下の通りです。
 
 - `VER` デバイスのバージョン番号
 - `SP` メインで表示されるシュートパワー
-  - `Bey Battle Pass` ベイバトルパスに記録されたシュートパワー値（アプリで読み込まれるのはこの値）をメインで表示する
-  - `Estimated` 異常値を除外した推定シュートパワー値をメインで表示する
+  - `Battle Pass Rec.` ベイバトルパスに記録されたシュートパワー値（アプリで読み込まれるのはこの値）をメインで表示する
+  - `Prof. Evaluated` 異常値を除外した推定シュートパワー値をメインで表示する
 - 電動ランチャーの設定
   - `ELR1` 電動ランチャー1の設定
     - `A`もしくは`-` オートモードで用いる電動ランチャーに指定されているか否か
@@ -221,8 +223,8 @@ SP計測器の場合は「読み出しモード」としています。
 
 <p align="center">
 <img width="200" alt="マニュアル画面：統計" src="https://github.com/user-attachments/assets/a20296cd-9d08-433c-a186-fa0e8650bad8" />
-<img width="200" alt="マニュアル画面：ヒストグラム" src="https://github.com/user-attachments/assets/e2552e46-27d6-407d-ba68-c2932a6bb851" />
-<img width="200" alt="マニュアル画面：パラメータ" src="https://github.com/user-attachments/assets/32e6cea9-b65b-4791-a74f-44d75f16dfe3" />
+<img width="200" alt="マニュアル画面：ヒストグラム" src="https://github.com/user-attachments/assets/d7770ca5-55c0-486f-bdd0-19710dda596a" />
+<img width="200" alt="マニュアル画面：パラメータ" src="https://github.com/user-attachments/assets/ae91d5e6-c923-408b-99a8-e9d4928c8f79" />
 </p>
 
 ヘッダ領域の詳細は以下の通りです。
@@ -236,83 +238,195 @@ SP計測器の場合は、`EL1`と`EL2`は表示されません。
   
 ### 2-3-3. クライアント側
 
-ここでは、ATLASと通信するPC、スマホ等で動作させるクライアントソフトウェアについて記述します。
-クライアントソフトウェアはWebアプリとして実装してあります。
+ここでは、ATLASと通信するPC、スマホ等で動作させるクライアントソフトウェア（以下、クライアント）について記述します。
+クライアントはWebアプリとして実装してあります。
 Web Bluetooth APIがChromeでしか動かないため、Chromeをお使いください。
 iPhoneの場合は、BluefyというブラウザでBluetoothが使えるようです。
 
-ATLASとの通信アプリは以下のULRにアクセスすると使えます。
+クライアントは以下のULRにアクセスすると使えます。
 
 https://shark-minister.github.io/atlas_bey/
 
-#### 接続
+#### 2-3-3-1. 概要
 
-ATLASをマニュアル/設定モードに切り替えた状態で、〔接続する〕ボタンをクリックしてください。
+クライアントは4つのページで構成されています。
 
-<p align="center">
-<img width="400" alt="connection" src="https://github.com/user-attachments/assets/3afbe3c1-41e9-49c1-9252-80afb8db29af" />
-</p>
-
-付近のATLASを検知したら、デバイスのリストに ATLAS_AUTO_LAUNCHER（Arduionの場合もあり）が表示されます。
-
-<p align="center">
-<img width="340" alt="接続" src="https://github.com/user-attachments/assets/503f0562-9e80-4ec7-aee9-709a2736eb2e" />
-</p>
-
-ATLAS_AUTO_LAUNCHER（or Arduiono）を選んで〔ペア設定〕をクリックするとATLASが接続されます。接続されると自動的にATLASのパラメータが読み込まれます。
-以下の設定画面（後述）は以下の通りになります。
+- 接続・制御ページ
+- 統計データページ
+- シュート一覧・プロファイル解析ページ
+- パラメータ設定ページ
 
 <p align="center">
-<img width="340" alt="Webクライアント画面2" src="https://github.com/user-attachments/assets/d438f183-53c3-4e5a-945d-c80943a5ca62" />
+<img width="800" alt="pages" src="https://github.com/user-attachments/assets/bc989637-9571-4b6a-ab9d-68714def0e30" />
 </p>
 
-#### 切断
+#### 2-3-3-2. 接続・制御ページ
 
-〔接続する〕ボタンをクリックすれば、ATLASとの接続を切断できます。
+##### 接続
 
-#### SP計測モードに切替（SP計測器で、かつスイッチレスの場合のみ表示）
+ATLASをマニュアル/設定モードに切り替えた状態で、〔Connect〕ボタンをクリックしてください。
 
-「Aモードに切替」ボタンは、SP計測器でスイッチレス型かタクトスイッチ型の場合のみ有効です。
+<p align="center">
+<img width="310" height="125" alt="connection" src="https://github.com/user-attachments/assets/f5040e2e-170d-49f6-b17c-5d20e665f212" />
+</p>
+
+付近のATLASを検知したら、デバイスのリストに ATLAS_AUTO_LAUNCHER（Arduinoの場合もあり）が表示されますので、ATLAS_AUTO_LAUNCHER（or Arduino）を選んで〔ペア設定〕をクリックするとATLASが接続されます。接続されると自動的にATLASのデバイス情報が読み込まれます。
+
+<p align="center">
+<img width="298" height="151" alt="devInfo" src="https://github.com/user-attachments/assets/6e83873c-aaca-4c28-bc42-e5fd06178f1d" />
+</p>
+
+##### 切断
+
+〔Disconnect〕ボタンをクリックすれば、ATLASとの接続を切断できます。
+
+<p align="center">
+<img width="310" height="125" alt="disconnection" src="https://github.com/user-attachments/assets/c94f87ee-b612-4e01-8da6-57dae6087a2f" />
+</p>
+
+##### SP計測モードに切替（SP計測器で、かつスライドスイッチ以外の場合のみ表示）
+
+〔Switch mode〕ボタンは、SP計測器でスイッチレス型かタクトスイッチ型の場合のみ有効です。
 クリックすると、SP計測モードに切り替わります。
 （このボタンを使用せずとも、SP計測器を再起動すればSP計測モードで立ち上がります）
 
-#### マニュアル制御（電動ランチャー制御として使う場合のみ表示）
-
-〔ベイを射出する〕ボタンを押すとモータにセットされたベイが射出されます。
-
-#### 設定（一部共通）
-
-- 回転方向: モーターの回転方向を設定します。Rが右回転、Lが左回転です。
-- シュートパワー: モーターの回転数を設定します。値は100の倍数である必要があります。
-- 猶予時間: 猶予時間をミリ秒単位で設定します。値は10の倍数である必要があります。
-- 遅延時間: 遅延時間をミリ秒単位で設定します。値は2の倍数である必要があります。
-- BBPの記録値をメインにする:
-  - 有効: BBPの記録SP値を大きく表示します（ワインダーランチャーではこちらがオススメ）
-  - 無効: 異常値を除外した見込みシュートパワー値を大きく表示します（ストリングランチャーではこちらがオススメ）
-- 〔読み出す〕ボタン: ATLASで動いているパラメータを読み込みます。
-- 〔書き込む〕ボタン: ATLASにパラメータを送ります。
-
-#### シュート情報
-
-ATLASに保存されているシュートパワー統計情報を読み込んで、グラフ表示を行います。
-
-- 〔読み出す〕ボタン: シュートパワー統計情報を読み込んで、グラフ表示を行う。
-- 〔初期化〕ボタン: ATLASに保存されているシュート統計情報をクリアする。
+スライドスイッチの機体では無効です。
 
 <p align="center">
-<img width="340" alt="シュート統計" src="https://github.com/user-attachments/assets/8f82318d-b840-4a8b-8af7-e0676e78d08a" />
+<img width="310" height="138" alt="modeSwitch" src="https://github.com/user-attachments/assets/9f1ced38-74f6-4b23-832f-0946787a628a" />
 </p>
+
+##### マニュアル制御（電動ランチャー制御として使う場合のみ表示）
+
+〔Launch bey〕ボタンを押すと伝導ランチャーのモータにセットされたベイが射出されます。
 
 <p align="center">
-<img width="340" alt="シュート統計グラフ" src="https://github.com/user-attachments/assets/f001e7fe-d015-423a-80fb-58371c006cdc" />
+<img width="302" height="125" alt="launchBey" src="https://github.com/user-attachments/assets/788b827e-8eb7-4792-911c-f33aca4f6e4d" />
 </p>
 
+#### 2-3-3-3. 統計データページ
+
+シュートパワーの統計をATLASから読み込み、表示するページです。
+
+<p align="center">
+<img width="343" height="104" alt="readStatsButton" src="https://github.com/user-attachments/assets/49ed5cba-4907-49db-a263-c11024b84314" />
+</p>
+
+各ボタンの意味は以下の通りです。
+
+- 〔Read〕ボタン: ATLASから統計データを読み込む
+- 〔Clear〕ボタン: ATLASの統計データおよびシュート一覧を全て削除する
+- 〔Export CSV〕ボタン: 統計データをCSV形式でダウンロードする
+
+統計データを読み込むと各種統計値とシュートパワー分布のグラフが表示されます。グラフの縦軸がシュートパワー、横軸がシュート数です。
+
+<p align="center">
+<img width="348" height="557" alt="statsHist" src="https://github.com/user-attachments/assets/13df5b77-20da-4ea1-9141-cecd3ddf9214" />
+
+</p>
+
+#### 2-3-3-4. シュート一覧・プロファイル解析ページ
+
+ATLAS 2では、ベイバトルパスから送られてくるシュート情報を全て逐次保存しています。
+このページではそれを読み込み、一つ一つのシュート情報の可視化・解析を行います。
+
+<p align="center">
+<img width="341" height="122" alt="listShoots" src="https://github.com/user-attachments/assets/08aafed7-a798-41d9-8c62-795c033beb5c" />
+
+</p>
+
+各ボタンの意味は以下の通りです。
+
+- 〔Read〕ボタン: ATLASからシュート一覧データを読み込む
+- 〔Download〕ボタン: シュート一覧データでダウンロードする（バイナリ形式）
+
+シュート一覧データを読み込むと表が表示されます。
+
+<p align="center">
+<img width="314" height="240" alt="listShoot2" src="https://github.com/user-attachments/assets/0151ca24-9e40-4a92-9d0c-e900354d4cc9" />
+
+</p>
+
+SPは、シュートパワープロファイルを評価して異常値を排除したSP値です。BBPはベイバトルパスで記録したSP値です。
+Accは、加速度（前半～中盤までの加速度）です。
+それぞれ、昇順／降順で並べ替えられます。
+表のシュートを1つ選択すると、そのシュートのプロファイルがグラフで表示されます。
+
+<p align="center">
+<img width="347" height="626" alt="prof" src="https://github.com/user-attachments/assets/863cdb4c-9844-4f59-8324-17858d9c67a3" />
+
+</p>
+
+シュートプロファイルはベイの回転毎のSP値であり、ストリングランチャーであれば、最初の回転からおおよそ12回転目までのSP値がプロットされます。
+縦軸がSP値で、横軸が1回転目からの経過時間（単位ミリ秒）です。
+上のグラフは、ベイが射出されるまでのプロット（青色）で、前半～中盤までの加速度をフィッティングさせて求めています（橙色）。
+下のグラフは、記録されている全32点のデータのプロットです。
+
+#### 2-3-3-5. パラメータ設定ページ
+
+このページではATLASのパラメータの取得・設定を行えます。
+〔Read〕ボタンがパラメータの読み込み、〔Write〕ボタンがパラメータの書き込みを行うボタンです。
+
+<p align="center">
+<img width="349" height="125" alt="paramsButton" src="https://github.com/user-attachments/assets/fb447e8f-7aa0-473e-bf43-bd31f6f1cb21" />
+
+</p>
+
+##### 表示するシュートパワー種類の設定
+
+オートモード（SP計測モード）におけるシュートパワーの表示を、以下のどちらかに設定できます。
+
+  - `Evaluated SP`: シュートパワープロファイルを評価し、異常値を除外したシュートパワー値を大きく表示する（推奨）。
+  - `BBP-recorded SP`: ベイバトルパスに記録されたSP値を大きく表示する。
+
+<p align="center">
+<img width="349" height="165" alt="viewSP" src="https://github.com/user-attachments/assets/bad922d8-04ef-480d-ab39-5d76759ca7c2" />
+
+</p>
+
+##### 電動ランチャーのシュートパワー設定
+
+電動ランチャーのシュートパワーを設定します。ここではモーターの回転数を設定します。値は100の倍数である必要があります。
+
+<p align="center">
+<img width="347" height="116" alt="shootPower" src="https://github.com/user-attachments/assets/bc1b695a-7aa1-4cf7-bdf5-d82d1336241d" />
+
+</p>
+
+##### モーターの回転方向設定
+
+モーターの回転方向を設定します。Rightが右回転、Leftが左回転です。
+
+<p align="center">
+<img width="343" height="95" alt="rotation" src="https://github.com/user-attachments/assets/f3af5bb2-afd6-40dc-b120-b32233f07c8d" />
+
+</p>
+
+##### 猶予時間の設定
+
+オートモードでのカウントダウン最初の "ReadySet" と "3" までの間隔のデフォルト値をミリ秒で指定します。この猶予時間内にベイをランチャーから外すとカウントダウンとモーター駆動開始がキャンセルされます。
+値は10の倍数である必要があります。
+
+<p align="center">
+<img width="347" height="149" alt="latency" src="https://github.com/user-attachments/assets/8d9d718d-26ec-411e-9ffb-4d51a28daec5" />
+
+</p>
+
+##### 射出遅延時間の設定
+
+モーター停止（ベイ射出）の間隔（射出遅延）のデフォルト値をミリ秒で指定します。オートモードでは、カウントダウンのShoot!の号令からの遅延に相当します。
+値は2の倍数である必要があります。
+
+<p align="center">
+<img width="349" height="131" alt="delay" src="https://github.com/user-attachments/assets/bc24fab3-0932-4f2b-8e0a-69d141b143c7" />
+
+</p>
 
 # 3. ソフトウェアの書き込み（更新も含む）
 
 ここでは、マイコンで動作するソフトウェアの書き込み（更新）について記述します。
 
-SP計測器をお持ちの方で、ソフトウェアの更新をされる場合は、3-1節～3-5節をご覧下さい。
+ATLAS（電動ランチャーコントローラ）もしくはATLAS lite（SP計測器）をお持ちの方で、ソフトウェアの更新をされる場合は、3-1節～3-5節をご覧下さい。
 具体的には、以下の節を読んで頂ければソフトウェアの更新が可能です。
 
 - 3-1節: 書き込みソフトウェアの準備
@@ -324,61 +438,20 @@ SP計測器をお持ちの方で、ソフトウェアの更新をされる場合
 
 ## 3-1. 書き込みソフトウェアの準備（ビルド環境）
 
-### 3-1-1. Arduino IDEのインストール
+ATLAS のマイコンソフトウェアは Visual Studio Code + PlatformIO で開発されています。
+Visual Studio Code とその拡張機能 PlatformIO をインストールしてください。
 
-マイコンへのソフトウェアの書き込みは、Arduino IDEというアプリケーションを用います。
-Arduino IDEをインストールしていない場合は、下記URLから自分のプラットフォーム（OS）にあったものをダウンロードしてインストールしてください。
+#### Visual Studio Code
 
-Arduino IDEの公式ダウンロードページ：
-https://www.arduino.cc/en/software/
+以下の公式サイトから自分のプラットフォーム（OS）に合うものをダウンロードしてインストールしてください。
 
-<p align="center">
-<img width="701" height="349" alt="Arduino IDE download" src="https://github.com/user-attachments/assets/cd8efcfc-9b93-45bb-880c-25fb97276830" />
-</p>
+https://code.visualstudio.com/
 
-> [!NOTE]
-> 本ソースコードは、Arduino IDEでビルドして書き込むことを想定しています。PlatformIOでのビルドは検証していません。
+#### PlatformIO
 
-### 3-1-2. ボードマネージャのインストール
+次に、Visual Studio Code の拡張機能 PlatformIO を以下の公式サイトの指示に従ってインストールしてください。
 
-次の手順で、ボードマネージャから、**esp32 by Espressif Systems** をインストールします。
-
-1. Arduino IDEを起動する
-2. 左のアイコン列の上から2番目（図の①）をクリックする
-3. 検索窓に **esp32-c3** と入力する（図の②）
-4. **esp32 by Espressif Systems** であることを確認して、「インストール」をクリックする（図の③）
-
-<p align="center">
-<img width="443" height="343" alt="board-manager" src="https://github.com/user-attachments/assets/008cc653-62ff-48d4-b246-2e0324643ad4" />
-</p>
-
-### 3-1-3. ライブラリのインストール
-
-以下のライブラリが必要になります。
-
-- **ArduinoBLE**
-  - 必須
-  - Bluetooth接続を行うためのライブラリ
-- **Adafruit SH110X**
-  - 1.3インチディスプレイSH1106を使う場合、必須
-  - SP計測器の標準版をお持ちの方はこちら
-- **Adafruit SSD1306**
-  - 0.96インチディスプレイSSD1306を使う場合、必須
-  - SP計測器のコンパクト版をお持ちの方はこちら
-- **DFRobotDFPlayerMini**
-  - オーディオプレイヤーのDFPlayerMiniを使う場合、必須
-  - SP計測器の場合は不要
-
-次の手順で、各ライブラリをインストールします。
-
-1. 左のアイコン列の上から3番目（図の①）をクリックする
-2. 検索窓にライブラリ名（上記のコピー＆ペーストが便利）を入力する（図の②）
-3. 一番上に出てくるライブラリの「インストール」ボタンをクリックし、インストールを行う（図の③）
-4. 必要なライブラリだけ、1-3を繰り返す
-
-<p align="center">
-<img width="304" height="344" alt="library" src="https://github.com/user-attachments/assets/e952eca0-3ef3-4d67-9004-4cddc26505ca" />
-</p>
+https://platformio.org/install/ide?install=vscode
 
 ## 3-2. ソースコードのダウンロード
 
@@ -387,6 +460,7 @@ Gitを使ってソースコードを取得する場合は 5-2-1 節、そうで�
 ### 3-2-1. Gitを使う場合
 
 適切なディレクトリにて、以下のコマンドでダウンロードしてください。
+直下に atlas_bey ディレクトリができています。
 
 ```
 $ git clone git@github.com:shark-minister/atlas_bey.git
@@ -395,48 +469,19 @@ $ git clone git@github.com:shark-minister/atlas_bey.git
 ### 3-2-2. Gitを使わない場合
 
 このページ最上部で、**<> Code** をクリックして（図の①）、Download Zip を選んでください（図の②）。
+ダウンロードしたZipファイルを展開するとatlas_bey-main というフォルダができます。
 
 <p align="center">
 <img width="698" height="352" alt="download" src="https://github.com/user-attachments/assets/eb3d4c55-26cf-4cfd-b55d-dfa145b8670f" />
 </p>
 
-ダウンロードしたファイルを選択し（図の①）、「すべて展開」をクリックしてください（図の②）。
-
-<p align="center">
-<img width="654" alt="展開" src="https://github.com/user-attachments/assets/16824325-9e93-4542-855e-4c21f61c6e3c" />
-</p>
-
-展開が終わると、atlas_bey-main といフォルダができます。
-
-<p align="center">
-<img width="600" alt="展開後" src="https://github.com/user-attachments/assets/e9de7b4c-a25a-4167-9bba-2231e31720e0" />
-</p>
-
 ## 3-3. プロジェクトのオープン
 
-Arduino IDEで 3-2節でダウンロードしたプロジェクトを開きます。
-
-1. 「ファイル」メニューの「開く...」をクリックする（図の①）
-2. 3-2節でダウンロードしたフォルダの中の **atlas.ino** を選択してください（図の②）。
-   - Gitを使用した場合、以下のフォルダの中にあります
-     - atlas_bey > atlas > atlas.ino
-   - Gitを使用していない場合は、展開によってできたフォルダの中を見ます（図の下線部を参照）
-     - atlas_bey-main > atlas_bey-main > atlas > atlas.ino
+Visual Studio Code の［ファイル］メニューから［フォルダーを開く...］を選び、ダウンロードした atlas_bey の直下にある **core** フォルダを開いてください。
+フォルダを開くとPlatformIOの初期化が行われます。
 
 <p align="center">
-<img width="723" alt="open" src="https://github.com/user-attachments/assets/e36dbc08-8380-42b2-ad35-4f7aeef6298c" />
-</p>
-
-あるいは、エクスプローラ上で atlas.ino をダブルクリックしても、Arduino IDEで開くことができます。
-
-<p align="center">
-<img width="711" alt="arduino.ino" src="https://github.com/user-attachments/assets/09f48ae9-18de-4df5-bb68-6daf889ea003" />
-</p>
-
-プロジェクトを開くと以下の画面になります。
-
-<p align="center">
-<img width="897" alt="window" src="https://github.com/user-attachments/assets/ebdbd209-9c3a-40b6-b0eb-0bc09d62626c" />
+<img width="800" alt="platformio" src="https://github.com/user-attachments/assets/13039fe7-7ab0-48ef-9383-86b7edf890ed" />
 </p>
 
 ## 3-4. ソフトウェア設定値の変更
@@ -445,11 +490,11 @@ Arduino IDEで 3-2節でダウンロードしたプロジェクトを開きま�
 
 ### 3-4-1. setting.hh の表示
 
-setting.hhのソースコードは、**setting.hh** のタブを選択すると表示されます。
-setting.hhのタブは、この順番にあるとは限りません。
+setting.hhのソースコードは、左ペインの include/setting.hh を選ぶと開くことができます。
 
 <p align="center">
-<img width="348" alt="setting.hh" src="https://github.com/user-attachments/assets/82001963-01b6-4dd4-9d67-c7b2df68d82d" />
+<img width="800" alt="settinghh" src="https://github.com/user-attachments/assets/034ce12a-b1d8-4236-8fb8-6eaef770595f" />
+
 </p>
 
 必要に応じて書き換えてください。
@@ -464,6 +509,13 @@ setting.hhのタブは、この順番にあるとは限りません。
 - `ATLAS_FULL_SPEC` 電動ランチャー制御としても使う、フルスペックATLASとしてビルドする
 - `ATLAS_LITE_SP_ONLY` SP計測器のみで使う、ATLAS liteとしてビルドする
 
+#### ディスプレイの種類（共通）
+
+`DISPLAY_DRIVER`に以下の定数のいずれかを設定する。
+
+- `ADAFRUIT_SH1106G` SH1106G (1.3インチ)
+- `ADAFRUIT_SSD1306` SSD1306 (0.96インチ)
+
 #### モード切替スイッチの種類（共通）
 
 `SWITCH_TYPE`に以下の定数のいずれかを設定する。
@@ -472,94 +524,119 @@ setting.hhのタブは、この順番にあるとは限りません。
 - `SW_SLIDE` スライドスイッチを使う（ver.1.2.xまで）
 - `SW_TACT` タクトスイッチを使う（ver.1.3.0以降）
 
-#### ディスプレイの種類（共通）
-
-`DISPLAY_MODEL`に以下の定数のいずれかを設定する。
-
-- `ADAFRUIT_SH1106G` SH1106G (1.3インチ)
-- `ADAFRUIT_SSD1306` SSD1306 (0.96インチ)
-
 #### モーター関連（電動ランチャー制御として使う場合のみ）
 
-- `NUM_MOTORS`
-  - 使用するモーターの数
-  - デフォルト値: 1
-- `USE_DUMMY_MOTOR`
-  - モーターをダミーモードにする。デバッグ用。モータードライバーに接続せず、Serial通信でデバッグ文を出力するのみとなる。
-  - デフォルト値: 0
+`NUM_MOTORS`に以下の定数のいずれかを設定する。
+
+- `SINGLE_MOTOR` 1台のモーター（電動ランチャー）
+- `DOUBLE_MOTORS` 2台のモーター（電動ランチャー）
 
 ### 3-4-3. ピン番号設定（共通）
 
 #### スイッチ関連
 
-- `MODE_SW_IN` 切替スイッチの中央端子と繋ぐピン番号
-- `MODE_SW_OUT` 切替スイッチのオートモード側端子と繋ぐピン番号
-
 <table>
   <tr>
-    <th></th>
-    <th colspan="2">フルスペック機ATLAS</th>
-    <th colspan="2">SP計測機ATLAS lite</th>
+    <th>型番</th>
+    <th>AFTP</th>
+    <th>AFTU</th>
+    <th>ALSU</th>
+    <th>ALLU</th>
+    <th>ALTU</th>
+  </tr>
+  <tr>
+    <th>タイプ</th>
+    <th colspan="2">フルスペック</th>
+    <th colspan="3">lite（SP計測器）</th>
   </tr>
   <tr>
     <th>スイッチ</th>
     <th>タクト</th>
-    <th>スライド</th>
     <th>タクト</th>
     <th>スライド</th>
+    <th>-</th>
+    <th>タクト</th>
   </tr>
   <tr>
-    <th>MODE_SW_IN</th>
-    <td>8</td>
-    <td>8</td>
-    <td>5</td>
-    <td>5</td>
+    <th>ボード</th>
+    <th>プリント基板</th>
+    <th colspan="4">ユニバーサル基板</th>
   </tr>
   <tr>
-    <th>MODE_SW_OUT</th>
-    <td>不要</td>
-    <td>5</td>
-    <td>不要</td>
-    <td>21</td>
+    <th>SW_SEL_IN</th>
+    <td>D8</td>
+    <td>D8</td>
+    <td>D3</td>
+    <td>-</td>
+    <td>D3</td>
+  </tr>
+  <tr>
+    <th>SW_SEL_OUT</th>
+    <td>-</td>
+    <td>-</td>
+    <td>D6</td>
+    <td>-</td>
+    <td>-</td>
   </tr>
 </table>
 
 #### モーター関連
 
-- `L_PWM_1` 
-   - モータードライバー1のL_PWMをつなぐGPIOピン番号
-   - デフォルト値: 2
-   - 左回転用PWM
-- `R_PWM_1` 
-   - モータードライバー1のR_PWMをつなぐGPIOピン番号
-   - デフォルト値: 3
-   - 右回転用PWM
-- `LR_EN_1` 
-   - モータードライバー1のL_ENとR_ENをつなぐGPIOピン番号
-   - デフォルト値: 4
-- `L_PWM_2` 
-   - モータードライバー2のL_PWMをつなぐGPIOピン番号
-   - デフォルト値: 11
-   - 左回転用PWM
-- `R_PWM_2` 
-   - モータードライバー2のR_PWMをつなぐGPIOピン番号
-   - デフォルト値: 10
-   - 右回転用PWM
-- `LR_EN_2` 
-   - モータードライバー2のL_ENとR_ENをつなぐGPIOピン番号
-   - デフォルト値: 4（モータードライバー1と共通）
-
-> [!CAUTION]
-> モーター2台体制は未検証です。
+<table>
+  <tr>
+    <th>型番</th>
+    <th>AFTP</th>
+    <th>AFTU</th>
+  </tr>
+  <tr>
+    <th>タイプ</th>
+    <th colspan="2">フルスペック</th>
+  </tr>
+  <tr>
+    <th>スイッチ</th>
+    <th colspan="2">タクト</th>
+  </tr>
+  <tr>
+    <th>ボード</th>
+    <th>プリント基板</th>
+    <th>ユニバーサル基板</th>
+  </tr>
+  <tr>
+    <th>MOTOR_ENBL</th>
+    <td>D3</td>
+    <td>D2</td>
+  </tr>
+  <tr>
+    <th>MOTOR_ENBL</th>
+    <td>D3</td>
+    <td>D2</td>
+  </tr>
+  <tr>
+    <th>MOTOR1_PWM_R</th>
+    <td>D2</td>
+    <td>D1</td>
+  </tr>
+  <tr>
+    <th>MOTOR1_PWM_L</th>
+    <td>D1</td>
+    <td>D0</td>
+  </tr>
+  <tr>
+    <th>MOTOR2_PWM_R</th>
+    <td>D9</td>
+    <td>D9</td>
+  </tr>
+  <tr>
+    <th>MOTOR2_PWM_L</th>
+    <td>D10</td>
+    <td>D10</td>
+  </tr>
+</table>
 
 #### オーディオ関連
 
-- `AUDIO_RX`
-   - シリアル通信RX
-   - デフォルト値: 20
-- `AUDIO_TX`
-   - シリアル通信TX
-   - デフォルト値: 21
+- `AUDIO_RX` RX
+- `AUDIO_TX` TX
 
 ### 3-4-4. ディスプレイパラメータ（共通）
 
@@ -664,19 +741,20 @@ setting.hhのタブは、この順番にあるとは限りません。
 SP計測器用のプログラムを書き込みたい場合は、setting.hh に以下の書き換えを行ってください。
 
 <p align="center">
-<img width="514" alt="SP_MEAS" src="https://github.com/user-attachments/assets/435fec6d-851e-4350-b96b-cc457e0ef085" />
+<img width="600" alt="settinghh2" src="https://github.com/user-attachments/assets/7504ed17-dbcd-4d4e-9c7c-619c466efd2d" />
+
 </p>
 
-**①利用形態（21行目）**
+**利用形態**
 - **ATLAS_FORMAT** の値を **ATLAS_LITE_SP_ONLY** に設定する
 
-**②スイッチの種類（27行目）**
+**スイッチの種類**
 - **SWITCH_TYPE** の値を 機器のスイッチ形態に合わせて設定する
   - **SW_NONE** - スイッチがない
   - **SW_SLIDE** - スライドスイッチ
   - **SW_TACT** - 押しボタンスイッチ
 
-**③ディスプレイタイプ（32行目）**
+**ディスプレイタイプ**
 - **DISPLAY_DRIVER** の値を、機器のディスプレイタイプに合わせて設定する
   - **ADAFRUITE_SH1106G** - 1.3インチディスプレイ（SP計測器の標準版）
   - **ADAFRUITE_SSD1306** - 0.96インチディスプレイ（SP計測器のコンパクト版）
@@ -684,39 +762,17 @@ SP計測器用のプログラムを書き込みたい場合は、setting.hh に�
 ## 3-5. プログラムの書き込み
 
 使用デバイスにあった設定ができたら、プログラムをビルドして書き込みを行います。
-まず、デバイスをUSBケーブルでつなぎ、ツールバーのデバイスリストの「他のボードとポートを選択」をクリック（画像オレンジ色で囲った部分）します。
+まず、デバイスをUSBケーブルでつなぎ、Visual Studio Code ウィンドウの右上にある［→］のドロップダウンリストから［Upload］を選びます。
 
 <p align="center">
-<img width="424" height="188" alt="board" src="https://github.com/user-attachments/assets/5a0c3b27-57a0-47c6-beb3-d300ea953c88" />
+<img width="333" height="244" alt="buildUpload" src="https://github.com/user-attachments/assets/cd6ebebb-8702-4a43-b85c-7e9d2d10c2b0" />
 </p>
 
-以下の手順で、ボードとポートを選択してください。
-
-1. ボードの検索窓に **xiao** と入力する（図の①）
-2. **XIAO_ESP32C3** を選択する（図の②）
-3. ポートは、出てくるUSBポートのものを選ぶ（図の③）
-4. OKを押す（図の④）
+プログラムのビルドと書き込みが行われ、終わると以下のような出力がなされてデバイスも再起動します。
 
 <p align="center">
-<img width="554" height="389" alt="board選択" src="https://github.com/user-attachments/assets/11793193-18f3-4fe3-8974-156dfc7cb0c5" />
-</p>
+<img width="500" alt="result" src="https://github.com/user-attachments/assets/98e793a2-b87b-4f71-94bd-a87641cb4062" />
 
-正しく選択できていれば、以下の図のようになります。
-
-<p align="center">
-<img width="345" height="126" alt="board1" src="https://github.com/user-attachments/assets/2f917e44-fa17-4f08-b757-80238d30755f" />
-</p>
-
-→ボタンを押すとビルドとマイコンへの書き込みが行われます。
-
-<p align="center">
-<img width="292" alt="board1" src="https://github.com/user-attachments/assets/b5688cfd-962f-4a72-84d2-cb37284bfe16" />
-</p>
-
-書き込みが終わると以下のような出力がなされ、デバイスも再起動します。
-
-<p align="center">
-<img width="734" alt="output1" src="https://github.com/user-attachments/assets/be7a7660-21f9-453b-be90-94c67d63af10" />
 </p>
 
 # 4. ハードウェア構成
@@ -830,7 +886,9 @@ microSDカードに 01, 02, 03, 04のフォルダを作成し、それぞれの�
 下の図の通り配線しました。
 
 <p align="center">
-<img width="700" alt="system-wiring" src="https://github.com/user-attachments/assets/b5dc64ba-1503-43b5-b2b0-5c735af7fa0d" />
+
+<img width="700" alt="wiring_v200" src="https://github.com/user-attachments/assets/d6667640-9198-4f10-996c-4cfec17190f2" />
+
 </p>
 
 SP計測器専用（ATLAS lite）での配線は以下の通りです。
@@ -841,7 +899,7 @@ SP計測器専用（ATLAS lite）での配線は以下の通りです。
 
 ### 4-2-1. BTS7960
 
-モータードライバー BTS7960 の配線は以下の通りです。
+モータードライバー BTS7960 の配線は以下の通りです。ESP32-C3の（）は、2台目のモータードライバーをつなぐ際のピン番号です。
 
 > [!IMPORTANT]
 > モータードライバーと電源・モーター間のケーブルは大きい電流が流れるので、1.25sq以上の太さのケーブルを使ってください。
@@ -856,25 +914,25 @@ SP計測器専用（ATLAS lite）での配線は以下の通りです。
   </tr>
   <tr>
     <td>LPWM</td>
-    <td>GPIO2</td>
+    <td>D1 (D10)</td>
     <td></td>
     <td></td>
   </tr>
   <tr>
     <td>RPWM</td>
-    <td>GPIO3</td>
+    <td>D2 (D9)</td>
     <td></td>
     <td></td>
   </tr>
   <tr>
     <td>L_EN</td>
-    <td>GPIO4</td>
+    <td>D3</td>
     <td></td>
     <td></td>
   </tr>
   <tr>
     <td>R_EN</td>
-    <td>GPIO4</td>
+    <td>D3</td>
     <td></td>
     <td></td>
   </tr>
@@ -984,7 +1042,7 @@ SP計測器専用（ATLAS lite）での配線は以下の通りです。
   </tr>
   <tr>
     <td>ピン1</td>
-    <td>GPIO5 (INPUT_PULLUP)</td>
+    <td>D8 (INPUT_PULLUP)</td>
   </tr>
   <tr>
     <td>ピン2</td>
